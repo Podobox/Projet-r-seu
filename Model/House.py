@@ -71,7 +71,7 @@ class House(Building):
         self.sizex = house_property[self.level].sizex
         self.sizey = house_property[self.level].sizey
 
-        print(f"evolved ({self.tile.posx}, {self.tile.posy}) to {self.level.name}")
+        # print(f"evolved ({self.tile.posx}, {self.tile.posy}) to {self.level.name}")
 
         return self.population - pop_buf
 

@@ -6,6 +6,7 @@ from Model.Well import Well
 from Model.Fountain import Fountain
 from Model.Building import Building
 from math import sqrt
+from Model.Owner import Owner
 
 MAP_DIM = 30
 
@@ -18,7 +19,7 @@ class Map:
         self.sizey = MAP_DIM
         self.entry_point = None
         self.exit_point = None
-
+        self.owner = None
     def __str__(self):
         string = ""
         for row in self.grid:

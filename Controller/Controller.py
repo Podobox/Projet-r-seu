@@ -28,6 +28,7 @@ from time import time_ns, sleep
 from Controller.Backup import Backup
 from Model.Destination_Walkers import Destination_Walkers
 from random import randint
+from Controller.Communication import Communication
 
 FRAMES_PER_SECONDS = 30
 TIME_NS_PER_FRAME = 1 / FRAMES_PER_SECONDS * 1e9
@@ -50,6 +51,7 @@ class Controller:
         # game is actually always set so changing the money here won't do anything
         self.game = Game(100000) if game is None else game
         self.backup = Backup(name_save)
+        self.communication = Communication()
         self.visualizer = Visualizer(self.list_button, self.game, self.backup)
         self.building = False
         self.buttonclicked = None
@@ -87,16 +89,22 @@ class Controller:
             self.game.trade_market()
 
             self.list_button = self.visualizer.update(self.game.map, self.game.walkers)
-            # self.visualizer.update_walkers(self.game.walkers)
 
             pg.display.update()
+
+            for message in self.communication.check_messages():
+                self.handle_message()
+
             self.wait_next_frame()
 
             self.checkEvents()
 
         print(self.game)
-
         return
+
+    def handle_message(self):
+        # logic here, call functions from self.communication to actually send the answer
+        pass
 
     def wait_next_frame(self):
         time_now = time_ns()
@@ -115,8 +123,6 @@ class Controller:
         # sleep(sleep_time * 1e-9)
         # instant_bench = ((TIME_NS_PER_FRAME - sleep_time) / TIME_NS_PER_FRAME * 100)
         # print(instant_bench)
-
-
 
         # No more useless sleeping
         self.checkEvents(sleep_time)

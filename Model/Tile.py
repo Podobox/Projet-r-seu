@@ -1,6 +1,7 @@
 from enum import Enum
 from Model.Player import Player
 
+
 class Tile_Type(Enum):
     Water = 1
     Mountain = 2
@@ -18,6 +19,7 @@ class Tile():
         self.posx = posx
         self.posy = posy
         self.player = None
+
     def __str__(self):
         ret = "("
         ret += str(self.building.__repr__()) if self.building is not None else str(self.type.name)

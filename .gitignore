@@ -3,3 +3,5 @@
 *__*
 *.vim
 *venv*
+c_daemon/build/*
+!*README.md

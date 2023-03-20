@@ -18,6 +18,7 @@ class Map:
         self.sizey = MAP_DIM
         self.entry_point = None
         self.exit_point = None
+
     def __str__(self):
         string = ""
         for row in self.grid:
@@ -101,10 +102,10 @@ class Map:
         for x in range(MAP_DIM):
             for y in range(MAP_DIM):
                 if self.is_type(x, y, Well):
-                    for xx in range(x - 2 if x - 2 >= 0 else 0, x + 2 + 1 if x + 2 + 1 <
-                                    MAP_DIM else MAP_DIM):
-                        for yy in range(y - 2 if y - 2 >= 0 else 0, y + 2 + 1 if y + 2 + 1 <
-                                        MAP_DIM else MAP_DIM):
+                    for xx in range(x - 2 if x - 2 >= 0 else 0, x + 2 + 1 if x + 2 + 1
+                                    < MAP_DIM else MAP_DIM):
+                        for yy in range(y - 2 if y - 2 >= 0 else 0, y + 2 + 1 if y + 2 + 1
+                                        < MAP_DIM else MAP_DIM):
                             # print(f"({xx}, {yy})")
                             self.grid[xx][yy].water_coverage = True
                             # Also usage of newly added Building attribute

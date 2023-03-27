@@ -22,7 +22,7 @@ DEP = $(OBJ:.o=.d)
 
 bin: $(BIN_DIR)c_daemon
 
-$(BIN_DIR)myos.bin: $(OBJ)
+$(BIN_DIR)c_daemon: $(OBJ)
 	@$(LD) $^ -o $@ $(LDFLAGS)
 
 $(BUILD_DIR)%.c.o: %.c

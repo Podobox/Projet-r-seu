@@ -1,6 +1,6 @@
 
 from Controller.Communication import Communication
-class property_possession:
+class Property_possession:
     comm = Communication()
 
     def __init__(self, player):

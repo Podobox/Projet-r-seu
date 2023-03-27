@@ -33,7 +33,7 @@ from Model.Tile import Tile_Type
 from random import seed, randint
 from datetime import datetime, timedelta
 
-
+from Controller.property_possession import Property_possession
 # min par frame
 TIME_PER_FRAME = 10
 
@@ -41,6 +41,7 @@ TIME_PER_FRAME = 10
 class Game:
 
     def __init__(self, denarii):
+        self.prop  = Property_possession()
         self.map = Map()
         self.denarii = denarii
         self.population = 0

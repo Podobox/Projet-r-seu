@@ -34,6 +34,7 @@ from random import seed, randint
 from datetime import datetime, timedelta
 
 from Controller.property_possession import Property_possession
+from Model.Player import Player
 # min par frame
 TIME_PER_FRAME = 10
 
@@ -43,6 +44,7 @@ class Game:
     def __init__(self, denarii):
         self.prop  = Property_possession()
         self.map = Map()
+        self.owner = Player()
         self.denarii = denarii
         self.population = 0
         self.unemployed = 0
@@ -140,26 +142,27 @@ class Game:
 
         if not self.pay(building_data[type].price):
             return
-        if not self.prop.modify_property(tile=self.map.grid[posx][posy],player=None):
-            pass
-        self.map.build(posx, posy, type)
-        # print(self.map)
-
-        building = self.map.grid[posx][posy].building
-
-        if type == House:
-            additional_population = building.population
-            self.population += additional_population
-            self.unemployed += additional_population
-
-        if type == Road:
-            # check every building for road connection
-            self.road_connect()
+        if not self.prop.is_owner(posx, posy, player=self.owner.name):
+            self.prop.modify_property(posx, posy, player=self.owner.name)
         else:
-            # only check for the new building because it doesn't impact the others
-            self.road_connect([building])
+            self.map.build(posx, posy, type)
+            # print(self.map)
 
-        self.buildings.append(building)
+            building = self.map.grid[posx][posy].building
+
+            if type == House:
+                additional_population = building.population
+                self.population += additional_population
+                self.unemployed += additional_population
+
+            if type == Road:
+                # check every building for road connection
+                self.road_connect()
+            else:
+                # only check for the new building because it doesn't impact the others
+                self.road_connect([building])
+
+            self.buildings.append(building)
 
     def destroy(self, posx, posy):
         building = self.map.grid[posx][posy].building
@@ -208,7 +211,7 @@ class Game:
                 # if w.spawn_road == building:
                     # # TODO respawn a new one because his spawn point (=end point)
                     # # got destroyed
-                    # pass
+                    # passrop.modify_pro
 
     def job_hunt(self):
         if self.unemployed < 0:

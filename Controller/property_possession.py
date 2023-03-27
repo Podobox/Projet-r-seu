@@ -5,19 +5,19 @@ class Property_possession:
 
     def __init__(self, player):
         self.player = player
+        posx= 0
+        posy =0
+        self.tile = (posx, posy)
 
     def is_owner(self, tile, player):
-        return self.tile.player == self.player
+        return tile.player == player 
     
 
     def modify_property(self, tile, player):
         if self.is_owner(tile, player):
-            self.comm.give_ownership(tile, player)
-            return True
-            
-        else:
-            self.comm.ask_for_ownership(tile, player)
-            if self.is_owner(tile, player):
+            print("already owner")            
+        else: 
+            if self.comm.ask_for_ownership(tile, player):
                 self.comm.give_ownership(tile, player)
             else:
                 print("Access denied")

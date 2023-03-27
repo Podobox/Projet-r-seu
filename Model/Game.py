@@ -38,6 +38,7 @@ from Controller.Communication import walker_type
 import Controller.Communication as com
 
 from Controller.property_possession import Property_possession
+from Model.Player import Player
 # min par frame
 TIME_PER_FRAME = 10
 
@@ -53,6 +54,7 @@ class Game:
     def __init__(self, denarii):
         self.prop  = Property_possession()
         self.map = Map()
+        self.owner = Player()
         self.denarii = denarii
         self.population = 0
         self.unemployed = 0
@@ -169,11 +171,26 @@ class Game:
         if type == Road:
             # check every building for road connection
             self.road_connect()
+ 
         else:
-            # only check for the new building because it doesn't impact the others
-            self.road_connect([building])
+            self.map.build(posx, posy, type)
+            # print(self.map)
 
-        self.buildings.append(building)
+            building = self.map.grid[posx][posy].building
+
+            if type == House:
+                additional_population = building.population
+                self.population += additional_population
+                self.unemployed += additional_population
+
+            if type == Road:
+                # check every building for road connection
+                self.road_connect()
+            else:
+                # only check for the new building because it doesn't impact the others
+                self.road_connect([building])
+
+            self.buildings.append(building)
 
         if type not in (Water, Tree, Rock, Other_Rock, Sign):
             self.communication.build(posx, posy, building_type(type))
@@ -223,6 +240,7 @@ class Game:
             self.road_connect()
 
         self.communication.destroy(posx, posy)
+
 
     def job_hunt(self):
         if self.unemployed < 0:

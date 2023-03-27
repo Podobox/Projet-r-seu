@@ -18,7 +18,7 @@ class Tile():
         self.water_coverage = False
         self.posx = posx
         self.posy = posy
-        self.player = None
+        self.owner = None
 
     def __str__(self):
         ret = "("

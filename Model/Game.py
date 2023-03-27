@@ -37,7 +37,7 @@ from datetime import datetime, timedelta
 from Controller.Communication import walker_type
 import Controller.Communication as com
 
-
+from Controller.property_possession import Property_possession
 # min par frame
 TIME_PER_FRAME = 10
 
@@ -51,6 +51,7 @@ def building_type(b):
 class Game:
 
     def __init__(self, denarii):
+        self.prop  = Property_possession()
         self.map = Map()
         self.denarii = denarii
         self.population = 0

@@ -22,12 +22,35 @@ void stop(char *s) {
     exit(EXIT_FAILURE);
 }
 
+
 int main(int argc, char *argv[]) {
+
+    char hostbuffer[256];
+    char *hostIP;
+    struct hostent *host_entry;
+  
+    // To retrieve hostname
+    if((gethostname(hostbuffer, sizeof(hostbuffer))) == -1) {
+        stop("gethostname");
+    } 
+    
+    // To retrieve host information
+    if((host_entry = gethostbyname(hostbuffer)) == -1) {
+        stop("gethostbyname");
+    }
+
+    // To convert an Internet network
+    // address into ASCII string
+    hostIP = inet_ntoa(*((struct in_addr*)
+                           host_entry->h_addr_list[0]));
+ 
+    printf("Host IP: %s\n", hostIP);
+  
     int sock, maxfd, connfd, nready;
     char buff[BUFLEN];
     struct sockaddr_in other_player_addr, my_addr;
-    const int number_player = 0;
-    char playerIP[][100] = {};
+    const int number_player = 1;
+    char playerIP[][100] = { "192.168.68.17"};
     int player_socket[number_player];
 
     // connect to all players connected
@@ -41,10 +64,8 @@ int main(int argc, char *argv[]) {
         other_player_addr.sin_port = htons(PORT);
         other_player_addr.sin_addr.s_addr = inet_addr(playerIP[i]);
 
-        if (other_player_addr.sin_addr.s_addr == INADDR_NONE && number_player)
-            stop("error inaddr\n");
-        else
-            printf("Trying %s...\n", other_player_addr.sin_addr.s_addr);
+        
+        printf("Trying %d...\n", inet_addr(playerIP[i]));
 
         if (connect(sock, (struct sockaddr *)&other_player_addr, sizeof(other_player_addr)) != 0) {
             stop("connect() : Unable to connect to the remote host");
@@ -64,9 +85,9 @@ int main(int argc, char *argv[]) {
 
     my_addr.sin_family = AF_INET;
     my_addr.sin_port = htons(PORT);
-    my_addr.sin_addr.s_addr = inet_addr("192.168.68.17");
+    my_addr.sin_addr.s_addr = inet_addr(hostIP);
 
-    // perror("ok");
+    perror("ok");
 
     int *len = (int *)malloc(sizeof(int));
     (*len) = sizeof(my_addr);
@@ -75,14 +96,14 @@ int main(int argc, char *argv[]) {
     if (bind(listenfd, (struct sockaddr *)&my_addr, sizeof(my_addr)) < 0)
         stop("bind failed");
 
-    // perror("ok");
+    perror("ok");
 
     // Ready to listen
     if (listen(listenfd, 5) != 0)
         stop("listen failed. Error");
 
-    // perror("ok");
-    // printf("ok");
+    perror("ok");
+    // printf("listen");
 
     while (1) {
         FD_ZERO(&readfds);
@@ -98,6 +119,7 @@ int main(int argc, char *argv[]) {
             maxfd = max(maxfd, player_socket[i]);
         }
 
+        perror("select test");
         if (((nready = select(maxfd + 1, &readfds, NULL, NULL, NULL)) < 0) && errno != EINTR) {
             stop("Select Error\n");
         }
@@ -115,6 +137,8 @@ int main(int argc, char *argv[]) {
                     break;
                 }
             }
+
+            printf("after recv new player");
         } else {
             
         }

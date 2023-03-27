@@ -89,6 +89,9 @@ class Game:
             string += f"\n{b}"
         return string
 
+    def take_all_ownership(self, player):
+        pass
+
     # return True if it was payed, else False
     def pay(self, price):
         if self.denarii >= price:

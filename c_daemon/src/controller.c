@@ -39,3 +39,5 @@ char * gethostIP() {
  
     printf("Host IP: %s\n", hostIP);
 }
+
+// get ip address from client connected using socket ?

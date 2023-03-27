@@ -8,11 +8,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #define INVALID_SOCKET -1
 #define SOCKET_ERROR -1
 #define TRUE 1
 #define BUFLEN 1024	    //Buffer length
+#define PORT 1234
+#define max(a, b) ((a > b) ? a : b)
 
 void stop(char *s)
 {
@@ -20,127 +23,97 @@ void stop(char *s)
 	exit(EXIT_FAILURE);
 }
 
-void chatTP(int sockfd)
-{
-	char buff[BUFLEN], *pseudo;
-	int n, rest;
-	bzero(&pseudo, sizeof(pseudo));
-	while (TRUE) {
-        // Create a file descriptor set
-		fd_set read_fds;
-		FD_ZERO(&read_fds);
-		bzero(buff, sizeof(buff));
-
-		// Add the sockets to the read and write sets
-        if (sockfd != 0){
-            FD_SET(sockfd, &read_fds);
-		}
-        FD_SET(0, &read_fds);
-
-		if (select(sockfd+1, &read_fds, NULL, NULL, NULL) < 0) {
-			stop("select");
-		}
-
-		if (FD_ISSET(sockfd, &read_fds)) {
-
-			// data is available to be read
-			if (( n = recv(sockfd , buff , sizeof(buff), 0)) < 0)
-				stop("recv error");
-			else if (n == 0) {
-				printf("\033[0mConnection closed by foreign host.\n\r");
-				break;
-			}
-
-            
-			// when te pseudo is used by another registered user
-			else if (strcmp(buff, "Change your pseudo with /nickname <pseudo>") == 0)
-			{
-				n = 0;            
-				// scan from the client
-				int c;
-				while ((c = getchar()) != '\n' && c != EOF)
-					buff[n++] = c;
-				buff[n] = '\0';
-				
-				if(strcmp(buff, "\n") != 0){
-					write(sockfd, buff, sizeof(buff));
-				}
-				
-				bzero(buff, sizeof(buff));
-			}
-			
-			else{
-				printf("\033[0m%s\033[0;35m\n", buff);
-				bzero(buff, sizeof(buff));
-			}
-		}
-
-        if (FD_ISSET(0, &read_fds)) {
-            n = 0;            
-            // scan from the client
-            int c;
-
-            while ((c = getchar()) != '\n' && c != EOF)
-                buff[n++] = c;
-            buff[n] = '\0';
-            
-            if(strcmp(buff, "\n") != 0){
-                write(sockfd, buff, sizeof(buff));
-            }
-            
-            bzero(buff, sizeof(buff));
-        }
-
-	}
-}
-
 int main(int argc,char *argv[])
 {
-	int n = 0, sock;
-	char buff[BUFLEN], message[BUFLEN+1], pseudo[20];
-	struct sockaddr_in server_addr;
+	int sock, maxfd, connfd, nready;
+	char buff[BUFLEN];
+	struct sockaddr_in other_player_addr, my_addr;
+    const int number_player = 2;
+	char playerIP[][100] = {};
+    int player_socket[number_player];
+  
+    // connect to all players connected
+    for(int i=0;i<number_player;i++){	
 
-	if (argc < 2 || argc > 3) {
-        printf("Usage: %s address [port]\n", argv[0]);
-		stop("Byeee");
-    }
+         // create socket
+        sock = socket(AF_INET,SOCK_STREAM,0);
+        if(sock == INVALID_SOCKET)
+            stop("socket invalide !\n");
 
-	int PORT = atoi(argv[2]);
+        other_player_addr.sin_family = AF_INET;
+        other_player_addr.sin_port = htons(PORT);
+        other_player_addr.sin_addr.s_addr = playerIP[i];
 
-	// Connect to a remote host
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(PORT);
-	server_addr.sin_addr.s_addr = inet_addr(argv[1]);
+        if(other_player_addr.sin_addr.s_addr == INADDR_NONE)
+            stop("error inaddr\n");
+        else
+            printf("Trying %s...\n", inet_ntoa(other_player_addr.sin_addr));
 
-	if(server_addr.sin_addr.s_addr == INADDR_NONE)
-		stop("erreur inaddr\n");
-	else
-		printf("Trying %s...\n", inet_ntoa(server_addr.sin_addr));
+		if(connect(sock,(struct sockaddr*)&other_player_addr, sizeof(other_player_addr)) != 0)
+        {
+            stop("connect() : Unable to connect to the remote host");
+            close(sock);
+        }
 
-	sock = socket(AF_INET,SOCK_STREAM,0);
-	if(sock == INVALID_SOCKET)
-		stop("socket invalide !\n");
-
-	if(connect(sock,(struct sockaddr*)&server_addr, sizeof(server_addr)) != 0)
-	{
-		stop("connect() : Unable to connect to the remote host");
-		close(sock);
+        // Accept the connection
+	    memset(&other_player_addr, 0, sizeof(other_player_addr));
 	}
 
-	printf("Connected to %s.\n", argv[1]);
+    
+    //set of socket descriptors
+	int listenfd = socket(AF_INET,SOCK_STREAM,0);
+    if(listenfd == INVALID_SOCKET)
+        stop("socket invalide !\n");
 
-	// recv
-	bzero(&message,BUFLEN+1);
-	if( recv(sock, message, BUFLEN, 0) < 0 ){
-			stop("recv failed. Error");
+    my_addr.sin_family = AF_INET;
+    my_addr.sin_port = htons(PORT);
+    my_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    int *len;
+    *len = sizeof(my_addr);
+
+    fd_set readfds;
+    if (bind(listenfd, (struct sockaddr *)&my_addr, sizeof(my_addr))<0)
+		stop("bind failed");
+
+	// Ready to listen	
+	if (listen(listenfd, 5) != 0)
+		stop("listen failed. Error");
+    
+    while (1) {
+
+        FD_ZERO(&readfds);
+        FD_SET(STDIN_FILENO, &readfds);
+        FD_SET(listenfd, &readfds);
+        maxfd = listenfd;
+        maxfd = max(maxfd, STDIN_FILENO);
+
+        for (int i = 0; i < number_player; i++) {
+            if (player_socket[i] > 0) {
+                FD_SET(player_socket[i], &readfds);
+            }
+            maxfd = max(maxfd, player_socket[i]);
+        }
+
+        if (((nready = select(maxfd + 1, &readfds, NULL, NULL, NULL)) < 0) && errno != EINTR) {
+            stop("Select Error\n");
+        }
+
+        if (FD_ISSET(listenfd, &readfds)) {
+            if ((connfd = accept(listenfd, (struct sockaddr *)&my_addr, &len)) < 0) {
+                stop("Cannot connect to this client!");
+            }
+
+            int clientID;
+            for (int index = 0; index < number_player; index++) {
+                if (player_socket[index] == 0) {
+                    player_socket[index] = connfd;
+                    break;
+                }
+            }
+		}
 	}
 
-	//show a message from server
-	printf("\033[0;31mMessage from Server : %s\033[0m", message);	
-
-	// function for chat
-	printf("\033[0;35m\n"); 
-	chatTP(sock);
 	close(sock);
 	return 0;
 }

@@ -9,42 +9,13 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include "controller.h"
 
-#define INVALID_SOCKET -1
-#define SOCKET_ERROR -1
-#define TRUE 1
 #define BUFLEN 1024  // Buffer length
 #define PORT 1234
 #define max(a, b) ((a > b) ? a : b)
 
-void stop(char *s) {
-    perror(s);
-    exit(EXIT_FAILURE);
-}
-
-
 int main(int argc, char *argv[]) {
-
-    char hostbuffer[256];
-    char *hostIP;
-    struct hostent *host_entry;
-  
-    // To retrieve hostname
-    if((gethostname(hostbuffer, sizeof(hostbuffer))) == -1) {
-        stop("gethostname");
-    } 
-    
-    // To retrieve host information
-    if((host_entry = gethostbyname(hostbuffer)) == -1) {
-        stop("gethostbyname");
-    }
-
-    // To convert an Internet network
-    // address into ASCII string
-    hostIP = inet_ntoa(*((struct in_addr*)
-                           host_entry->h_addr_list[0]));
- 
-    printf("Host IP: %s\n", hostIP);
   
     int sock, maxfd, connfd, nready;
     char buff[BUFLEN];
@@ -53,39 +24,40 @@ int main(int argc, char *argv[]) {
     char playerIP[][100] = { "192.168.68.17"};
     int player_socket[number_player];
 
+    char *hostIP = gethostIP();
+
     // connect to all players connected
     for (int i = 0; i < number_player; i++) {
         // create socket
         sock = socket(AF_INET, SOCK_STREAM, 0);
-        if (sock == INVALID_SOCKET)
+        if (sock == -1)
             stop("socket invalide !\n");
 
         other_player_addr.sin_family = AF_INET;
         other_player_addr.sin_port = htons(PORT);
         other_player_addr.sin_addr.s_addr = inet_addr(playerIP[i]);
+ 
+        printf("Trying %s...\n", inet_ntoa(other_player_addr.sin_addr));
 
-        
-        printf("Trying %d...\n", inet_addr(playerIP[i]));
+        perror("before connect");
 
         if (connect(sock, (struct sockaddr *)&other_player_addr, sizeof(other_player_addr)) != 0) {
             stop("connect() : Unable to connect to the remote host");
             close(sock);
         }
-
-        // Accept the connection
-        memset(&other_player_addr, 0, sizeof(other_player_addr));
+           
     }
-
-    // perror("ok");
 
     // set of socket descriptors
     int listenfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (listenfd == INVALID_SOCKET)
+    if (listenfd == -1)
         stop("socket invalide !\n");
+
+    perror("ok");
 
     my_addr.sin_family = AF_INET;
     my_addr.sin_port = htons(PORT);
-    my_addr.sin_addr.s_addr = inet_addr(hostIP);
+    my_addr.sin_addr.s_addr = hostIP;
 
     perror("ok");
 

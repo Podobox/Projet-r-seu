@@ -255,4 +255,3 @@ class Controller:
                             if self.visualizer.MODE_FILE_MENU and not actionned:
                                 self.visualizer.MODE_FILE_MENU = False
                         break
-

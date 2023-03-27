@@ -1,10 +1,12 @@
 import os
 
-
 class Communication:
     def __init__(self):
         # create fifo to communicate with c daemon
         self.fifo = ...
+
+    def send(self, message):
+        
 
     def ask_for_ownership(posx, posy):
         # return True / False

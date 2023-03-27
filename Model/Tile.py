@@ -23,6 +23,7 @@ class Tile():
     def __str__(self):
         ret = "("
         ret += str(self.building.__repr__()) if self.building is not None else str(self.type.name)
+        ret += f", {self.owner.id}"
         ret += f", {self.desirability}, {self.water_coverage})"
         return ret
 

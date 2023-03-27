@@ -13,6 +13,8 @@ class Property_possession:
     def modify_property(self, tile, player):
         if self.is_owner(tile, player):
             self.comm.give_ownership(tile, player)
+            return True
+            
         else:
             self.comm.ask_for_ownership(tile, player)
             if self.is_owner(tile, player):

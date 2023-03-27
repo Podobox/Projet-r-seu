@@ -27,8 +27,8 @@ def main():
                     fifo.close()
                     pg.quit()    
             if event.type == pg.MOUSEBUTTONDOWN:
-                background = pygame.image.load('Images/_fired_00001.png')
-                background = pygame.transform.scale(background, x)
+                background = pg.image.load('Images/_fired_00001.png')
+                background = pg.transform.scale(background, x)
                 menu_page = True
 
         pg.display.flip()

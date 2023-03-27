@@ -6,7 +6,6 @@ class Communication:
         self.fifo = ...
 
     def send(self, message):
-        
 
     def ask_for_ownership(posx, posy):
         # return True / False

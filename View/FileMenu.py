@@ -1,4 +1,5 @@
-import sys, os
+import sys
+import os
 import pygame as pg
 from PIL import Image
 from Controller.Button import Button
@@ -9,30 +10,29 @@ from Model.House import House
 from Controller.Backup import Backup
 
 
-
-
 class FileMenu:
 
-    def __init__(self, window, window_width, window_height, backup, game):
+    def __init__(self, window, window_width, window_height, backup, game, communication):
         self.window = window
         self.window_width = window_width
         self.window_height = window_height
         self.coefficient = 0.28
         self.backup = backup
         self.game = game
-
+        self.communication = communication
 
         self.AddButtons()
 
         return
 
-    #Button(self, path, x, y, dx, dy, action):
+    # Button(self, path, x, y, dx, dy, action):
     def AddButtons(self):
-        #Boutons de la liste file: load & game
+        # Boutons de la liste file: load & game
         self.list_button = [
             #Button(self.window, "/Images/load_game2.png",0, 42, self.backup.load(), self.coefficient, ),
-            Button(self.window,"/Images/save_game2.png", 0, 42, self.backup.save, self.coefficient, game=self.game),
-            Button(self.window,"/Images/exit_game.png",0, 83.5, self.quit, self.coefficient)
+            Button(self.window, "/Images/save_game2.png", 0, 42,
+                   self.backup.save, self.coefficient, game=self.game),
+            Button(self.window, "/Images/exit_game.png", 0, 83.5, self.quit, self.coefficient)
 
         ]
 
@@ -42,6 +42,7 @@ class FileMenu:
         return self.list_button
 
     def quit(self):
+        self.communication.disconnect()
         exit()
         return
 

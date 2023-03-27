@@ -37,6 +37,7 @@ from datetime import datetime, timedelta
 # min par frame
 TIME_PER_FRAME = 10
 
+ME = None
 
 class Game:
 
@@ -252,7 +253,8 @@ class Game:
                     isinstance(b, Tree) or isinstance(b, Water) or \
                     isinstance(b, New_House) or isinstance(b, House) or \
                     isinstance(b, Sign) or isinstance(b, Prefecture) or \
-                    isinstance(b, Well) or isinstance(b, Fountain):
+                    isinstance(b, Well) or isinstance(b, Fountain) or \
+                    b.tile.owner != self.me:
                 continue
             if b.burn(self.date, self.speed):
                 posx, posy = b.tile.posx, b.tile.posy

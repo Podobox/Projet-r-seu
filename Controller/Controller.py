@@ -1,5 +1,6 @@
 import random
 
+from Model.Player import Player
 from Model.Grass import Grass
 from Model.Map import MAP_DIM
 from Model.Other_Rock import Other_Rock
@@ -43,7 +44,7 @@ class Controller:
     final_pos = None
     ORIGIN_DECALAGE = (0, 0)
 
-    def __init__(self, name_save, game=None):
+    def __init__(self, name_save, game=None, players=None):
         # pg.init()
         self.list_button = []
         self.MODE_DECALAGE = False
@@ -56,6 +57,10 @@ class Controller:
         self.building = False
         self.buttonclicked = None
         self.last_frame = time_ns()
+        self.player = Player()
+        self.players = players
+        if self.players is None:
+            self.game.take_all_ownership(self.player)
 
         # Benchmarking
         # self.bench = 0

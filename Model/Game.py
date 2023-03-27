@@ -153,7 +153,8 @@ class Game:
 
         if not self.pay(building_data[type].price):
             return
-
+        if not self.prop.modify_property(tile=self.map.grid[posx][posy],player=None):
+            pass
         self.map.build(posx, posy, type)
         # print(self.map)
 

@@ -90,7 +90,7 @@ class Game:
         return string
 
     def take_all_ownership(self, player):
-        pass
+        self.map.take_all_ownership(player)
 
     # return True if it was payed, else False
     def pay(self, price):

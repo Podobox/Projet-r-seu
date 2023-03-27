@@ -29,7 +29,7 @@ int main(int argc,char *argv[])
 	char buff[BUFLEN];
 	struct sockaddr_in other_player_addr, my_addr;
     const int number_player = 2;
-	char playerIP[][100] = {};
+	char playerIP[][100] = { "192.168.68.17"};
     int player_socket[number_player];
   
     // connect to all players connected
@@ -67,7 +67,7 @@ int main(int argc,char *argv[])
 
     my_addr.sin_family = AF_INET;
     my_addr.sin_port = htons(PORT);
-    my_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    my_addr.sin_addr.s_addr = inet_addr("192.168.123.166");
 
     int *len;
     *len = sizeof(my_addr);

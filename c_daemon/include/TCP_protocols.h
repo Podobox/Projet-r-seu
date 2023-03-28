@@ -5,6 +5,8 @@ int connect_existed_players(int index);
 
 int create_master_socket(char *myIP);
 
-char * gethostIP();
+char *gethostIP();
+
+void stop(char *msg);
 
 #endif

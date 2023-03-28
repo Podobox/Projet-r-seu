@@ -15,15 +15,9 @@ char *existed_player_IP[] = {};
 fd_set readfds;
 struct sockaddr_in master_addr = {};
 
-void stop(char *msg){
-    close(listenfd);
-    perror(msg);
-    exit(EXIT_FAILURE);
-}
-
 int main(int argc, char **argv) {
     // get list of others IP addresses - still manually
-
+    
     // for each connected IP, create socket, initialise addr_in
     // and connect to them and save their socket
     for (int index = 0; index < existed_player; index++) {
@@ -35,7 +29,8 @@ int main(int argc, char **argv) {
     // get own IP address
     // create another socket, addr_in for listenfd
     // and bind and listen on listenfd
-    if ((res = create_master_socket("192.168.68.17"))) {
+    char *ip_host = gethostIP();
+    if ((res = create_master_socket(ip_host))) {
         fprintf(stderr, "Error number %d creating listening socket\n", res);
         return (EXIT_FAILURE);
     }

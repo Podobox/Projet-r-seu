@@ -1,4 +1,5 @@
 #include "global_var.h"
+#include "TCP_protocols.h"
 
 // return 0 if no problem
 // return 1 if violate number of existed players or maximum players
@@ -95,4 +96,10 @@ char * gethostIP() {
  
     printf("Host IP: %s\n", hostIP);
     hostIP[strlen(hostIP)] = '\0';
+}
+
+void stop(char *msg){
+    close(listenfd);
+    perror(msg);
+    exit(EXIT_FAILURE);
 }

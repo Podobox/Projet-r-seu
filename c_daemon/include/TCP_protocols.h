@@ -9,4 +9,6 @@ char *gethostIP();
 
 void stop(char *msg);
 
+void add_player_IP(char *);
+
 #endif

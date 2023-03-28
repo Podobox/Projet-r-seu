@@ -7,7 +7,6 @@ const uint16_t PORT = 1234;
 int maxfd;
 int res;
 int listenfd = 0;
-int connected_player = 0;
 int existed_player = 0;
 int player_socket[PLAYER_MAX] = {0};
 char *existed_player_IP[] = {};
@@ -16,27 +15,52 @@ fd_set readfds;
 struct sockaddr_in master_addr = {};
 
 int main(int argc, char **argv) {
-    // get list of others IP addresses - still manually
-    
-    // for each connected IP, create socket, initialise addr_in
-    // and connect to them and save their socket
-    for (int index = 0; index < existed_player; index++) {
-        if ((res = connect_existed_players(index))) {
-            fprintf(stderr, "Error number %d connecting to player #%d\n", res, index);
+
+    char *ip_host = gethostIP();
+
+    // get list of others IP addresses
+    if( argc > 1) {
+        add_player_IP(argv[1]);
+        for (int in = 0; in < existed_player; in++) {
+            printf("%s\n", existed_player_IP[in]);
+        }
+    }
+    else {
+        add_player_IP(ip_host);
+        printf("existed palyer: %d\n", existed_player);
+
+        for (int index = 0; index < existed_player; index++) {
+            printf("%s\n", existed_player_IP[index]);
         }
     }
 
     // get own IP address
     // create another socket, addr_in for listenfd
     // and bind and listen on listenfd
-    char *ip_host = gethostIP();
     if ((res = create_master_socket(ip_host))) {
         fprintf(stderr, "Error number %d creating listening socket\n", res);
         return (EXIT_FAILURE);
     }
 
+    printf("existed palyer: %d\n", existed_player);
+
+    
+    // for each connected IP, create socket, initialise addr_in
+    // and connect to them and save their socket
+    for (int j = 0; j < existed_player; j++) {
+        printf("before connect existed player\n");
+
+        if ((res = connect_existed_players(j))) {
+            fprintf(stderr, "Error number %d connecting to player #%d\n", res, j);
+        }
+        printf("after connect existed player %d\n", j);
+
+    }
+
+    printf("finish connect existed player\n");
+
     // while loop
-    while (1) {
+    while (1) {              
         
         // get all socket into fd set
         FD_ZERO(&readfds);
@@ -60,7 +84,7 @@ int main(int argc, char **argv) {
         // new player connecting
         if(FD_ISSET(listenfd, &readfds)){
             // out of slot
-            if(connected_player >= PLAYER_MAX){
+            if(existed_player >= PLAYER_MAX){
                 continue;
             }
             
@@ -75,7 +99,7 @@ int main(int argc, char **argv) {
             for(int index = 0; index < PLAYER_MAX; index++){
                 if(player_socket[index] == 0){
                     player_socket[index] = res;
-                    connected_player++;
+                    existed_player++;
                     break;
                 }
             }

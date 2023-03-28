@@ -35,6 +35,7 @@ class Building:
         self.collapsed = False
         # Added to cover the full building like the real game - Tuan
         self.water_coverage = False
+        self.communication = None  # will be set by Game
 
     def __str__(self):
         string = self.__repr__()
@@ -53,14 +54,19 @@ class Building:
     def burn(self, time, multiplier):
         if not self.burning:
             f = floor(multiplier)
+            bs_buf = self.burn_stage
             for _ in range(f):
                 self.burn_stage += 1 if random() > (1 - BURN_PROBABILITY) else 0
             if random() < multiplier - f:
                 self.burn_stage += 1 if random() > (1 - BURN_PROBABILITY) else 0
+            if self.burn_stage != bs_buf:
+                self.communication.burn_stage_increase(self.tile.posx, self.tile.posy,
+                                                       self.burn_stage)
 
             if self.burn_stage > STAGES_BEFORE_BURN:
                 self.burning = True
                 self.burning_start = time
+                self.communication.catch_fire(self.tile.posx, self.tile.posy)
         else:
             if time - self.burning_start > timedelta(hours=BURNING_TIME_BEFORE_COLLAPSE):
                 return True
@@ -71,14 +77,19 @@ class Building:
         self.burning = False
         self.burning_start = None
         self.burn_stage = 0
+        self.communication.put_out_fire(self.tile.posx, self.tile.posy)
 
     # return True if collapsing, else False
     def collapse(self, multiplier):
         f = floor(multiplier)
+        cs_buf = self.collapse_stage
         for _ in range(f):
             self.collapse_stage += 1 if random() > (1 - COLLAPSE_PROBABILITY) else 0
         if random() < multiplier - f:
             self.collapse_stage += 1 if random() > (1 - COLLAPSE_PROBABILITY) else 0
+        if self.collapse_stage != cs_buf:
+            self.communication.collapse_stage_increase(self.tile.posx, self.tile.posy,
+                                                       self.collapse_stage)
 
         return self.collapse_stage > STAGES_BEFORE_COLLAPSE
 

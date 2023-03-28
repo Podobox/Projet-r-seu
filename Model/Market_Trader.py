@@ -8,6 +8,7 @@ class Market_Trader(Random_Walkers):
     def __init__(self, market, spawn_road, map):
         super().__init__(35, 26, spawn_road, map)
         self.market = market
+        self.building = market
 
     def __repr__(self):
         return "Market_Trader"
@@ -33,13 +34,8 @@ class Market_Trader(Random_Walkers):
                 if b.food < 6 * b.population:
                     # 1 year worth of food
                     food_wanted = 6 * b.population - b.food
-                    if self.market.current_stock >= food_wanted:
-                        print(f"trading {food_wanted} food, {b.food} already in house, {self.market.current_stock} in stock")
-                        b.food += food_wanted
-                        self.market.current_stock -= food_wanted
-                    else:
-                        b.food += self.market.current_stock
-                        self.market.current_stock = 0
+                    sold = self.market.sell(food_wanted)
+                    b.food += sold
 
     def can_go_back(self):
         return self.market.road_connection == self.map.grid[int(self.posx)][int(self.posy)].building and self.market.is_active() and self.market.road_connection is not None

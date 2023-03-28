@@ -9,6 +9,7 @@ class Engineer(Random_Walkers):
         # short patrol 43 tiles
         super().__init__(52, 43, spawn_road, map)
         self.post = post
+        self.building = post
 
     def __repr__(self):
         return "Engineer"
@@ -31,6 +32,8 @@ class Engineer(Random_Walkers):
         for b in bs:
             if b is not None:
                 b.collapse_stage = 0
+                self.post.communication.collapse_stage_reset(self.post.tile.posx,
+                                                             self.post.tile.posy)
 
     def can_go_back(self):
         return self.post == self.map.grid[int(self.posx)][int(self.posy)].building and self.post.is_active() and self.post.road_connection is not None

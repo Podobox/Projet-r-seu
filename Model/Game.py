@@ -26,18 +26,26 @@ from Model.Farm_Boy import Farm_Boy
 from Model.Tax_Collector import Tax_Collector
 from Model.Migrant import Migrant
 from Model.Market_Buyer import Market_Buyer
+from Model.Market_Trader import Market_Trader
+from Model.Prefect import Prefect
 
 from Model.Map import Map, MAP_DIM
 from Model.Models_Data import building_data
 from Model.Tile import Tile_Type
 from random import seed, randint
 from datetime import datetime, timedelta
+from Controller.Communication import ME, walker_type
 
 
 # min par frame
 TIME_PER_FRAME = 10
 
-ME = None
+
+def building_type(b):
+    buildings = [Collapsed, Engineer_Post, Forum, Fountain, Garden, Granary, House,
+                 Market, New_House, Prefecture, Road, Senate, Well, Wheat_Farm]
+    return buildings.index(b)
+
 
 class Game:
 
@@ -48,12 +56,24 @@ class Game:
         self.unemployed = 0
         self.walkers = []
         self.buildings = []
-        # TODO la date commence a -340 normalement mais python ne prends les date qu'a
-        # partir de 1
         self.date = datetime(1, 1, 1)
         self.paused = False
         self.speed = 1  # speed scaling
         self.last_meal = self.date
+
+    def __str__(self):
+        string = str(self.map)
+        string += f"\nSpeed: {self.speed}"
+        string += f"\nPaused: {self.paused}"
+        string += f"\nDenarii: {self.denarii}"
+        string += f"\nUnemployed: {self.unemployed}/{self.population}"
+        for w in self.walkers:
+            string += f"\n{w}"
+        for b in self.buildings:
+            string += f"\n{b}"
+        return string
+
+    def set_initial_map(self):
         for y in range(0, MAP_DIM - MAP_DIM // 5):
             for x in range(y // 2):
                 self.build(x, y, Water)
@@ -77,18 +97,6 @@ class Game:
             # y = random.randint(0, MAP_DIM)
             for y in range(0, MAP_DIM):
                 self.build(x, y, Tree)
-
-    def __str__(self):
-        string = str(self.map)
-        string += f"\nSpeed: {self.speed}"
-        string += f"\nPaused: {self.paused}"
-        string += f"\nDenarii: {self.denarii}"
-        string += f"\nUnemployed: {self.unemployed}/{self.population}"
-        for w in self.walkers:
-            string += f"\n{w}"
-        for b in self.buildings:
-            string += f"\n{b}"
-        return string
 
     def take_all_ownership(self, player):
         self.map.take_all_ownership(player)
@@ -148,6 +156,7 @@ class Game:
         # print(self.map)
 
         building = self.map.grid[posx][posy].building
+        building.communication = self.communication
 
         if type == House:
             additional_population = building.population
@@ -162,6 +171,9 @@ class Game:
             self.road_connect([building])
 
         self.buildings.append(building)
+
+        if type not in (Water, Tree, Rock, Other_Rock, Sign):
+            self.communication.build(posx, posy, building_type(type))
 
     def destroy(self, posx, posy):
         building = self.map.grid[posx][posy].building
@@ -206,11 +218,8 @@ class Game:
 
         if building_type == Road:
             self.road_connect()
-            # for w in self.workers:
-                # if w.spawn_road == building:
-                    # # TODO respawn a new one because his spawn point (=end point)
-                    # # got destroyed
-                    # pass
+
+        self.communication.destroy(posx, posy)
 
     def job_hunt(self):
         if self.unemployed < 0:
@@ -254,7 +263,7 @@ class Game:
                     isinstance(b, New_House) or isinstance(b, House) or \
                     isinstance(b, Sign) or isinstance(b, Prefecture) or \
                     isinstance(b, Well) or isinstance(b, Fountain) or \
-                    b.tile.owner != self.me:
+                    b.tile.owner != ME:
                 continue
             if b.burn(self.date, self.speed):
                 posx, posy = b.tile.posx, b.tile.posy
@@ -293,12 +302,12 @@ class Game:
         if (self.date - self.last_meal) >= timedelta(days=365 / 6):
             self.last_meal = self.date
             for b in self.buildings:
-                if isinstance(b, House):
+                if isinstance(b, House) and b.tile.owner == ME:
                     b.eat()
 
     def farm(self):
         for b in self.buildings:
-            if isinstance(b, Wheat_Farm):
+            if isinstance(b, Wheat_Farm) and b.tile.owner == ME:
                 b.farm(self.date)
                 buf = b.farm_boy
                 if b.deliver(self.map):
@@ -369,20 +378,26 @@ class Game:
 
     def check_evolution(self):
         for b in self.buildings:
-            if isinstance(b, House):
+            if isinstance(b, House) and b.tile.owner == ME:
                 diff = b.evolve()
+                if diff != 0:
+                    self.communication.evolve(b.tile.posx, b.tile.posy)
                 self.population += diff
                 self.unemployed += diff
                 diff = b.devolve()
+                if diff != 0:
+                    self.communication.devolve(b.tile.posx, b.tile.posy)
                 self.population += diff
                 self.unemployed += diff
-            elif isinstance(b, New_House):
+            elif isinstance(b, New_House) and b.tile.owner == ME:
                 if self.map.entry_point is not None and b.migrate(self.map):
+                    self.communication.walker_spawn(map.entry_point.posx, map.entry_point.posy,
+                                                    walker_type(Migrant))
                     self.add_to_walkers(b.migrant)
 
     def fill_market(self):
         for b in self.buildings:
-            if isinstance(b, Market):
+            if isinstance(b, Market) and b.tile.owner == ME:
                 buf = b.buyer
                 if b.fill(self.map):
                     self.add_to_walkers(b.buyer)
@@ -391,7 +406,7 @@ class Game:
 
     def trade_market(self):
         for b in self.buildings:
-            if isinstance(b, Market):
+            if isinstance(b, Market) and b.tile.owner == ME:
                 buf = b.trader
                 if b.trade(self.map):
                     self.add_to_walkers(b.trader)
@@ -400,6 +415,8 @@ class Game:
 
     def walk(self):
         for w in self.walkers:
+            if w.building.tile.owner != ME:
+                continue
             res = w.walk(self.date)
             match res:
                 case Action.NONE: pass
@@ -413,10 +430,18 @@ class Game:
                     match w:
                         case Market_Buyer():
                             w.market.buyer = None
-                        case Migrant(): pass
+                            self.communication.walker_destroy(w.building.posx, w.building.posy,
+                                                              walker_type(Market_Buyer))
+                        case Migrant():
+                            self.communication.walker_destroy(w.building.posx, w.building.posy,
+                                                              walker_type(Migrant))
                         case Farm_Boy():
+                            self.communication.walker_destroy(w.building.posx, w.building.posy,
+                                                              walker_type(Farm_Boy))
                             w.farm.farm.boy = None
                         case Engineer():
+                            self.communication.walker_destroy(w.building.posx, w.building.posy,
+                                                              walker_type(Engineer))
                             w.post.engineer = None
                     self.remove_from_walkers(w)
                 case _:
@@ -426,7 +451,7 @@ class Game:
 
     def engineer(self):
         for b in self.buildings:
-            if isinstance(b, Engineer_Post):
+            if isinstance(b, Engineer_Post) and b.tile.owner == ME:
                 buf = b.engineer
                 if b.engineer_do(self.map):
                     self.add_to_walkers(b.engineer)
@@ -435,7 +460,7 @@ class Game:
 
     def firefight(self):
         for b in self.buildings:
-            if isinstance(b, Prefecture):
+            if isinstance(b, Prefecture) and b.tile.owner == ME:
                 buf = b.prefect
                 if b.prefect_do(self.map):
                     self.add_to_walkers(b.prefect)
@@ -444,7 +469,7 @@ class Game:
 
     def collect_tax(self):
         for b in self.buildings:
-            if isinstance(b, Forum):
+            if isinstance(b, Forum) and b.tile.owner == ME:
                 buf = b.tax_collector
                 if b.collect(self.map):
                     self.add_to_walkers(b.tax_collector)

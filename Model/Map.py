@@ -28,9 +28,9 @@ class Map:
         return string
 
     def take_all_ownership(self, player):
-        for l in self.grid:
-            for c in l:
-                l.owner = player
+        for c in self.grid:
+            for t in c:
+                t.owner = player
 
     def build(self, posx, posy, type):
         b = type(self.grid[posx][posy])

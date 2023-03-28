@@ -18,6 +18,7 @@ class Prefect(Random_Walkers):
         # short patrol 43 tiles
         super().__init__(52, 43, spawn_road, map)
         self.prefecture = prefecture
+        self.building = prefecture
         self.prefect_state = Prefect_State.ROAMING
         self.puting_out = None
         self.puting_out_speed = 0.003  # stages per minutes
@@ -60,6 +61,8 @@ class Prefect(Random_Walkers):
                             self.direction = None
                             return
                         b.burn_stage = 0
+                        self.prefecture.communication.burn_stage_reset(self.prefecture.tile.posx,
+                                                                       self.prefecture.tile.posy)
         elif self.prefect_state == Prefect_State.GOING_TO_FIRE:
             # print("prefect going to fire")
             pass

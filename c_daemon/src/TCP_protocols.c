@@ -32,7 +32,7 @@ int connect_existed_players(int index) {
     for (int i = 0; i < PLAYER_MAX; i++) {
         if (player_socket[i] == 0) {
             player_socket[i] = sock;
-            break;
+           break;
         }
     }
     return 0;

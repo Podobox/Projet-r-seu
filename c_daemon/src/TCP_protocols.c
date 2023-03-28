@@ -1,5 +1,6 @@
-#include "global_var.h"
 #include "TCP_protocols.h"
+
+#include "global_var.h"
 
 // return 0 if no problem
 // return 1 if violate number of existed players or maximum players
@@ -29,7 +30,6 @@ int connect_existed_players(int index) {
     }
 
     // save player socket
-    connected_player++;
     for (int i = 0; i < PLAYER_MAX; i++) {
         if (player_socket[i] == 0) {
             player_socket[i] = sock;
@@ -56,7 +56,7 @@ int create_master_socket(char *myIP) {
     master_addr.sin_addr.s_addr = inet_addr(myIP);
 
     int option = 1;
-    if(setsockopt(listenfd, SOL_SOCKET, SO_REUSEPORT, &option, sizeof(option)) < 0){
+    if (setsockopt(listenfd, SOL_SOCKET, SO_REUSEPORT, &option, sizeof(option)) < 0) {
         perror("setsockopt");
     }
 
@@ -74,31 +74,31 @@ int create_master_socket(char *myIP) {
     return 0;
 }
 
-char * gethostIP() {
-    
+char *gethostIP() {
     char hostbuffer[256];
     char *hostIP;
     struct hostent *host_entry;
 
     // To retrieve hostname
-    if((gethostname(hostbuffer, sizeof(hostbuffer))) == -1) {
+    if ((gethostname(hostbuffer, sizeof(hostbuffer))) == -1) {
         stop("gethostname");
-    } 
-    
+    }
+
     // To retrieve host information
-    if((host_entry = gethostbyname(hostbuffer)) == -1) {
+    if ((host_entry = gethostbyname(hostbuffer)) == -1) {
         stop("gethostbyname");
     }
 
     // To convert an Internet network
     // address into ASCII string
-    hostIP = inet_ntoa(*((struct in_addr*)host_entry->h_addr_list[0]));
- 
+    hostIP = inet_ntoa(*((struct in_addr *)host_entry->h_addr_list[0]));
+
     printf("Host IP: %s\n", hostIP);
     hostIP[strlen(hostIP)] = '\0';
+    return hostIP;
 }
 
-void stop(char *msg){
+void stop(char *msg) {
     close(listenfd);
     perror(msg);
     exit(EXIT_FAILURE);

@@ -52,6 +52,10 @@ int main(int argc, char *argv[]) {
     // set of socket descriptors
     if ((listenfd = socket(AF_INET, SOCK_STREAM, 0))== -1)
         stop("socket invalide !\n");
+    else
+        printf("listen fd %d\n", listenfd);
+    
+    perror("listensocked");
 
     my_addr.sin_family = AF_INET;
     my_addr.sin_port = htons(PORT);
@@ -61,14 +65,12 @@ int main(int argc, char *argv[]) {
     (*len) = sizeof(my_addr);
 
     fd_set readfds;
-    if (bind(listenfd, (struct sockaddr *)&my_addr, sizeof(my_addr)) < 0)
+    if (bind(listenfd, (struct sockaddr *)&my_addr, sizeof(my_addr)) != 0)
         stop("bind failed");
 
     // Ready to listen
     if (listen(listenfd, 5) != 0)
         stop("listen failed. Error");
-
-    perror("after listen");
 
 
     while (1) {
@@ -87,7 +89,6 @@ int main(int argc, char *argv[]) {
             maxfd = max(maxfd, player_socket[i]);
         }
   
-        perror("select test");
         if (((nready = select(maxfd + 1, &readfds, NULL, NULL, NULL)) < 0) && errno != EINTR) {
             stop("Select Error\n");
         }

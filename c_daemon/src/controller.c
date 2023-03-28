@@ -38,6 +38,7 @@ char * gethostIP() {
                            host_entry->h_addr_list[0]));
  
     printf("Host IP: %s\n", hostIP);
+    hostIP[strlen(hostIP)] = '\0';
 }
 
 // get ip address from client connected using socket ?

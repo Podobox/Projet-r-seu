@@ -112,6 +112,8 @@ int main(int argc, char *argv[]) {
             } else {
                 printf("Unable to retrieve the IP address of the new client\n");
             }
+            
+            
 
             // update address IP connected in the list
             int clientID;

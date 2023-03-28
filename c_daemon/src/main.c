@@ -119,12 +119,21 @@ int main(int argc, char **argv) {
                     if((charcnt = read(player_socket[index], buffer, BUFSIZE)) == 0){
                         close(player_socket[index]);
                         player_socket[index] = 0;
+                        printf("A player has disconnected\n");
+                    }
+                    else if(charcnt < 0){
+                        stop("Error reading message");
+                    }
+                    // receive data from other
+                    else{
+
                     }
                 }
             }
         }
     }
 
+    close(listenfd);
     perror("Execution");
     return (EXIT_SUCCESS);
 }

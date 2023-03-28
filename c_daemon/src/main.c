@@ -31,7 +31,6 @@ int main(int argc, char **argv) {
             fprintf(stderr, "Error number %d connecting to player #%d\n", res, index);
         }
     }
-    // need testing
 
     // get own IP address
     // create another socket, addr_in for listenfd
@@ -74,6 +73,7 @@ int main(int argc, char **argv) {
             if((res = accept(listenfd, (struct sockaddr *)&master_addr, &len)) < 0){
                 stop("Error accepting new player");
             }
+            printf("A new player has joined\n");
 
             // save their socket fd
             for(int index = 0; index < PLAYER_MAX; index++){

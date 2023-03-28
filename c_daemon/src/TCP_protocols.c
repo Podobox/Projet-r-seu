@@ -54,10 +54,10 @@ int create_master_socket(char *myIP) {
     master_addr.sin_port = htons(PORT);
     master_addr.sin_addr.s_addr = inet_addr(myIP);
 
-    // int option = 1;
-    // if(setsockopt(listenfd, SOL_SOCKET, SO_REUSEPORT, &option, sizeof(option)) < 0){
-    //     perror("setsockopt");
-    // }
+    int option = 1;
+    if(setsockopt(listenfd, SOL_SOCKET, SO_REUSEPORT, &option, sizeof(option)) < 0){
+        perror("setsockopt");
+    }
 
     // bind socket to address
     if (bind(listenfd, (struct sockaddr *)&master_addr, sizeof(master_addr)) < 0) {

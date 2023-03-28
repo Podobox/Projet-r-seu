@@ -120,8 +120,9 @@ class Communication:
         # probably not the best file for this function
         pass
 
-
-while(True):
+while (True):
     Sender = Communication()
-    string = input("Enter String :\t ")
+    string = input("")
     Sender.send_message_from_py_to_c(string)
+    if (str(string) == 'end' or str(string) == 'exit' or str(string) == ''):
+        break

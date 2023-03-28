@@ -19,7 +19,7 @@ struct mesg_buffer
     char mesg_text[100];
 } message;
 
-char *recv_from_python()
+void recv_from_python()
 {
 
     int msgid;
@@ -27,26 +27,21 @@ char *recv_from_python()
     msgid = msgget(MESG_KEY, 0666 | IPC_CREAT);
     message.mesg_type = PY_TO_C;
 
+    int length;
     // msgsnd to send message
-    if (msgrcv(msgid, &message, sizeof(message), message.mesg_type, 0) == -1)
+    if ((length = msgrcv(msgid, &message, sizeof(message), message.mesg_type, 0)) == -1)
     {
         perror("Msgrcv failed");
     }
     // display the message
-    char *buffer = (char *)calloc(BUF_SIZE, sizeof(char));
-    bzero(buffer, BUF_SIZE);
-    strncpy(buffer, message.mesg_text, sizeof(message.mesg_text));
-
-    return buffer;
+    message.mesg_text[length] = '\0';
 }
 
 int main()
 {
-    char *buffer = (char *)calloc(BUF_SIZE, sizeof(char));
-    bzero(buffer, BUF_SIZE);
     while (True)
     {
-        buffer = recv_from_python();
+        recv_from_python();
         printf("Data send is : %s \n", message.mesg_text);
     }
 }

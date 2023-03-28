@@ -37,6 +37,7 @@ int main(int argc, char **argv) {
 
     // while loop
     while (1) {
+        
         // get all socket into fd set
         FD_ZERO(&readfds);
         FD_SET(listenfd, &readfds);

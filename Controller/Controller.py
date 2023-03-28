@@ -31,7 +31,7 @@ from Model.Destination_Walkers import Destination_Walkers
 from random import randint
 from Controller.Communication import Communication
 
-FRAMES_PER_SECONDS = 30
+FRAMES_PER_SECONDS = 7
 TIME_NS_PER_FRAME = 1 / FRAMES_PER_SECONDS * 1e9
 
 
@@ -97,8 +97,8 @@ class Controller:
 
             pg.display.update()
 
-            for message in self.communication.check_messages():
-                self.handle_message()
+            # for message in self.communication.check_messages():
+            #     self.handle_message()
 
             self.wait_next_frame()
 

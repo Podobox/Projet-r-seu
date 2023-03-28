@@ -64,7 +64,7 @@ class Communication:
         self.fifo = ...
 
     def send(self, message):
-        pass
+           pass
 
     def walker_destroy(self, posx, posy, walker_type):
         message = struct.pack("iQQQQ", MessageType.WALKER_DESTROY, posx, posy, 0, walker_type)
@@ -172,7 +172,7 @@ class Communication:
         # return the game it is connected to and its players
         pass
 
-    def diconnect(self):
+    def disconnect(self):
         message = struct.pack("iQQQQ", MessageType.DISCONNECT.value, 0, 0, 0, 0)
         self.send(message)
         # cleanly disconnectand release all owned objects

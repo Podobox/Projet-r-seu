@@ -15,8 +15,13 @@
 #define PORT 1234
 
 int main(int argc, char *argv[]) {
+
+    // connecte to the game 
+    // receive the number of player in the game
+    // update the adresse IP of connected client
+    // try to connect to all the client
     
-    const int number_player = 1;
+    const int number_player = 1 ;
     int sock, maxfd, listenfd, connfd, nready, player_socket[number_player];
     char buff[BUFLEN], playerIP[][100] = { "192.168.68.17" };
     struct sockaddr_in other_player_addr, my_addr;
@@ -95,6 +100,7 @@ int main(int argc, char *argv[]) {
 
         // new player incoming
         if (FD_ISSET(listenfd, &readfds)) {
+
             if ((connfd = accept(listenfd, (struct sockaddr *)&my_addr, len)) < 0) {
                 stop("Cannot connect to this client!");
             }
@@ -107,6 +113,7 @@ int main(int argc, char *argv[]) {
                 printf("Unable to retrieve the IP address of the new client\n");
             }
 
+            // update address IP connected in the list
             int clientID;
             for (int index = 0; index < number_player; index++) {
                 if (player_socket[index] == 0) {
@@ -115,7 +122,6 @@ int main(int argc, char *argv[]) {
                 }
             }
 
-            printf("after recv new player");
         }   
 
     }

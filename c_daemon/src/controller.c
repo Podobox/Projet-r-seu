@@ -34,8 +34,7 @@ char * gethostIP() {
 
     // To convert an Internet network
     // address into ASCII string
-    hostIP = inet_ntoa(*((struct in_addr*)
-                           host_entry->h_addr_list[0]));
+    hostIP = inet_ntoa(*((struct in_addr*)host_entry->h_addr_list[0]));
  
     printf("Host IP: %s\n", hostIP);
     hostIP[strlen(hostIP)] = '\0';

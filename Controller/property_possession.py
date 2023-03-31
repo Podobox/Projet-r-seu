@@ -38,3 +38,12 @@ class PropertyPossession:
             if tile.player == player:
                 count += 1
         return count
+    
+    
+property_possession = PropertyPossession(0, 0, "Player 1")
+property_possession.modify_property(1, 1, "Player 1")
+property_possession.modify_property(2, 2, "Player 1")
+property_possession.modify_property(3, 3, "Player 2")
+property_possession.modify_property(4, 4, "Player 1")
+count = property_possession.count_properties("Player 1")
+print(f"Player 1 owns {count} properties.")

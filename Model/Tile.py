@@ -19,6 +19,8 @@ class Tile():
         self.posx = posx
         self.posy = posy
         self.player = None
+    # def set_player(self,player):
+    #     self.player = player
 
     def __str__(self):
         ret = "("

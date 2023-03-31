@@ -10,9 +10,11 @@ class Chat:
         self.height = 40
         self.chat_posx = 40
         self.chat_posy = window_height - 100
-        self.message = "Hello"
+        self.message = ""
         self.input = ""
         self.memory = []
+        self.new_input = True
+        self.new_message = True
         self.communication = communication
         self.chat = self.creation()
         self.timer = pg.time.get_ticks()
@@ -25,6 +27,7 @@ class Chat:
             # self.communication.send(self.message)   
             print("message print: ", self.message)
             self.memory.append(self.message)
+            self.new_message = True
             self.message = ""
         if now - self.timer > 4000 and self.memory:
             self.timer = now
@@ -33,8 +36,7 @@ class Chat:
     def display(self, chat):
         chat.update()
         self.display_input()
-        self.display_message()
-        self.window.blit(self.chat, (self.chat_posx, self.chat_posy))
+        self.display_chat()
 
     def creation(self):
         c = pg.Surface((self.width, self.height))
@@ -65,16 +67,21 @@ class Chat:
                     else:
                         carac = event.dict['unicode']
                         self.input = self.input + carac
+                    
+                    self.new_input = True
 
-    def display_message(self):
-        if self.memory:
+    def display_chat(self):
+        if self.memory and self.new_message:
             font = pg.font.Font(None, 28)
             text_surface = font.render(self.memory[len(self.memory)-1] , True, (155, 175, 120))
             self.window.blit(text_surface, (self.chat_posx, self.chat_posy-50))
+            # self.new_message = False
     def display_input(self):
-        if self.memory:
+        if self.memory and self.new_input:
             font = pg.font.Font(None, 32)
             text_surface = font.render(self.input, True, (60, 50, 50))
             coordinate = text_surface.get_rect(centery=self.chat.get_rect().centery)
             coordinate.left = 75
             self.chat.blit(text_surface, coordinate)
+            self.window.blit(self.chat, (self.chat_posx, self.chat_posy))
+            # self.new_input = False

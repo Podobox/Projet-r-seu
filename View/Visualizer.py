@@ -43,6 +43,8 @@ from View.Minimap import Minimap
 
 from Model.Tree import Tree
 from Model.Water import Water
+from Controller.property_possession import PropertyPossession
+from Model.Player import Player
 
 
 # Get full screen size
@@ -88,6 +90,8 @@ class Visualizer:
     GAME_HEIGHT = WINDOW_HEIGHT
     zoom = DEFAULT_ZOOM
     MODE_FILE_MENU = False
+    owner = Player()
+    prop  = PropertyPossession(posx=0,posy=0, player=owner)
 
     buildingMode = False
 
@@ -1650,12 +1654,12 @@ class Visualizer:
             self.displayImage(row, column, tileDIM, origin,
                               imgName, imgCode, compenX, compenY)
     def showPlayerCase(self, row, column, tileDIM, origin):
-        #if (row, column) in playerTiles:
-        imgName = 'player_case'
-        compenX = tileDIM
-        compenY = 0
-        imgCode =''
-        self.displayImage(row, column, tileDIM, origin, imgName,imgCode, compenX, compenY)
+        if not self.prop.is_owner(row, column, self.owner.name):
+            imgName = 'player_case'
+            compenX = tileDIM
+            compenY = 0
+            imgCode =''
+            self.displayImage(row, column, tileDIM, origin, imgName,imgCode, compenX, compenY)
 
 
     def showDesirabilityLevel(self, row, column, tileDim, origin, desirabilityLevel):

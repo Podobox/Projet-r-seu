@@ -1,7 +1,6 @@
 from Controller.Communication import Communication
 from Model.Tile import Tile
 
-
 class PropertyPossession:
     def __init__(self, posx, posy, player):
         self.tile = Tile(posx=posx, posy=posy, type=None)
@@ -24,7 +23,7 @@ class PropertyPossession:
                     f"Vous êtes maintenant propriétaire de la case ({posx}, {posy}).")
             else:
                 print("Accès refusé.")
-
+    
     def receive_property_request(self, tile, player):
         if self.is_owner(tile.posx, tile.posy, player):
             del self.owned_tiles[(tile.posx, tile.posy)]
@@ -32,3 +31,10 @@ class PropertyPossession:
             print(f"La case ({tile.posx}, {tile.posy}) a été libérée.")
         else:
             print("Vous n'êtes pas propriétaire de cette case.")
+    
+    def count_properties(self, player):
+        count = 0
+        for tile in self.owned_tiles.values():
+            if tile.player == player:
+                count += 1
+        return count

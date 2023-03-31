@@ -1,6 +1,4 @@
 import os
-import pickle
-import struct
 from enum import Enum
 from Model.Player import Player
 from Model.Engineer import Engineer
@@ -10,6 +8,13 @@ from Model.Market_Trader import Market_Trader
 from Model.Migrant import Migrant
 from Model.Prefect import Prefect
 from Model.Tax_Collector import Tax_Collector
+import sys
+import sysv_ipc
+import re
+import pickle
+import struct
+# import pygame
+#from Model.Player import Player
 
 ME = None
 
@@ -20,6 +25,10 @@ def walker_type(w):
 
 
 # if bug with population : add event for job offered in a specific building
+
+KEY = 1234
+PY_TO_C = 3
+
 class MessageType(Enum):
     REQUIRE_OWNERSHIP = 1
     GIVE_OWNERSHIP = 2
@@ -61,7 +70,8 @@ class Message(Enum):
 class Communication:
     def __init__(self):
         # create fifo to communicate with c daemon
-        self.fifo = ...
+        self.message_queue = sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT)
+        self.message = None
 
     def send(self, message):
            pass
@@ -186,3 +196,16 @@ class Communication:
         # return the game
         # probably not the best file for this function
         pass
+
+""" TEST
+Sender = Communication() 
+Sender.evolve(9, 5) #11
+Sender.devolve(9, 6) #12
+Sender.diconnect() #4
+Sender.connect(3, 8000) #3
+Sender.give_ownership(9, 7) #2
+Sender.move_walker(9, 8, 2, 3) #13
+Sender.put_out_fire(10, 9)
+"""
+# if (str(string) == 'end' or str(string) == 'exit' or str(string) == ''):
+#     break

@@ -11,6 +11,7 @@ class Chat:
         self.chat_posx = 40
         self.chat_posy = window_height - 100
         self.message = "Hello"
+        self.input = ""
         self.memory = []
         self.communication = communication
         self.chat = self.creation()
@@ -18,8 +19,7 @@ class Chat:
     
     def update(self):
         now = pg.time.get_ticks()
-        # self.chat.fill((150, 200, 200))
-        # self.check_chat()
+        self.check_input()
         # if a message is sent, send it in peer
         if self.message:
             # self.communication.send(self.message)   
@@ -32,6 +32,7 @@ class Chat:
 
     def display(self, chat):
         chat.update()
+        self.display_input()
         self.display_message()
         self.window.blit(self.chat, (self.chat_posx, self.chat_posy))
 
@@ -46,37 +47,34 @@ class Chat:
         c.blit(text_surface, coordinate)
         return c
     
-    def check_chat(self):
+    def check_input(self):
         for event in pg.event.get():
-                if (event.type == pg.K_ESCAPE):
-                    running = False
-                    pg.quit()
-                    quit(0)
+                ### deselection the chat ###
+                # if (event.type == pg.K_ESCAPE):
+                #     running = False
+                #     pg.quit()
+                #     quit(0)
                 if event.type == pg.KEYDOWN:
                     if event.key == pg.K_BACKSPACE:
-                        nom = nom[:-1]
-                        screen.blit(zone_de_texte, ((x[0] / 2) - 150, (x[1] / 3) + 50))
-                        #supp_text= pg.image.load("Images/supp_text.png")
-                        text_2 = font.render(nom, True, (0, 0, 0))
-                        screen.blit(text_2, (x[0] / 2 - 100, (x[1] / 3) + 70))
-                        pg.display.flip()
+                        self.input = self.input[:-1]
+
                     elif event.key == pg.K_RETURN:
-                        # display the text input on the screen
-                        pass
+                        # add in memory the input
+                        self.memory.append(self.input)
                         
                     else:
-                        if event.type == pg.KEYDOWN:
-                            if event.key == pg.K_ESCAPE:
-                                pg.quit()
-                                quit(0)
                         carac = event.dict['unicode']
-                        nom = nom + carac
-                        text_2 = font.render(nom, True, (0, 0, 0))
-                        screen.blit(zone_de_texte, ((x[0] / 2) - 150, (x[1] / 3) + 50))
-                        screen.blit(text_2, (x[0] / 2 - 100, (x[1] / 3) + 70))
-                        pg.display.flip()
+                        self.input = self.input + carac
+
     def display_message(self):
         if self.memory:
             font = pg.font.Font(None, 28)
             text_surface = font.render(self.memory[len(self.memory)-1] , True, (155, 175, 120))
             self.window.blit(text_surface, (self.chat_posx, self.chat_posy-50))
+    def display_input(self):
+        if self.memory:
+            font = pg.font.Font(None, 32)
+            text_surface = font.render(self.input, True, (60, 50, 50))
+            coordinate = text_surface.get_rect(centery=self.chat.get_rect().centery)
+            coordinate.left = 75
+            self.chat.blit(text_surface, coordinate)

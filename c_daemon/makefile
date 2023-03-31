@@ -6,7 +6,7 @@ CFLAGS_DEBUG = -g -Wall -Wextra
 CFLAGS = $(CFLAGS_COMPILE) $(CFLAGS_DEBUG)
 
 LD = gcc
-LDFLAGS = 
+LDFLAGS =
 
 
 BIN_DIR = bin/

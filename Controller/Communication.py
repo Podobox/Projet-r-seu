@@ -163,7 +163,8 @@ class Communication:
         # check for messages from other players
         # making this function a generator might be a good idea
         # handle the message in the controller
-        pass
+        yield None
+        return
 
     def connect(self, ip, port):
         message = struct.pack("iQQQQ", MessageType.CONNECT.value, ip, port, 0, 0)

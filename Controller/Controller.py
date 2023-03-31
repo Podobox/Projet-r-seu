@@ -29,7 +29,7 @@ from time import time_ns, sleep
 from Controller.Backup import Backup
 from Model.Destination_Walkers import Destination_Walkers
 from random import randint
-from Controller.Communication import Communication, ME
+from Controller.Communication import Communication, ME, MessageType
 
 FRAMES_PER_SECONDS = 10
 TIME_NS_PER_FRAME = 1 / FRAMES_PER_SECONDS * 1e9
@@ -101,8 +101,8 @@ class Controller:
 
             pg.display.update()
 
-            # for message in self.communication.check_messages():
-                # self.handle_message()
+            for message in self.communication.check_messages():
+                self.handle_message(message)
 
             self.wait_next_frame()
 
@@ -111,9 +111,9 @@ class Controller:
         print(self.game)
         return
 
-    def handle_message(self):
-        # logic here, call functions from self.communication to actually send the answer
-        pass
+    def handle_message(self, message):
+        match MessageType(message[0]):
+            case MessageType.REQUIRE_OWNERSHIP: pass
 
     def wait_next_frame(self):
         time_now = time_ns()

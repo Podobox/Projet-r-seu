@@ -8,7 +8,6 @@ FONT2 = pg.font.Font(None, 28)
 
 class Chat:
 
-    def __init__(self, window, window_width, window_height, communication):
         self.window = window
         self.window_width = window_width
         self.window_height = window_height

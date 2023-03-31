@@ -10,7 +10,7 @@ class Chat:
         self.height = 40
         self.chat_posx = 40
         self.chat_posy = window_height - 100
-        self.message = ""
+        self.message = "Helloo"
         self.input = ""
         self.memory = []
         self.new_input = True
@@ -36,7 +36,9 @@ class Chat:
     def display(self, chat):
         chat.update()
         self.display_input()
-        self.display_chat()
+        self.display_message()
+        self.window.blit(self.chat, (self.chat_posx, self.chat_posy))
+
 
     def creation(self):
         c = pg.Surface((self.width, self.height))
@@ -70,18 +72,18 @@ class Chat:
                     
                     self.new_input = True
 
-    def display_chat(self):
+    def display_message(self):
         if self.memory and self.new_message:
             font = pg.font.Font(None, 28)
             text_surface = font.render(self.memory[len(self.memory)-1] , True, (155, 175, 120))
             self.window.blit(text_surface, (self.chat_posx, self.chat_posy-50))
             # self.new_message = False
     def display_input(self):
-        if self.memory and self.new_input:
+        if self.input and self.new_input:
             font = pg.font.Font(None, 32)
             text_surface = font.render(self.input, True, (60, 50, 50))
             coordinate = text_surface.get_rect(centery=self.chat.get_rect().centery)
             coordinate.left = 75
             self.chat.blit(text_surface, coordinate)
-            self.window.blit(self.chat, (self.chat_posx, self.chat_posy))
+            # self.window.blit(self.chat, (self.chat_posx, self.chat_posy))
             # self.new_input = False

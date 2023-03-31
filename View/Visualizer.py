@@ -162,12 +162,6 @@ class Visualizer:
         
         self.chat.display(self.chat)
 
-        self.chat.display(self.chat)
-
-        self.chat.display(self.chat)
-
-        self.chat.display(self.chat)
-
         # Draw game barre
         self.barre.barre_function(self.game.denarii, self.game.population, self.game.date)
         self.list_button = (set(self.list_button) | set([self.barre.fileButton]))

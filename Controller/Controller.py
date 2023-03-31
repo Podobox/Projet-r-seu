@@ -29,7 +29,8 @@ from time import time_ns, sleep
 from Controller.Backup import Backup
 from Model.Destination_Walkers import Destination_Walkers
 from random import randint
-from Controller.Communication import Communication, ME, MessageType
+from Controller.Communication import Communication, MessageType
+import Controller.Communication as com
 
 FRAMES_PER_SECONDS = 10
 TIME_NS_PER_FRAME = 1 / FRAMES_PER_SECONDS * 1e9
@@ -61,14 +62,13 @@ class Controller:
         self.last_frame = time_ns()
         self.player = Player()
         self.players = players
-        global ME
-        ME = self.player
+        com.ME = self.player
         if self.players is None:
             self.game.take_all_ownership(self.player)
 
         # Benchmarking
-        self.bench = 0
-        self.bench_nb = 0
+        # self.bench = 0
+        # self.bench_nb = 0
         self.run()
 
     def run(self):
@@ -77,7 +77,9 @@ class Controller:
         for _ in range(5):
             self.game.increase_speed()
 
-        self.game.build(15, 15, Prefecture)
+        for x in range(MAP_DIM):
+            for y in range(MAP_DIM):
+                print(self.game.map.grid[x][y].owner)
 
         while True:
             self.game.advance_time()
@@ -101,8 +103,8 @@ class Controller:
 
             pg.display.update()
 
-            for message in self.communication.check_messages():
-                self.handle_message(message)
+            # for message in self.communication.check_messages():
+                # self.handle_message(message)
 
             self.wait_next_frame()
 
@@ -123,10 +125,10 @@ class Controller:
         # self.bench = (sleep_time * 1e-9 + self.bench * self.bench_nb) \
             # / (self.bench_nb + 1)
         # instant_bench = ((TIME_NS_PER_FRAME - sleep_time) / TIME_NS_PER_FRAME * 100)
-        self.bench = (((TIME_NS_PER_FRAME - sleep_time) / TIME_NS_PER_FRAME * 100)
-        + self.bench * self.bench_nb) / (self.bench_nb + 1)
-        self.bench_nb += 1
-        print(self.bench)
+        # self.bench = (((TIME_NS_PER_FRAME - sleep_time) / TIME_NS_PER_FRAME * 100)
+        # + self.bench * self.bench_nb) / (self.bench_nb + 1)
+        # self.bench_nb += 1
+        # print(self.bench)
         # print(instant_bench)
         # print(sleep_time * 1e-9)
         # sleep(sleep_time * 1e-9)

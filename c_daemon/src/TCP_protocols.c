@@ -33,7 +33,7 @@ int connect_existed_players(int index) {
     for (int i = 0; i < PLAYER_MAX; i++) {
         if (player_socket[i] == 0) {
             player_socket[i] = sock;
-            break;
+           break;
         }
     }
     return 0;
@@ -102,4 +102,12 @@ void stop(char *msg) {
     close(listenfd);
     perror(msg);
     exit(EXIT_FAILURE);
+}
+
+void add_player_IP(char *new_player_IP) {
+    
+    if (existed_player < PLAYER_MAX) {
+        existed_player_IP[existed_player] = new_player_IP;
+        existed_player++;
+    }
 }

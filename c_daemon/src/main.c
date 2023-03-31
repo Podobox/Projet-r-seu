@@ -7,7 +7,6 @@ uint16_t PORT = 1234;
 int maxfd;
 int res;
 int listenfd = 0;
-int connected_player = 0;
 int existed_player = 0;
 int player_socket[PLAYER_MAX] = {0};
 char *existed_player_IP[PLAYER_MAX] = {NULL};
@@ -19,7 +18,6 @@ int main(int argc, char **argv) {
     // get own IP address
     // create another socket, addr_in for listenfd
     // and bind and listen on listenfd
-    char *ip_host = gethostIP();
     if ((res = create_master_socket(ip_host))) {
         fprintf(stderr, "Error number %d creating listening socket\n", res);
         return (EXIT_FAILURE);
@@ -47,7 +45,7 @@ int main(int argc, char **argv) {
     }
 
     // while loop
-    while (1) {
+    while (1) {              
         
         // get all socket into fd set
         FD_ZERO(&readfds);
@@ -71,7 +69,7 @@ int main(int argc, char **argv) {
         // new player connecting
         if (FD_ISSET(listenfd, &readfds)) {
             // out of slot
-            if (connected_player >= PLAYER_MAX) {
+            if(existed_player >= PLAYER_MAX){
                 continue;
             }
 
@@ -86,7 +84,7 @@ int main(int argc, char **argv) {
             for (int index = 0; index < PLAYER_MAX; index++) {
                 if (player_socket[index] == 0) {
                     player_socket[index] = res;
-                    connected_player++;
+                    existed_player++;
                     break;
                 }
             }

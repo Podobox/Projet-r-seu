@@ -173,7 +173,6 @@ class Game:
             return
         if not self.prop.is_owner(posx, posy, player=self.owner.name):
             print("you're not owner ")
-            self.alert()
             self.prop.modify_property(posx, posy, player=self.owner.name)
         else :
             if isinstance(building, Sign):

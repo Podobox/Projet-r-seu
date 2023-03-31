@@ -8,8 +8,10 @@ int maxfd;
 int res;
 int listenfd = 0;
 int existed_player = 0;
-int player_socket[PLAYER_MAX] = {0};
-char *existed_player_IP[PLAYER_MAX] = {NULL};
+// int player_socket[PLAYER_MAX] = {0};
+// char *existed_player_IP[PLAYER_MAX] = {NULL};
+
+network_info connection[PLAYER_MAX] = {0};
 
 fd_set readfds;
 struct sockaddr_in master_addr = {};
@@ -18,6 +20,11 @@ int main(int argc, char **argv) {
     // get own IP address
     // create another socket, addr_in for listenfd
     // and bind and listen on listenfd
+    for(int i = 0; i < PLAYER_MAX; i++){
+        connection[i].used = 0;
+        connection[i].socket = 0;
+        connection[i].IP = NULL;
+    }
     char *ip_host = gethostIP();
     if ((res = create_master_socket(ip_host))) {
         fprintf(stderr, "Error number %d creating listening socket\n", res);

@@ -23,10 +23,18 @@ extern const int BUFSIZE;
 extern uint16_t PORT;
 
 extern int listenfd;
-extern int player_socket[PLAYER_MAX];
+// extern int player_socket[PLAYER_MAX];
+
+typedef struct {
+    int used;
+    int socket;
+    char *IP;
+} network_info;
+
+extern network_info connection[PLAYER_MAX];
 
 extern int existed_player;
-extern char *existed_player_IP[PLAYER_MAX];
+// extern char *existed_player_IP[PLAYER_MAX];
 
 extern struct sockaddr_in master_addr;
 

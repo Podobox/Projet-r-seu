@@ -42,6 +42,7 @@ from View.FileMenu import FileMenu
 from View.SideMenu import Menu
 from View.Minimap import Minimap
 from View.Chat import Chat
+
 import Controller.Communication as com
 from Model.Tree import Tree
 from Model.Water import Water
@@ -115,6 +116,7 @@ class Visualizer:
         #self.images = dict()
         self.minimap = Minimap(self.window, WINDOW_WIDTH, WINDOW_HEIGHT)
 
+        self.chat = Chat(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, communication)
         self.loadImages()
         return
 
@@ -167,9 +169,8 @@ class Visualizer:
 
         self.minimap.display(map, self.deplacementX + self.tmpDeplacementX,
                              self.deplacementY + self.tmpDeplacementY)
-        # self.imgavatar.display()
         
-
+        self.chat.display(self.chat)
 
         # Draw game barre
         self.barre.barre_function(self.game.denarii, self.game.population, self.game.date)

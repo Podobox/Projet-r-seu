@@ -4,7 +4,8 @@ from Model.Forum import Forum
 from Model.Fountain import Fountain
 from Model.Garden import Garden
 from Model.Granary import Granary
-
+import tkinter as tk
+import pygame
 from Model.House import House, house_property
 from Model.Market import Market
 from Model.New_House import New_House
@@ -38,8 +39,9 @@ from Controller.Communication import walker_type
 import Controller.Communication as com
 
 from Controller.property_possession import Property_possession
+
 from Model.Player import Player
-# min par frame
+
 TIME_PER_FRAME = 10
 
 
@@ -52,9 +54,9 @@ def building_type(b):
 class Game:
 
     def __init__(self, denarii):
-        self.prop  = Property_possession()
-        self.map = Map()
         self.owner = Player()
+        self.prop  = PropertyPossession(posx=0,posy=0, player=self.owner)
+        self.map = Map()
         self.denarii = denarii
         self.population = 0
         self.unemployed = 0
@@ -105,7 +107,7 @@ class Game:
     def take_all_ownership(self, player):
         self.map.take_all_ownership(player)
 
-    # return True if it was payed, else False
+
     def pay(self, price):
         if self.denarii >= price:
             self.denarii -= price
@@ -157,6 +159,7 @@ class Game:
             return
         if not self.prop.modify_property(tile=self.map.grid[posx][posy],player=None):
             pass
+
         self.map.build(posx, posy, type)
         # print(self.map)
 
@@ -171,68 +174,62 @@ class Game:
         if type == Road:
             # check every building for road connection
             self.road_connect()
- 
+
         else:
-            self.map.build(posx, posy, type)
-            # print(self.map)
-
-            building = self.map.grid[posx][posy].building
-
-            if type == House:
-                additional_population = building.population
-                self.population += additional_population
-                self.unemployed += additional_population
-
-            if type == Road:
-                # check every building for road connection
-                self.road_connect()
-            else:
-                # only check for the new building because it doesn't impact the others
-                self.road_connect([building])
-
-            self.buildings.append(building)
+            # only check for the new building because it doesn't impact the others
+            self.road_connect([building])
 
         if type not in (Water, Tree, Rock, Other_Rock, Sign):
             self.communication.build(posx, posy, building_type(type))
 
+        self.buildings.append(building)
+        # else:
+        #     self.prop.modify_property(posx, posy, player=self.owner.name)
+        #     print("property changed")
     def destroy(self, posx, posy):
         building = self.map.grid[posx][posy].building
         if building is None:
             return
+        if not self.prop.is_owner(posx, posy, player=self.owner.name):
+            print("you're not owner ")
+            self.alert()
+            self.prop.modify_property(posx, posy, player=self.owner.name)
+        else :
+            if isinstance(building, Sign):
+                return
 
-        if isinstance(building, Sign):
-            return
+            building_type = type(building)
+            if building_type == Rock or building_type == Water or building_type == Other_Rock:
+                return
 
-        building_type = type(building)
-        if building_type == Rock or building_type == Water or building_type == Other_Rock:
-            return
+            if not self.pay(2):
+                return
 
-        if not self.pay(2):
-            return
+            if building_type == House:
+                removed_population = building.population
+                self.population -= removed_population
+                self.unemployed -= removed_population
+                m = Migrant(self.map, building, self.map.exit_point, leaving=True)
+                self.walkers.append(m)
+            self.unemployed += building.employees
 
-        if building_type == House:
-            removed_population = building.population
-            self.population -= removed_population
-            self.unemployed -= removed_population
-            m = Migrant(self.map, building, self.map.exit_point, leaving=True)
-            self.walkers.append(m)
-        self.unemployed += building.employees
+            if isinstance(building, Engineer_Post) and building.engineer is not None:
+                self.remove_from_walkers(building.engineer)
+            elif isinstance(building, Wheat_Farm) and building.farm_boy is not None:
+                self.remove_from_walkers(building.farm_boy)
+            elif isinstance(building, Forum) and building.tax_collector is not None:
+                self.remove_from_walkers(building.tax_collector)
+            elif isinstance(building, Market):
+                if building.buyer is not None:
+                    self.remove_from_walkers(building.buyer)
+                if building.trader is not None:
+                    self.remove_from_walkers(building.trader)
+            elif isinstance(building, Prefecture) and building.prefect is not None:
+                self.remove_from_walkers(building.prefect)
 
-        if isinstance(building, Engineer_Post) and building.engineer is not None:
-            self.remove_from_walkers(building.engineer)
-        elif isinstance(building, Wheat_Farm) and building.farm_boy is not None:
-            self.remove_from_walkers(building.farm_boy)
-        elif isinstance(building, Forum) and building.tax_collector is not None:
-            self.remove_from_walkers(building.tax_collector)
-        elif isinstance(building, Market):
-            if building.buyer is not None:
-                self.remove_from_walkers(building.buyer)
-            if building.trader is not None:
-                self.remove_from_walkers(building.trader)
-        elif isinstance(building, Prefecture) and building.prefect is not None:
-            self.remove_from_walkers(building.prefect)
+            self.buildings.remove(building)
 
-        self.buildings.remove(building)
+            self.map.destroy(posx, posy)
 
         self.map.destroy(posx, posy)
 

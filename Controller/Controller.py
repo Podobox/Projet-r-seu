@@ -106,6 +106,7 @@ class Controller:
             # for message in self.communication.check_messages():
                 # self.handle_message(message)
 
+
             self.wait_next_frame()
 
             self.checkEvents()

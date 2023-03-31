@@ -169,6 +169,8 @@ class Visualizer:
 
         self.minimap.display(map, self.deplacementX + self.tmpDeplacementX,
                              self.deplacementY + self.tmpDeplacementY)
+        
+        self.chat.display(self.chat)
 
         self.chat.display(self.chat)
 

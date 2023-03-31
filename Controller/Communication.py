@@ -10,6 +10,7 @@ from enum import Enum
 
 KEY = 1234
 PY_TO_C = 3
+C_TO_PY = 2
 
 class MessageType(Enum):
     REQUIRE_OWNERSHIP = 1
@@ -46,6 +47,20 @@ class Communication:
     def send_message_from_py_to_c(self, message):
         # send the actions from python to c
         self.message_queue.send(message, type=PY_TO_C)
+
+    def receive_message_from_c_to_py(self, message):
+        message = struct.unpack("iQQQQ", message)
+        try:
+            mq = sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT)
+            
+        while True:
+            message, mtype = mq.receive(type = C_TO_PY)
+            print("*** New message received ***")
+            print(f"Receive message: {message.decode()}")
+
+        except sysv_ipc.ExistentialError:
+            print("ERROR: message queue creation failed")
+
 
     def ask_for_money_ownership(self):
         message = struct.pack("iQQQQ", MessageType.REQUIRE_MONEY_OWNERSHIP, 0, 0, 0, 0)

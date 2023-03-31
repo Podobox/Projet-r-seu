@@ -286,7 +286,7 @@ def enter_connect_game():
                         pygame.display.flip()
                         continue
                     ip, port = ip_port.split("/")
-                    game, players = communication.connect(ip, port)
+                    game, players = communication.connect(ip, int(port))
                     if game is None:
                         erreur = "host does not exist"
                         text_erreur = font.render(erreur, True, (255, 0, 0))

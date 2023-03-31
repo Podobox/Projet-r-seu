@@ -34,7 +34,6 @@ typedef struct {
 extern network_info connection[PLAYER_MAX];
 
 extern int existed_player;
-// extern char *existed_player_IP[PLAYER_MAX];
 
 extern struct sockaddr_in master_addr;
 

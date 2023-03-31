@@ -1,5 +1,4 @@
 #include "TCP_protocols.h"
-
 #include "global_var.h"
 
 // return 0 if no problem
@@ -22,7 +21,7 @@ int connect_existed_players(int index) {
     bzero(&current_player, sizeof(current_player));
     current_player.sin_family = AF_INET;
     current_player.sin_port = htons(PORT);
-    current_player.sin_addr.s_addr = inet_addr(existed_player_IP[index]);
+    current_player.sin_addr.s_addr = inet_addr(connection[index].IP);
 
     // connect to the player
     if (connect(sock, (struct sockaddr *)&current_player, sizeof(current_player)) < 0) {
@@ -30,12 +29,8 @@ int connect_existed_players(int index) {
     }
 
     // save player socket
-    for (int i = 0; i < PLAYER_MAX; i++) {
-        if (player_socket[i] == 0) {
-            player_socket[i] = sock;
-           break;
-        }
-    }
+    connection[index].socket = sock;
+
     return 0;
 }
 
@@ -43,7 +38,7 @@ int connect_existed_players(int index) {
 // return 1 if cannot create socket
 // return 2 if cannot bind socket
 // return 3 if cannot listen
-int create_master_socket(char *myIP) {
+int create_master_socket(char *ip_host) {
     // create socket
     if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         return 1;
@@ -53,7 +48,7 @@ int create_master_socket(char *myIP) {
     bzero(&master_addr, sizeof(master_addr));
     master_addr.sin_family = AF_INET;
     master_addr.sin_port = htons(PORT);
-    master_addr.sin_addr.s_addr = inet_addr(myIP);
+    master_addr.sin_addr.s_addr = inet_addr(ip_host);
 
     int option = 1;
     if (setsockopt(listenfd, SOL_SOCKET, SO_REUSEPORT, &option, sizeof(option)) < 0) {
@@ -102,12 +97,4 @@ void stop(char *msg) {
     close(listenfd);
     perror(msg);
     exit(EXIT_FAILURE);
-}
-
-void add_player_IP(char *new_player_IP) {
-    
-    if (existed_player < PLAYER_MAX) {
-        existed_player_IP[existed_player] = new_player_IP;
-        existed_player++;
-    }
 }

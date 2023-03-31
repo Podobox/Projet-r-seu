@@ -9,6 +9,10 @@ char *gethostIP();
 
 void stop(char *msg);
 
-void add_player_IP(char *);
+void add_connection(int, char*);
+
+void print_connections();
+
+void close_connection(int);
 
 #endif

@@ -18,6 +18,7 @@ int main(int argc, char **argv) {
     // get own IP address
     // create another socket, addr_in for listenfd
     // and bind and listen on listenfd
+    char *ip_host = gethostIP();
     if ((res = create_master_socket(ip_host))) {
         fprintf(stderr, "Error number %d creating listening socket\n", res);
         return (EXIT_FAILURE);

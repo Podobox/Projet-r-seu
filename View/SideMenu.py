@@ -119,11 +119,16 @@ class Menu:
                    (self.coefficient
                    * 149.117), self.window_height - (self.coefficient * 220), self.changeOverlay,
                    self.coefficient / 10.5, overlay="Water"),
+            Button(self.window, "/Images/Show_Tile.png", self.window_width -
+            (self.coefficient
+            * 158.117), self.window_height - (self.coefficient * 25), self.changeOverlay,
+            self.coefficient /9.5, overlay="Tile"),
+    
             Button(self.window, "/Images/desirability_overlay.png", self.window_width -
                    (self.coefficient
                    * 80), self.window_height - (self.coefficient * 220), self.changeOverlay,
                    self.coefficient / 10.5, overlay="Desirability")
-            
+
 
         ]
 

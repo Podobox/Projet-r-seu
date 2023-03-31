@@ -1,30 +1,34 @@
-
 from Controller.Communication import Communication
-class Property_possession:
-    comm = Communication()
+from Model.Tile import Tile
 
-    def __init__(self, player):
-        self.player = player
-        posx= 0
-        posy =0
-        self.tile = (posx, posy)
 
-    def is_owner(self, tile, player):
-        return tile.player == player 
-    
+class PropertyPossession:
+    def __init__(self, posx, posy, player):
+        self.tile = Tile(posx=posx, posy=posy, type=None)
+        self.owned_tiles = {}
 
-    def modify_property(self, tile, player):
-        if self.is_owner(tile, player):
-            print("already owner")            
-        else: 
-            if self.comm.ask_for_ownership(tile, player):
-                self.comm.give_ownership(tile, player)
+    def is_owner(self, posx, posy, player):
+        tile = self.owned_tiles.get((posx, posy))
+        return tile is not None and tile.player == player
+
+    def modify_property(self, posx, posy, player):
+        if self.is_owner(posx, posy, player):
+            print("Déjà propriétaire.")
+        elif (posx, posy) in self.owned_tiles:
+            print("Vous possédez déjà une case.")
+        else:
+            if Communication.ask_for_ownership(posx, posy):
+                self.owned_tiles[(posx, posy)] = self.tile
+                Communication.give_ownership(posx, posy, player)
+                print(
+                    f"Vous êtes maintenant propriétaire de la case ({posx}, {posy}).")
             else:
-                print("Access denied")
+                print("Accès refusé.")
 
     def receive_property_request(self, tile, player):
-        if not self.is_owner(tile, player):
-            if self.comm.ask_for_ownership(id(tile), None):
-                self.comm.give_ownership(id(tile), player)
-            else:
-                print("Access denied")
+        if self.is_owner(tile.posx, tile.posy, player):
+            del self.owned_tiles[(tile.posx, tile.posy)]
+            Communication.deny_ownership(tile.posx, tile.posy, player)
+            print(f"La case ({tile.posx}, {tile.posy}) a été libérée.")
+        else:
+            print("Vous n'êtes pas propriétaire de cette case.")

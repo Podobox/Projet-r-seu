@@ -125,9 +125,11 @@ class Controller:
         # self.bench = (sleep_time * 1e-9 + self.bench * self.bench_nb) \
             # / (self.bench_nb + 1)
         # instant_bench = ((TIME_NS_PER_FRAME - sleep_time) / TIME_NS_PER_FRAME * 100)
+
         # self.bench = (((TIME_NS_PER_FRAME - sleep_time) / TIME_NS_PER_FRAME * 100)
         # + self.bench * self.bench_nb) / (self.bench_nb + 1)
         # self.bench_nb += 1
+
         # print(self.bench)
         # print(instant_bench)
         # print(sleep_time * 1e-9)
@@ -157,12 +159,12 @@ class Controller:
                 case pg.MOUSEBUTTONDOWN:
                     print("MouseButtonDown")
                     if event.button == pg.BUTTON_LEFT:
-                        print("Left button pressed at (x, y) = ", event.pos)
+                        # print("Left button pressed at (x, y) = ", event.pos)
 
                         print("self.building est a : ", self.building)
                         # ------------------------------------------------------------------------------------Faire en clique droit
                     elif event.button == pg.BUTTON_RIGHT:
-                        print("Right button pressed at (x, y) = ", event.pos)
+                        # print("Right button pressed at (x, y) = ", event.pos)
                         if event.pos[0] <= self.visualizer.GAME_WIDTH and event.pos[1] <= self.visualizer.GAME_HEIGHT:
                             self.MODE_DECALAGE = True
                             self.ORIGIN_DECALAGE = event.pos
@@ -178,9 +180,9 @@ class Controller:
                             self.building = False
                             self.visualizer.changeBuildingMode()
                             self.final_pos = None
-                        print("Left button released at (x, y) = ", event.pos)
+                        # print("Left button released at (x, y) = ", event.pos)
                     elif event.button == pg.BUTTON_RIGHT:
-                        print("Right button released at (x, y) = ", event.pos)
+                        # print("Right button released at (x, y) = ", event.pos)
                         if self.MODE_DECALAGE:
                             self.MODE_DECALAGE = False
                             mouse_pos = event.pos
@@ -241,10 +243,10 @@ class Controller:
                     if left_button_pressed:
                         actionned = False
                         if not(self.building):
-                            print("into not(self.building)")
+                            # print("into not(self.building)")
                             for button in self.list_button:
                                 if button.listener_rect(mouse_pos):
-                                    print("button clicked")
+                                    # print("button clicked")
                                     self.buttonclicked = button
 
                                     if self.buttonclicked.building != -1:

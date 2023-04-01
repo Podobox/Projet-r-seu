@@ -21,12 +21,8 @@ class Chat:
 
         self.communication = communication
         self.chat = self.creation()
-        self.timer = pg.time.get_ticks()
     
-    def update(self):
-        now = pg.time.get_ticks()
-        if not self.memory:
-            self.timer = now    
+    def update(self, now):
         self.check_input(now)
         # if a message is sent, send it in peer to everyone and add it in memory
         if self.message:
@@ -34,18 +30,17 @@ class Chat:
             print("message print: ", self.message)
             self.memory.append((self.message, pg.time.get_ticks()))
             print("Voici la mémoire", self.memory)
-
             self.message = ""
-        if now - self.timer > 4000 and self.memory:
-            self.timer = now
+
+        if self.memory and now - self.memory[0][1] > 4000 :
             self.memory = self.memory[1:]
-            print("Mémoire supprimé: ", self.memory)
             
 
     def display(self, chat):
-        chat.update()
+        now = pg.time.get_ticks()
+        chat.update(now)
+        self.display_message(now)
         self.display_input()
-        self.display_message()
         self.window.blit(self.chat, (self.chat_posx, self.chat_posy))
 
 
@@ -78,22 +73,34 @@ class Chat:
                         
                     else:
                         carac = event.dict['unicode']
+                        # don't input the key enter in carac
                         if carac != '\r':
                             self.input = self.input + carac
                     
                     # self.new_input = True
 
-    def display_message(self):
+    def display_message(self, now):
         if self.memory: 
             # if there's just one word in memory
             if len(self.memory) == 1:
                 text_surface = FONT2.render(self.memory[0][0] , True, (155, 175, 120))
+                if now - self.memory[0][1] > 2000:
+                    t = int(255*(2-(now - self.memory[0][1]) / 2000))
+                    text_surface.set_alpha(t)
+                elif now - self.memory[0][1] > 4000:
+                    t = 0
                 self.window.blit(text_surface, (self.chat_posx, self.chat_posy-40))
             else:
                 for i in range(len(self.memory)):
                     text_surface = FONT2.render(self.memory[len(self.memory)-1-i][0] , True, (155, 175, 120))
+                    # add the transparency on the text
+                    if now - self.memory[len(self.memory)-1-i][1] > 2000:
+                        t = int(255*(2-(now - self.memory[len(self.memory)-1-i][1]) / 2000))
+                        text_surface.set_alpha(t)
+                    elif now - self.memory[len(self.memory)-1-i][1] >= 4000:
+                        t = 0
+                        text_surface.set_alpha(t)
                     self.window.blit(text_surface, (self.chat_posx, self.chat_posy-40*(i+1)))
-                    print("taille de la mémoire:", len(self.memory))
     def display_input(self):
         if self.input and self.new_input:
             text_surface = FONT.render(self.input, True, (60, 50, 50))

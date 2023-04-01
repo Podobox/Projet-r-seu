@@ -1,5 +1,8 @@
 import pygame as pg
 from Controller.Communication import Communication
+
+FONT = pg.font.Font(None, 32)
+FONT2 = pg.font.Font(None, 28)
 class Chat:
 
     def __init__(self, window, window_width, window_height, communication):
@@ -10,28 +13,34 @@ class Chat:
         self.height = 40
         self.chat_posx = 40
         self.chat_posy = window_height - 100
-        self.message = "Helloo"
+        self.message = ""
         self.input = ""
         self.memory = []
+        # boolean to know when refresh screen
         self.new_input = True
-        self.new_message = True
+
         self.communication = communication
         self.chat = self.creation()
         self.timer = pg.time.get_ticks()
     
     def update(self):
         now = pg.time.get_ticks()
-        self.check_input()
-        # if a message is sent, send it in peer
+        if not self.memory:
+            self.timer = now    
+        self.check_input(now)
+        # if a message is sent, send it in peer to everyone and add it in memory
         if self.message:
             # self.communication.send(self.message)   
             print("message print: ", self.message)
-            self.memory.append(self.message)
-            self.new_message = True
+            self.memory.append((self.message, pg.time.get_ticks()))
+            print("Voici la mémoire", self.memory)
+
             self.message = ""
         if now - self.timer > 4000 and self.memory:
             self.timer = now
-            self.memory = self.memory[:-1]
+            self.memory = self.memory[1:]
+            print("Mémoire supprimé: ", self.memory)
+            
 
     def display(self, chat):
         chat.update()
@@ -51,7 +60,7 @@ class Chat:
         c.blit(text_surface, coordinate)
         return c
     
-    def check_input(self):
+    def check_input(self, now):
         for event in pg.event.get():
                 ### deselection the chat ###
                 # if (event.type == pg.K_ESCAPE):
@@ -62,28 +71,35 @@ class Chat:
                     if event.key == pg.K_BACKSPACE:
                         self.input = self.input[:-1]
 
-                    elif event.key == pg.K_RETURN:
-                        # add in memory the input
-                        self.memory.append(self.input)
+                    elif event.key == pg.K_RETURN and self.input:
+                        self.message = self.input
+                        self.input = ""
+                        self.chat = self.creation()
                         
                     else:
                         carac = event.dict['unicode']
-                        self.input = self.input + carac
+                        if carac != '\r':
+                            self.input = self.input + carac
                     
-                    self.new_input = True
+                    # self.new_input = True
 
     def display_message(self):
-        if self.memory and self.new_message:
-            font = pg.font.Font(None, 28)
-            text_surface = font.render(self.memory[len(self.memory)-1] , True, (155, 175, 120))
-            self.window.blit(text_surface, (self.chat_posx, self.chat_posy-50))
-            # self.new_message = False
+        if self.memory: 
+            # if there's just one word in memory
+            if len(self.memory) == 1:
+                text_surface = FONT2.render(self.memory[0][0] , True, (155, 175, 120))
+                self.window.blit(text_surface, (self.chat_posx, self.chat_posy-40))
+            else:
+                for i in range(len(self.memory)):
+                    text_surface = FONT2.render(self.memory[len(self.memory)-1-i][0] , True, (155, 175, 120))
+                    self.window.blit(text_surface, (self.chat_posx, self.chat_posy-40*(i+1)))
+                    print("taille de la mémoire:", len(self.memory))
     def display_input(self):
         if self.input and self.new_input:
-            font = pg.font.Font(None, 32)
-            text_surface = font.render(self.input, True, (60, 50, 50))
+            text_surface = FONT.render(self.input, True, (60, 50, 50))
             coordinate = text_surface.get_rect(centery=self.chat.get_rect().centery)
             coordinate.left = 75
             self.chat.blit(text_surface, coordinate)
             # self.window.blit(self.chat, (self.chat_posx, self.chat_posy))
             # self.new_input = False
+    

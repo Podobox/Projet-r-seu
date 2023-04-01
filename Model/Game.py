@@ -34,7 +34,8 @@ from Model.Models_Data import building_data
 from Model.Tile import Tile_Type
 from random import seed, randint
 from datetime import datetime, timedelta
-from Controller.Communication import ME, walker_type
+from Controller.Communication import walker_type
+import Controller.Communication as com
 
 
 # min par frame
@@ -263,7 +264,7 @@ class Game:
                     isinstance(b, New_House) or isinstance(b, House) or \
                     isinstance(b, Sign) or isinstance(b, Prefecture) or \
                     isinstance(b, Well) or isinstance(b, Fountain) or \
-                    b.tile.owner != ME:
+                    b.tile.owner != com.ME:
                 continue
             if b.burn(self.date, self.speed):
                 posx, posy = b.tile.posx, b.tile.posy
@@ -302,12 +303,12 @@ class Game:
         if (self.date - self.last_meal) >= timedelta(days=365 / 6):
             self.last_meal = self.date
             for b in self.buildings:
-                if isinstance(b, House) and b.tile.owner == ME:
+                if isinstance(b, House) and b.tile.owner is com.ME:
                     b.eat()
 
     def farm(self):
         for b in self.buildings:
-            if isinstance(b, Wheat_Farm) and b.tile.owner == ME:
+            if isinstance(b, Wheat_Farm) and b.tile.owner is com.ME:
                 b.farm(self.date)
                 buf = b.farm_boy
                 if b.deliver(self.map):
@@ -378,7 +379,7 @@ class Game:
 
     def check_evolution(self):
         for b in self.buildings:
-            if isinstance(b, House) and b.tile.owner == ME:
+            if isinstance(b, House) and b.tile.owner is com.ME:
                 diff = b.evolve()
                 if diff != 0:
                     self.communication.evolve(b.tile.posx, b.tile.posy)
@@ -389,15 +390,16 @@ class Game:
                     self.communication.devolve(b.tile.posx, b.tile.posy)
                 self.population += diff
                 self.unemployed += diff
-            elif isinstance(b, New_House) and b.tile.owner == ME:
+            elif isinstance(b, New_House) and b.tile.owner is com.ME:
                 if self.map.entry_point is not None and b.migrate(self.map):
-                    self.communication.walker_spawn(map.entry_point.posx, map.entry_point.posy,
+                    self.communication.walker_spawn(self.map.entry_point.tile.posx,
+                                                    self.map.entry_point.tile.posy,
                                                     walker_type(Migrant))
                     self.add_to_walkers(b.migrant)
 
     def fill_market(self):
         for b in self.buildings:
-            if isinstance(b, Market) and b.tile.owner == ME:
+            if isinstance(b, Market) and b.tile.owner is com.ME:
                 buf = b.buyer
                 if b.fill(self.map):
                     self.add_to_walkers(b.buyer)
@@ -406,7 +408,7 @@ class Game:
 
     def trade_market(self):
         for b in self.buildings:
-            if isinstance(b, Market) and b.tile.owner == ME:
+            if isinstance(b, Market) and b.tile.owner is com.ME:
                 buf = b.trader
                 if b.trade(self.map):
                     self.add_to_walkers(b.trader)
@@ -415,7 +417,7 @@ class Game:
 
     def walk(self):
         for w in self.walkers:
-            if w.building.tile.owner != ME:
+            if w.building.tile.owner != com.ME:
                 continue
             res = w.walk(self.date)
             match res:
@@ -451,7 +453,7 @@ class Game:
 
     def engineer(self):
         for b in self.buildings:
-            if isinstance(b, Engineer_Post) and b.tile.owner == ME:
+            if isinstance(b, Engineer_Post) and b.tile.owner is com.ME:
                 buf = b.engineer
                 if b.engineer_do(self.map):
                     self.add_to_walkers(b.engineer)
@@ -460,7 +462,7 @@ class Game:
 
     def firefight(self):
         for b in self.buildings:
-            if isinstance(b, Prefecture) and b.tile.owner == ME:
+            if isinstance(b, Prefecture) and b.tile.owner is com.ME:
                 buf = b.prefect
                 if b.prefect_do(self.map):
                     self.add_to_walkers(b.prefect)
@@ -469,7 +471,7 @@ class Game:
 
     def collect_tax(self):
         for b in self.buildings:
-            if isinstance(b, Forum) and b.tile.owner == ME:
+            if isinstance(b, Forum) and b.tile.owner is com.ME:
                 buf = b.tax_collector
                 if b.collect(self.map):
                     self.add_to_walkers(b.tax_collector)

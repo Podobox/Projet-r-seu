@@ -1,11 +1,8 @@
 import pygame as pg
 from Controller.Communication import Communication
 
-# text to print
 FONT = pg.font.Font(None, 32)
 FONT2 = pg.font.Font(None, 28)
-
-
 class Chat:
 
     def __init__(self, window, window_width, window_height, communication):

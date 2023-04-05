@@ -27,6 +27,11 @@ class Map:
             string += "\n"
         return string
 
+    def take_all_ownership(self, player):
+        for c in self.grid:
+            for t in c:
+                t.owner = player
+
     def build(self, posx, posy, type):
         b = type(self.grid[posx][posy])
         startx = int(posx - b.sizex / 2) + 1 if posx - b.sizex / 2 > 0 else 0

@@ -18,11 +18,12 @@ class Tile():
         self.water_coverage = False
         self.posx = posx
         self.posy = posy
-        self.player = None
+        self.owner = None
 
     def __str__(self):
         ret = "("
         ret += str(self.building.__repr__()) if self.building is not None else str(self.type.name)
+        ret += f", {self.owner.id}"
         ret += f", {self.desirability}, {self.water_coverage})"
         return ret
 

@@ -27,6 +27,7 @@ class Granary(Building):
         if self.is_active() and not self.is_full():
             self.current_stock += 1
             print("stocking in granary")
+            self.communication.granary_stock(self.tile.posx, self.tile.posy)
             return True
         else:
             return False
@@ -35,6 +36,7 @@ class Granary(Building):
     def unstock(self):
         if self.is_active() and not self.is_empty():
             self.current_stock -= 1
+            self.communication.granary_unstock(self.tile.posx, self.tile.posy)
             print("unstocking in granary")
             return True
         else:

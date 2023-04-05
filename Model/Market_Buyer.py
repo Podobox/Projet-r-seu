@@ -16,6 +16,7 @@ class Market_Buyer(Destination_Walkers):
         self.market = market
         self.state = Market_Buyer_State.TO_MARKET
         self.granary = None
+        self.building = market
 
     def __repr__(self):
         return "Market_Buyer"

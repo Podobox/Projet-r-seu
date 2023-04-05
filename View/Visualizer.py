@@ -40,6 +40,7 @@ from Controller.Button import Button
 from View.FileMenu import FileMenu
 from View.SideMenu import Menu
 from View.Minimap import Minimap
+from View.Chat import Chat
 
 from Model.Tree import Tree
 from Model.Water import Water
@@ -91,7 +92,7 @@ class Visualizer:
 
     buildingMode = False
 
-    def __init__(self, list_button, game, backup):
+    def __init__(self, list_button, game, backup, communication):
         # Create pygame window
         self.game = game
         global WINDOW_HEIGHT, WINDOW_WIDTH
@@ -107,9 +108,10 @@ class Visualizer:
         self.images = {zoom: dict() for zoom in cellSizeDict}
         self.barre = Barre(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, False, self)
         # self.barre.barre_function()
-        self.fileMenu = FileMenu(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, backup, game)
+        self.fileMenu = FileMenu(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, backup, game, communication)
         #self.images = dict()
         self.minimap = Minimap(self.window, WINDOW_WIDTH, WINDOW_HEIGHT)
+        self.chat = Chat(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, communication)
         self.loadImages()
         return
 
@@ -143,7 +145,6 @@ class Visualizer:
                                     WINDOW_HEIGHT / 2 - WINDOW_WIDTH / 4 - (cellSize * MAP_DIM) / 2],
                                    MAP_DIM, cellSize)
 
-
         # Draw the game menu
         self.menu_displayed = False
         if not(self.menu_displayed):
@@ -159,12 +160,15 @@ class Visualizer:
         if self.MODE_FILE_MENU:
             self.list_button = (set(self.list_button) | set(self.fileMenu.display()))
 
-        self.minimap.display(map, self.deplacementX+self.tmpDeplacementX, self.deplacementY+self.tmpDeplacementY)
+        self.minimap.display(map, self.deplacementX + self.tmpDeplacementX,
+                             self.deplacementY + self.tmpDeplacementY)
         
+        self.chat.display(self.chat)
+
         # Draw game barre
         self.barre.barre_function(self.game.denarii, self.game.population, self.game.date)
         self.list_button = (set(self.list_button) | set([self.barre.fileButton]))
-        
+
         return self.list_button
 
     def update_walker(self, w, cellSize, tileDIM, origin):
@@ -576,8 +580,8 @@ class Visualizer:
                                 row, column, tileDIM, origin, imgName, imgCode, compenX, compenY)
                         else:
                             posd = {3: [0, -1],
-                                    2: [1, 0], 
-                                    1: [0, 1], 
+                                    2: [1, 0],
+                                    1: [0, 1],
                                     0: [-1, 0]}
                             posMark = []
                             for i in range(len(posd)):
@@ -1042,7 +1046,7 @@ class Visualizer:
                             compenX = cellSize
                             compenY = cellSize * 3 / 4
                             self.displayImage(row, column, tileDIM, origin,
-                                          imgName, imgCode, compenX, compenY)
+                                              imgName, imgCode, compenX, compenY)
                     case Sign():
                         imgName = 'Sign_'
                         if MAP.grid[column][row].building.type == Sign_Type.Enter:
@@ -1358,14 +1362,14 @@ class Visualizer:
         return
 
     def changeBuildingMode(self, buttonclicked=-1, pos=-1, finalpos=-1):
-        
+
         if buttonclicked == -1:
             self.buildingMode = False
             return
 
         correct_x = 0
         correct_y = 0
-        
+
         if buttonclicked.building == Forum:
             correct_x = -2
             correct_y = -1
@@ -1378,22 +1382,20 @@ class Visualizer:
         elif buttonclicked.building == Granary:
             correct_x = -2
             correct_y = 1
-        
-        
-        
-        
+
         if finalpos != -1:
             # faut rajouter dans buildingMode une position final puis on s'occupe du rest dans displayBuildingMode()
             obj = buttonclicked.obj
             pos = self.isoToCart(pos)
             finalpos = self.isoToCart(finalpos)
-            self.buildingMode = [buttonclicked.building, obj, (pos[0]+correct_x, pos[1]+correct_y), finalpos]
+            self.buildingMode = [buttonclicked.building, obj,
+                                 (pos[0] + correct_x, pos[1] + correct_y), finalpos]
             return
 
         obj = buttonclicked.obj
         pos = self.isoToCart(pos)
         # pos = self.cartToIso(pos)
-        self.buildingMode = [buttonclicked.building, obj, (pos[0]+correct_x, pos[1]+correct_y)]
+        self.buildingMode = [buttonclicked.building, obj, (pos[0] + correct_x, pos[1] + correct_y)]
         return
 
     def displayBuildingMode(self, MAP):
@@ -1402,20 +1404,18 @@ class Visualizer:
             init_pos = self.buildingMode[2]
             final_pos = self.buildingMode[3]
 
-            if self.buildingMode[0]==Senate or self.buildingMode[0]== Wheat_Farm :
+            if self.buildingMode[0] == Senate or self.buildingMode[0] == Wheat_Farm:
                 row = self.buildingMode[2][0]
                 column = self.buildingMode[2][1]
                 cellSize = cellSizeDict[self.zoom]
                 tileDIM = cellSize
                 origin = [self.GAME_HEIGHT / 2 + self.GAME_WIDTH / 4 -
-                        (cellSize * MAP_DIM) / 2, self.GAME_HEIGHT / 2 - self.GAME_WIDTH / 4 - (cellSize * MAP_DIM) / 2]
+                          (cellSize * MAP_DIM) / 2, self.GAME_HEIGHT / 2 - self.GAME_WIDTH / 4 - (cellSize * MAP_DIM) / 2]
 
                 settings = self.getSettingsBuilding(cellSize, row, column, MAP)
                 self.displayImage(row, column, tileDIM, origin,
-                                settings[0], settings[1], settings[2], settings[3], 128)
+                                  settings[0], settings[1], settings[2], settings[3], 128)
                 return
-
-
 
             if init_pos[0] <= final_pos[0]:
                 mini_x = init_pos[0]
@@ -1442,18 +1442,18 @@ class Visualizer:
                               self.GAME_HEIGHT / 2 - self.GAME_WIDTH / 4 - (cellSize * MAP_DIM) / 2]
                     settings = self.getSettingsBuilding(cellSize, row, column, MAP)
                     self.displayImage(row, column, tileDIM, origin,
-                                        settings[0], settings[1], settings[2], settings[3], 128)
-                    if self.buildingMode[0]==Market or self.buildingMode[0]==Forum:
+                                      settings[0], settings[1], settings[2], settings[3], 128)
+                    if self.buildingMode[0] == Market or self.buildingMode[0] == Forum:
                         mini_x += 2
-                    elif self.buildingMode[0]==Granary:
-                        mini_x +=3 
-                    else:    
-                        mini_x+=1
+                    elif self.buildingMode[0] == Granary:
+                        mini_x += 3
+                    else:
+                        mini_x += 1
                 mini_x = old_mini_x
-                if self.buildingMode[0]==Market or self.buildingMode[0]==Forum:
+                if self.buildingMode[0] == Market or self.buildingMode[0] == Forum:
                     mini_y += 2
-                elif self.buildingMode[0]== Granary:
-                     mini_y+=3
+                elif self.buildingMode[0] == Granary:
+                    mini_y += 3
                 else:
                     mini_y += 1
             return
@@ -1516,32 +1516,32 @@ class Visualizer:
             imgCode = '00001'
             compenX = cellSize * 2
             compenY = cellSize * 5 / 8
-        elif self.buildingMode[0]== Granary:
+        elif self.buildingMode[0] == Granary:
             imgName = 'GranaryBase'
             imgCode = '00001'
             compenX = 0
             compenY = cellSize / 2
-        elif self.buildingMode[0]== Well:
+        elif self.buildingMode[0] == Well:
             imgName = 'Well'
             imgCode = '00001'
             compenX = cellSize
             compenY = cellSize * 3 / 4
-        elif self.buildingMode[0]==Fountain:
+        elif self.buildingMode[0] == Fountain:
             imgName = 'Fountain'
             imgCode = '00001'
             compenX = cellSize * 31 / 32
             compenY = 0
-        elif self.buildingMode[0]== Senate:
+        elif self.buildingMode[0] == Senate:
             imgName = 'Senate'
             imgCode = '00001'
             compenX = cellSize
             compenY = 0
-        elif self.buildingMode[0]== Garden:
+        elif self.buildingMode[0] == Garden:
             imgName = 'Garden'
             imgCode = '00001'
             compenX = cellSize
             compenY = cellSize / 16
-        elif self.buildingMode[0]== Forum:
+        elif self.buildingMode[0] == Forum:
             imgName = 'Forum'
             imgCode = '00001'
             compenX = cellSize

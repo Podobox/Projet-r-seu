@@ -10,6 +10,7 @@ class Tax_Collector(Random_Walkers):
     def __init__(self, forum, spawn_road, map):
         super().__init__(43, 35, spawn_road, map)
         self.forum = forum
+        self.building = forum
 
     def __repr__(self):
         return "Tax_Collector"

@@ -17,6 +17,7 @@ class Farm_Boy(Destination_Walkers):
         self.farm = farm
         self.state = Farm_Boy_State.WAITING_FARM
         self.granary = None
+        self.building = farm
 
     def __repr__(self):
         return "Farm_Boy"

@@ -1,5 +1,6 @@
 import random
 
+from Model.Player import Player
 from Model.Grass import Grass
 from Model.Map import MAP_DIM
 from Model.Other_Rock import Other_Rock
@@ -28,9 +29,10 @@ from time import time_ns, sleep
 from Controller.Backup import Backup
 from Model.Destination_Walkers import Destination_Walkers
 from random import randint
-from Controller.Communication import Communication
+from Controller.Communication import Communication, MessageType
+import Controller.Communication as com
 
-FRAMES_PER_SECONDS = 7
+FRAMES_PER_SECONDS = 10
 TIME_NS_PER_FRAME = 1 / FRAMES_PER_SECONDS * 1e9
 
 
@@ -43,7 +45,7 @@ class Controller:
     final_pos = None
     ORIGIN_DECALAGE = (0, 0)
 
-    def __init__(self, name_save, game=None):
+    def __init__(self, name_save, game=None, players=None):
         # pg.init()
         self.list_button = []
         self.MODE_DECALAGE = False
@@ -52,10 +54,17 @@ class Controller:
         self.game = Game(100000) if game is None else game
         self.backup = Backup(name_save)
         self.communication = Communication()
-        self.visualizer = Visualizer(self.list_button, self.game, self.backup)
+        self.game.communication = self.communication
+        self.game.set_initial_map()
+        self.visualizer = Visualizer(self.list_button, self.game, self.backup, self.communication)
         self.building = False
         self.buttonclicked = None
         self.last_frame = time_ns()
+        self.player = Player()
+        self.players = players
+        com.ME = self.player
+        if self.players is None:
+            self.game.take_all_ownership(self.player)
 
         # Benchmarking
         # self.bench = 0
@@ -68,7 +77,9 @@ class Controller:
         for _ in range(5):
             self.game.increase_speed()
 
-        self.game.build(15, 15, Prefecture)
+        for x in range(MAP_DIM):
+            for y in range(MAP_DIM):
+                print(self.game.map.grid[x][y].owner)
 
         while True:
             self.game.advance_time()
@@ -93,7 +104,7 @@ class Controller:
             pg.display.update()
 
             # for message in self.communication.check_messages():
-            #     self.handle_message()
+                # self.handle_message(message)
 
             self.wait_next_frame()
 
@@ -102,9 +113,9 @@ class Controller:
         print(self.game)
         return
 
-    def handle_message(self):
-        # logic here, call functions from self.communication to actually send the answer
-        pass
+    def handle_message(self, message):
+        match MessageType(message[0]):
+            case MessageType.REQUIRE_OWNERSHIP: pass
 
     def wait_next_frame(self):
         time_now = time_ns()
@@ -114,9 +125,11 @@ class Controller:
         # self.bench = (sleep_time * 1e-9 + self.bench * self.bench_nb) \
             # / (self.bench_nb + 1)
         # instant_bench = ((TIME_NS_PER_FRAME - sleep_time) / TIME_NS_PER_FRAME * 100)
+
         # self.bench = (((TIME_NS_PER_FRAME - sleep_time) / TIME_NS_PER_FRAME * 100)
         # + self.bench * self.bench_nb) / (self.bench_nb + 1)
         # self.bench_nb += 1
+
         # print(self.bench)
         # print(instant_bench)
         # print(sleep_time * 1e-9)
@@ -132,7 +145,6 @@ class Controller:
         stop_time = time_ns() + delta_time
         for event in pg.event.get():
 
-
             if time_ns() >= stop_time:
                 return
             match event.type:
@@ -147,42 +159,44 @@ class Controller:
                 case pg.MOUSEBUTTONDOWN:
                     print("MouseButtonDown")
                     if event.button == pg.BUTTON_LEFT:
-                        print("Left button pressed at (x, y) = ", event.pos)
-                        
+                        # print("Left button pressed at (x, y) = ", event.pos)
+
                         print("self.building est a : ", self.building)
                         # ------------------------------------------------------------------------------------Faire en clique droit
                     elif event.button == pg.BUTTON_RIGHT:
-                        print("Right button pressed at (x, y) = ", event.pos)
+                        # print("Right button pressed at (x, y) = ", event.pos)
                         if event.pos[0] <= self.visualizer.GAME_WIDTH and event.pos[1] <= self.visualizer.GAME_HEIGHT:
                             self.MODE_DECALAGE = True
                             self.ORIGIN_DECALAGE = event.pos
-                    
+
                 case pg.MOUSEBUTTONUP:
-                        if event.button == pg.BUTTON_LEFT:
-                            if self.MODE_BUILD:
-                                # --------------------------------------Appeler la fonction pour ajouter en rectangle mode
-                                self.final_pos = event.pos
-                                self.buttonclicked.action(self.buttonclicked.building, self.init_pos, self.final_pos)
-                                self.MODE_BUILD = False
-                                self.building = False
-                                self.visualizer.changeBuildingMode()
-                                self.final_pos = None
-                            print("Left button released at (x, y) = ", event.pos)
-                        elif event.button == pg.BUTTON_RIGHT:
-                            print("Right button released at (x, y) = ", event.pos)
-                            if self.MODE_DECALAGE:
-                                self.MODE_DECALAGE = False
-                                mouse_pos = event.pos
-                                self.visualizer.tmpDeplacementX = mouse_pos[0] - self.ORIGIN_DECALAGE[0]
-                                self.visualizer.tmpDeplacementY = mouse_pos[1] - self.ORIGIN_DECALAGE[1]
-                                self.visualizer.deplacementX += self.visualizer.tmpDeplacementX
-                                self.visualizer.deplacementY += self.visualizer.tmpDeplacementY
-                                self.visualizer.tmpDeplacementX = 0
-                                self.visualizer.tmpDeplacementY = 0
+                    if event.button == pg.BUTTON_LEFT:
+                        if self.MODE_BUILD:
+                            # --------------------------------------Appeler la fonction pour ajouter en rectangle mode
+                            self.final_pos = event.pos
+                            self.buttonclicked.action(
+                                self.buttonclicked.building, self.init_pos, self.final_pos)
+                            self.MODE_BUILD = False
+                            self.building = False
+                            self.visualizer.changeBuildingMode()
+                            self.final_pos = None
+                        # print("Left button released at (x, y) = ", event.pos)
+                    elif event.button == pg.BUTTON_RIGHT:
+                        # print("Right button released at (x, y) = ", event.pos)
+                        if self.MODE_DECALAGE:
+                            self.MODE_DECALAGE = False
+                            mouse_pos = event.pos
+                            self.visualizer.tmpDeplacementX = mouse_pos[0] - self.ORIGIN_DECALAGE[0]
+                            self.visualizer.tmpDeplacementY = mouse_pos[1] - self.ORIGIN_DECALAGE[1]
+                            self.visualizer.deplacementX += self.visualizer.tmpDeplacementX
+                            self.visualizer.deplacementY += self.visualizer.tmpDeplacementY
+                            self.visualizer.tmpDeplacementX = 0
+                            self.visualizer.tmpDeplacementY = 0
                 case pg.MOUSEMOTION:
                     if event.type == pg.MOUSEMOTION:
                         if self.MODE_BUILD:
-                            self.visualizer.changeBuildingMode(self.buttonclicked, self.init_pos, event.pos)
+                            self.visualizer.changeBuildingMode(
+                                self.buttonclicked, self.init_pos, event.pos)
                         elif self.building:
                             self.visualizer.changeBuildingMode(self.buttonclicked, event.pos)
                             # print("position de la souris : ", event.pos)
@@ -192,67 +206,66 @@ class Controller:
                             self.visualizer.tmpDeplacementX = mouse_pos[0] - self.ORIGIN_DECALAGE[0]
                             self.visualizer.tmpDeplacementY = mouse_pos[1] - self.ORIGIN_DECALAGE[1]
                 case pg.MOUSEWHEEL:
-                        if not self.MODE_DECALAGE and event.y != 0:
-                            if event.y > 0:
-                                # zoom in
-                                new_zoom_percentage = max(cellSizeDict.keys())
-                                for zoom_percentage in cellSizeDict.keys():
-                                    if zoom_percentage > self.visualizer.zoom and zoom_percentage < new_zoom_percentage:
-                                        new_zoom_percentage = zoom_percentage
-                                if new_zoom_percentage != self.visualizer.zoom:
-                                    self.visualizer.deplacementX = self.visualizer.deplacementX * new_zoom_percentage / self.visualizer.zoom
-                                    self.visualizer.deplacementY = self.visualizer.deplacementY * new_zoom_percentage / self.visualizer.zoom
-                            else:
-                                # zoom out
-                                new_zoom_percentage = min(cellSizeDict.keys())
-                                for zoom_percentage in cellSizeDict.keys():
-                                    if zoom_percentage < self.visualizer.zoom and zoom_percentage > new_zoom_percentage:
-                                        new_zoom_percentage = zoom_percentage
-                                if new_zoom_percentage != self.visualizer.zoom:
-                                    # self.visualizer.deplacementX += self.visualizer.GAME_WIDTH / 4
-                                    # self.visualizer.deplacementY += self.visualizer.GAME_HEIGHT / 4
-                                    self.visualizer.deplacementX *= new_zoom_percentage
-                                    self.visualizer.deplacementY *= new_zoom_percentage
-                                    self.visualizer.deplacementX /= self.visualizer.zoom
-                                    self.visualizer.deplacementY /= self.visualizer.zoom
-                            self.visualizer.zoom = new_zoom_percentage
+                    if not self.MODE_DECALAGE and event.y != 0:
+                        if event.y > 0:
+                            # zoom in
+                            new_zoom_percentage = max(cellSizeDict.keys())
+                            for zoom_percentage in cellSizeDict.keys():
+                                if zoom_percentage > self.visualizer.zoom and zoom_percentage < new_zoom_percentage:
+                                    new_zoom_percentage = zoom_percentage
+                            if new_zoom_percentage != self.visualizer.zoom:
+                                self.visualizer.deplacementX = self.visualizer.deplacementX * new_zoom_percentage / self.visualizer.zoom
+                                self.visualizer.deplacementY = self.visualizer.deplacementY * new_zoom_percentage / self.visualizer.zoom
+                        else:
+                            # zoom out
+                            new_zoom_percentage = min(cellSizeDict.keys())
+                            for zoom_percentage in cellSizeDict.keys():
+                                if zoom_percentage < self.visualizer.zoom and zoom_percentage > new_zoom_percentage:
+                                    new_zoom_percentage = zoom_percentage
+                            if new_zoom_percentage != self.visualizer.zoom:
+                                # self.visualizer.deplacementX += self.visualizer.GAME_WIDTH / 4
+                                # self.visualizer.deplacementY += self.visualizer.GAME_HEIGHT / 4
+                                self.visualizer.deplacementX *= new_zoom_percentage
+                                self.visualizer.deplacementY *= new_zoom_percentage
+                                self.visualizer.deplacementX /= self.visualizer.zoom
+                                self.visualizer.deplacementY /= self.visualizer.zoom
+                        self.visualizer.zoom = new_zoom_percentage
                 case _:
-                        # print(pg.event.event_name(event.type), "occured")
-                        mouse_button_pressed = pg.mouse.get_pressed()
-                        left_button_pressed = mouse_button_pressed[0]
-                        right_button_pressed = mouse_button_pressed[2]
-                        mouse_pos = pg.mouse.get_pos()
-                        if right_button_pressed:
-                            if mouse_pos[0] <= self.visualizer.GAME_WIDTH and mouse_pos[1] <= self.visualizer.GAME_HEIGHT:
-                                self.MODE_DECALAGE = True
-                                self.ORIGIN_DECALAGE = mouse_pos
-                        if left_button_pressed:
-                            actionned = False
-                            if not(self.building):
-                                print("into not(self.building)")
-                                for button in self.list_button:
-                                    if button.listener_rect(mouse_pos):
-                                        print("button clicked")
-                                        self.buttonclicked = button
+                    # print(pg.event.event_name(event.type), "occured")
+                    mouse_button_pressed = pg.mouse.get_pressed()
+                    left_button_pressed = mouse_button_pressed[0]
+                    right_button_pressed = mouse_button_pressed[2]
+                    mouse_pos = pg.mouse.get_pos()
+                    if right_button_pressed:
+                        if mouse_pos[0] <= self.visualizer.GAME_WIDTH and mouse_pos[1] <= self.visualizer.GAME_HEIGHT:
+                            self.MODE_DECALAGE = True
+                            self.ORIGIN_DECALAGE = mouse_pos
+                    if left_button_pressed:
+                        actionned = False
+                        if not(self.building):
+                            # print("into not(self.building)")
+                            for button in self.list_button:
+                                if button.listener_rect(mouse_pos):
+                                    # print("button clicked")
+                                    self.buttonclicked = button
 
-                                        if self.buttonclicked.building != -1:
-                                            self.building = True
-                                        elif self.buttonclicked.overlay != -1:
-                                            self.buttonclicked.action(self.buttonclicked.overlay)
-                                        
-                                        elif self.buttonclicked.game != -1:
-                                            self.buttonclicked.action(self.buttonclicked.game)
-                                            
-                                        else:
-                                            self.buttonclicked.action()
-                                            actionned = True
+                                    if self.buttonclicked.building != -1:
+                                        self.building = True
+                                    elif self.buttonclicked.overlay != -1:
+                                        self.buttonclicked.action(self.buttonclicked.overlay)
 
-                                        break
-                            else:
-                                    self.init_pos = mouse_pos
-                                    self.MODE_BUILD = True
-                            
-                            if self.visualizer.MODE_FILE_MENU and not actionned:
-                                self.visualizer.MODE_FILE_MENU = False
-                        break
+                                    elif self.buttonclicked.game != -1:
+                                        self.buttonclicked.action(self.buttonclicked.game)
 
+                                    else:
+                                        self.buttonclicked.action()
+                                        actionned = True
+
+                                    break
+                        else:
+                            self.init_pos = mouse_pos
+                            self.MODE_BUILD = True
+
+                        if self.visualizer.MODE_FILE_MENU and not actionned:
+                            self.visualizer.MODE_FILE_MENU = False
+                    break

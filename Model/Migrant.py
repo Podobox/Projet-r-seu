@@ -9,6 +9,7 @@ class Migrant(Destination_Walkers):
         self.destination = (dest_house.tile.posx, dest_house.tile.posy)
         self.house = self.map.grid[self.destination[0]][self.destination[1]].building
         self.leaving = leaving
+        self.building = spawn
 
     def __repr__(self):
         return "Migrant"

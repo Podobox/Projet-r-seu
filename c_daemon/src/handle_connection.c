@@ -15,6 +15,7 @@ void add_connection(int socket, char* IP) {
         connection[i].used = 1;
         connection[i].socket = socket;
         connection[i].IP = strdup(IP);
+        existed_player++;
     } else {
         // The array is full, handle the error as needed.
     }

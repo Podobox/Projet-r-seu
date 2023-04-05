@@ -29,8 +29,15 @@ from time import time_ns, sleep
 from Controller.Backup import Backup
 from Model.Destination_Walkers import Destination_Walkers
 from random import randint
-from Controller.Communication import Communication, MessageType
+from Controller.Communication import Communication, MessageType, walker_type
 import Controller.Communication as com
+from Model.Farm_Boy import Farm_Boy_State, Farm_Boy
+from Model.Market_Buyer import Market_Buyer_State, Market_Buyer
+from Model.Market_Trader import Market_Trader
+from Model.Migrant import Migrant
+from Model.Engineer import Engineer
+from Model.Prefect import Prefect
+from Model.Tax_Collector import Tax_Collector
 
 FRAMES_PER_SECONDS = 10
 TIME_NS_PER_FRAME = 1 / FRAMES_PER_SECONDS * 1e9
@@ -112,16 +119,21 @@ class Controller:
     def handle_message(self, message):
         match MessageType(message[0]):
             case MessageType.REQUIRE_OWNERSHIP:
-                pass
+                if self.game.map.grid[message[1]][message[2]].owner == com.ME:
+                    self.game.map.grid[message[1]][message[2]] = None
+                    self.communication.give_ownership(message[1], message[2], message[3])
             case MessageType.GIVE_OWNERSHIP:
+                # not handled here
                 pass
             case MessageType.CONNECT:
                 pass
             case MessageType.DISCONNECT:
-                pass
+                # message sent only to me, i take all the tiles
+                self.game.map.grid[message[1]][message[2]].owner = com.ME
             case MessageType.ACCEPT_CONNECTION:
                 pass
             case MessageType.CHANGE_OWNERSHIP:
+                # not necessary
                 pass
             case MessageType.BUILD:
                 self.game.build(message[1], message[2], force=True)
@@ -152,23 +164,65 @@ class Controller:
                 self.game.map.grid[message[1]][message[2]].building.collapse_stage = \
                     message[3]
             case MessageType.WALKER_SPAWN:
-                pass
+                b = self.game.map.grid[message[1]][message[2]]
+                match walker_type(message[4]):
+                    case Engineer():
+                        b.engineer_do(self.game.map)
+                        self.game.walkers.append(b.engineer)
+                    case Farm_Boy():
+                        b.deliver(self.game.map)
+                        self.game.walkers.append(b.farm_boy)
+                    case Market_Buyer():
+                        b.fill(self.game.map)
+                        self.game.walkers.append(b.buyer)
+                    case Market_Trader():
+                        b.trade(self.game.map)
+                        self.game.walkers.append(b.trader)
+                    case Migrant():
+                        b.migrate(self.game.map)
+                        self.game.walkers.append(b.migrant)
+                    case Prefect():
+                        b.prefect_do(self.game.map)
+                        self.game.walkers.append(b.prefect)
+                    case Tax_Collector():
+                        b.collect(self.game.map)
+                        self.game.walkers.append(b.tax_collector)
             case MessageType.GRANARY_STOCK:
-                # stock dans le grenier
-                # changer la destination de la market_buyer
-                pass
+                # farm boy
+                fb = self.game.map.grid[message[1]][message[2]].building.farm_boy
+                fb.granary.stock()
+                fb.destination = (fb.spawn_road.tile.posx, fb.spawn_road.tile.posy)
+                fb.state = Farm_Boy_State.TO_FARM
             case MessageType.GRANARY_UNSTOCK:
-                pass
+                # market buyer
+                mb = self.game.map.grid[message[1]][message[2]].building.buyer
+                mb.granary.unstock()
+                mb.destination = (mb.spawn_road.tile.posx, mb.spawn_road.tile.posy)
+                mb.state = Market_Buyer_State.TO_MARKET
             case MessageType.COLLAPSE_STAGE_RESET:
                 self.game.map.grid[message[1]][message[2]].building.collapse_stage = 0
             case MessageType.BURN_STAGE_RESET:
                 self.game.map.grid[message[1]][message[2]].building.burn_stage = 0
             case MessageType.MARKET_STOCK:
-                pass
+                # market buyer
+                mb = self.game.map.grid[message[1]][message[2]].building.buyer
+                mb.market.stock()
+                if mb.granary.road_connection is None:
+                    mb.destination = (mb.granary.tile.posx, mb.granary.tile.posy)
+                else:
+                    mb.destination = (mb.granary.road_connection.tile.posx,
+                                      mb.granary.road_connection.tile.posy)
+                mb.state = Market_Buyer_State.TO_GRANARY
             case MessageType.MARKET_SELL:
-                pass
+                # market trader
+                mt = self.game.map.grid[message[1]][message[2]].building.trader
+                mt.market.sell(message[3])
             case MessageType.WALKER_DESTROY:
                 pass
+            case MessageType.HOUSE_FOOD_STOCK:
+                self.game.map.grid[message[1]][message[2]].food += message[3]
+            case MessageType.HOUSE_EAT:
+                self.game.map.grid[message[1]][message[2]].food -= message[3]
 
     def wait_next_frame(self):
         time_now = time_ns()
@@ -179,7 +233,7 @@ class Controller:
             # / (self.bench_nb + 1)
         # instant_bench = ((TIME_NS_PER_FRAME - sleep_time) / TIME_NS_PER_FRAME * 100)
         self.bench = (((TIME_NS_PER_FRAME - sleep_time) / TIME_NS_PER_FRAME * 100)
-        + self.bench * self.bench_nb) / (self.bench_nb + 1)
+                      + self.bench * self.bench_nb) / (self.bench_nb + 1)
         self.bench_nb += 1
         print(self.bench)
         # print(instant_bench)

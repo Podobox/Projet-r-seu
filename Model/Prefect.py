@@ -26,7 +26,7 @@ class Prefect(Random_Walkers):
     def __repr__(self):
         return "Prefect"
 
-    def find_destination(self):
+    def find_destination(self, action):
         if self.prefect_state == Prefect_State.RETURN:
             self.destination = (self.prefecture.tile.posx, self.prefecture.tile.posy)
         elif self.prefect_state == Prefect_State.ROAMING:
@@ -75,19 +75,21 @@ class Prefect(Random_Walkers):
                 self.prefect_state = Prefect_State.ROAMING
             pass
 
-    def walk(self, date):
+    def walk(self, date, action):
         if self.prefect_state == Prefect_State.RETURN:
-            self.action_while(date)
+            if action:
+                self.action_while(date)
             if self.walk_to_destination(date):
                 self.destination = None
                 self.direction = None
                 # self.state = Random_Walker_State.RANDOM
                 self.prefect_state = Prefect_State.ROAMING
                 # print("prefect going random")
-                if self.can_go_back():
-                    return Action.NONE
-                else:
-                    return Action.DESTROY_SELF
+                if action:
+                    if self.can_go_back():
+                        return Action.NONE
+                    else:
+                        return Action.DESTROY_SELF
         if self.prefect_state == Prefect_State.ROAMING:
             if self.date_last_frame is None:
                 self.date_last_frame = date
@@ -126,13 +128,16 @@ class Prefect(Random_Walkers):
                     self.prefect_state = Prefect_State.RETURN
 
             self.date_last_frame = date
-            return self.action_while(date)
+            if action:
+                return self.action_while(date)
         elif self.prefect_state == Prefect_State.GOING_TO_FIRE:
             if self.walk_to_destination(date):
                 self.prefect_state = Prefect_State.PUTING_OUT
-            self.action_while(date)
+            if action:
+                self.action_while(date)
         else:  # PUTING_OUT
-            self.action_while(date)
+            if action:
+                self.action_while(date)
             self.date_last_frame = date
 
     def can_go_back(self):

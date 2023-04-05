@@ -95,8 +95,10 @@ class House(Building):
 
     def eat(self):
         if self.level.value >= House_Level.Small_Shack.value and self.food > 0:
+            buf = self.food
             print(f"eating {self.population} from {self.food} stock")
             for _ in range(self.population):
                 self.food -= 1
             if self.food < 0:
                 self.food = 0
+            self.communication.house_eat(self.tile.posx, self.tile.posy, buf - self.food)

@@ -21,17 +21,19 @@ class Market_Buyer(Destination_Walkers):
     def __repr__(self):
         return "Market_Buyer"
 
-    def find_destination(self):
+    def find_destination(self, action):
         if self.state == Market_Buyer_State.TO_GRANARY:
-            if self.granary == \
+            if action and self.granary == \
                     self.map.grid[self.granary.tile.posx][self.granary.tile.posy].building:
                 if self.granary.unstock():
+                    self.granary.communication.granary_unstock(self.market.tile.posx,
+                                                               self.market.tile.posy)
                     self.destination = (self.spawn_road.tile.posx, self.spawn_road.tile.posy)
                     self.state = Market_Buyer_State.TO_MARKET
         else:  # TO_MARKET
             if not self.market.stock_greater_than(self.market.capacity - 100):
                 self.granary = self.map.find_closest(int(self.posx), int(self.posy), Granary)
-                if self.granary is not None:
+                if self.granary is not None and action:
                     if self.granary.road_connection is None:
                         self.destination = (self.granary.tile.posx, self.granary.tile.posy)
                     else:
@@ -39,6 +41,8 @@ class Market_Buyer(Destination_Walkers):
                                             self.granary.road_connection.tile.posy)
                     # cartload can't be refused because we left only when there was place
                     self.market.stock()
+                    self.market.communication.market_stock(self.market.tile.posx,
+                                                           self.market.tile.posy)
                     self.state = Market_Buyer_State.TO_GRANARY
 
     def action_post(self):

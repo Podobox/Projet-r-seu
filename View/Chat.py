@@ -73,26 +73,28 @@ class Chat:
 
     def check_input(self, now):
         for event in pg.event.get():
-            if event.type == pg.KEYDOWN:
-                if event.key == pg.K_BACKSPACE:
-                    self.input = self.input[:-1]
-                    self.chat = self.creation()
+                ### deselection the chat ###
+                # if (event.type == pg.K_ESCAPE):
+                #     running = False
+                #     pg.quit()
+                #     quit(0)
+                if event.type == pg.KEYDOWN:
+                    if event.key == pg.K_BACKSPACE:
+                        self.input = self.input[:-1]
+                        self.chat = self.creation()
 
-                elif event.key == pg.K_ESCAPE:
-                    self.is_selected = False
-
-                elif event.key == pg.K_RETURN and self.input:
-                    self.message = self.input
-                    self.input = ""
-                    self.chat = self.creation()
-
-                else:
-                    carac = event.dict['unicode']
-                    # don't input the key enter in carac
-                    if carac != '\r':
-                        self.input = self.input + carac
-
-                # self.new_input = True
+                    elif event.key == pg.K_RETURN and self.input:
+                        self.message = self.input
+                        self.input = ""
+                        self.chat = self.creation()
+                        
+                    else:
+                        carac = event.dict['unicode']
+                        # don't input the key enter in carac
+                        if carac != '\r':
+                            self.input = self.input + carac
+                    
+                    # self.new_input = True
 
     def display_message(self, now):
         if self.memory:

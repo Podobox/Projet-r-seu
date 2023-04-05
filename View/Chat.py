@@ -87,6 +87,7 @@ class Chat:
                 if event.type == pg.KEYDOWN:
                     if event.key == pg.K_BACKSPACE:
                         self.input = self.input[:-1]
+                        self.chat = self.creation()
 
                     elif event.key == pg.K_RETURN and self.input:
                         self.message = self.input

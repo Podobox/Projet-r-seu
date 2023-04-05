@@ -159,11 +159,11 @@ class Communication:
                               walker_type)
         self.send_message_from_py_to_c(message)
 
-    def ask_for_ownership(self, posx, posy, player, me):  # TODO in Model
-        message = struct.pack("iQQQQ", MessageType.REQUIRE_OWNERSHIP.value, posx, posy, player, 0)
+    def ask_for_ownership(self, posx, posy):  # TODO in Model
+        message = struct.pack("iQQQQ", MessageType.REQUIRE_OWNERSHIP.value, posx, posy, 0, 0)
         self.send_message_from_py_to_c(message)
         # wait for answer and return
-        message = struct.pack("iQQQQ", MessageType.CHANGE_OWNERSHIP.value, posx, posy, me, 0)
+        message = struct.pack("iQQQQ", MessageType.CHANGE_OWNERSHIP.value, posx, posy, ME, 0)
         self.send_message_from_py_to_c(message)
 
     def give_ownership(self, posx, posy):  # TODO in Model

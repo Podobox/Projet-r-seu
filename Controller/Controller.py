@@ -81,6 +81,13 @@ class Controller:
             for y in range(MAP_DIM):
                 print(self.game.map.grid[x][y].owner)
 
+        self.game.map.grid[9][9].owner = None
+        self.game.map.grid[8][9].owner = None
+        self.game.map.grid[9][8].owner = None
+        self.game.map.grid[7][9].owner = None
+        self.game.map.grid[9][7].owner = None
+
+
         while True:
             self.game.advance_time()
 

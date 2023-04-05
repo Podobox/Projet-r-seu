@@ -40,6 +40,7 @@ from Controller.Button import Button
 from View.FileMenu import FileMenu
 from View.SideMenu import Menu
 from View.Minimap import Minimap
+import Controller.Communication as com
 
 from Model.Tree import Tree
 from Model.Water import Water
@@ -90,8 +91,6 @@ class Visualizer:
     GAME_HEIGHT = WINDOW_HEIGHT
     zoom = DEFAULT_ZOOM
     MODE_FILE_MENU = False
-    owner = Player()
-    prop  = PropertyPossession(posx=0,posy=0, player=owner)
 
     buildingMode = False
 
@@ -127,7 +126,9 @@ class Visualizer:
                     size = cellSizeDict[zoom]
                     self.images[zoom][filename] = pg.transform.scale(
                         i, (i.get_width() * zoom / DEFAULT_ZOOM, i.get_height() * zoom / DEFAULT_ZOOM))
-
+    def is_owner(self,MAP, row, column):
+        return MAP.grid[row][column].owner == com.ME
+        
     def update(self, map, walkers):
         self.list_button = []
         # Edge of each cell of the grid is 20px in cartesian
@@ -375,13 +376,10 @@ class Visualizer:
         # overlap
         for row in range(MAP_DIM):
             for column in range(MAP_DIM):
-                
-                # if self.overlayType == 'Tile':
-                #         self.showPlayerCase(row, column,tileDIM, origin) 
-                        
+      
                 if MAP.is_type(column, row, Road):
                     if self.overlayType == 'Tile':
-                        self.showPlayerCase(row, column,tileDIM, origin) 
+                        self.showPlayerCase(MAP, row, column,tileDIM, origin) 
                     else:
     
                         roadType = 0
@@ -494,7 +492,7 @@ class Visualizer:
                             self.showDesirabilityLevel(
                                 row, column, tileDIM, origin, desirabilityLevel)
                         elif self.overlayType == 'Tile':
-                            self.showPlayerCase(row, column,tileDIM, origin) 
+                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
                        
                         else:
                             houseNames = {
@@ -559,7 +557,7 @@ class Visualizer:
                             self.showDesirabilityLevel(
                                 row, column, tileDIM, origin, desirabilityLevel)
                         elif self.overlayType == 'Tile':
-                            self.showPlayerCase(row, column,tileDIM, origin) 
+                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
                 
                         else:
                             imgName = 'NewHouse'
@@ -570,7 +568,7 @@ class Visualizer:
                                               imgName, imgCode, compenX, compenY)
                     case Water():
                         if self.overlayType == 'Tile':
-                            self.showPlayerCase(row, column,tileDIM, origin) 
+                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
                         else:
                             isSea = True
                             for dx in range(-1, 2, 1):
@@ -635,7 +633,7 @@ class Visualizer:
                                     row, column, tileDIM, origin, imgName, imgCode, compenX, compenY)
                     case Tree():
                         if self.overlayType == 'Tile':
-                            self.showPlayerCase(row, column,tileDIM, origin) 
+                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
                         else:
                             imgName = 'Land1a'
                             compenX = cellSize * \
@@ -648,7 +646,7 @@ class Visualizer:
                                 row, column, tileDIM, origin, imgName, imgCode, compenX, compenY)
                     case Rock():
                         if self.overlayType == 'Tile':
-                            self.showPlayerCase(row, column,tileDIM, origin) 
+                            self.showPlayerCase(MAP, row, column,tileDIM, origin) 
                         else:
                             imgName = 'Land1a'
                             compenX = cellSize * \
@@ -665,7 +663,7 @@ class Visualizer:
                                             imgName, imgCode, compenX, compenY)
                     case Other_Rock():
                         if self.overlayType == 'Tile':
-                            self.showPlayerCase(row, column,tileDIM, origin) 
+                            self.showPlayerCase(MAP, row, column,tileDIM, origin) 
                         else:
                             imgName = 'plateau'
                             compenX = cellSize * \
@@ -718,7 +716,7 @@ class Visualizer:
                             self.showDesirabilityLevel(
                                 row, column, tileDIM, origin, desirabilityLevel)
                         elif self.overlayType == 'Tile':
-                            self.showPlayerCase(row, column,tileDIM, origin) 
+                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
                         
                         else:
                             imgName = 'Prefecture'
@@ -754,7 +752,7 @@ class Visualizer:
                                           # imgName, imgCode, compenX, compenY)
                     case Collapsed():
                         if self.overlayType == 'Tile':
-                            self.showPlayerCase(row, column,tileDIM, origin) 
+                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
                         else:
                             imgName = 'Collapsed'
                             imgCode = '00001'
@@ -801,7 +799,7 @@ class Visualizer:
                             self.showDesirabilityLevel(
                                 row, column, tileDIM, origin, desirabilityLevel)
                         elif self.overlayType == 'Tile':
-                            self.showPlayerCase(
+                            self.showPlayerCase(MAP,
                                 row, column, tileDIM, origin,)
                         else:
                             imgName = 'EngineerPost'
@@ -868,7 +866,7 @@ class Visualizer:
                             self.showDesirabilityLevel(
                                 row, column, tileDIM, origin, desirabilityLevel)
                         elif self.overlayType == 'Tile':
-                            self.showPlayerCase(row, column,tileDIM, origin) 
+                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
                         elif MAP.grid[column][row].building.tile.posy == row and MAP.grid[column][row].building.tile.posx == column:
                             imgName = 'Farm'
                             imgCode = '00001'
@@ -946,7 +944,7 @@ class Visualizer:
                             self.showDesirabilityLevel(
                                 row, column, tileDIM, origin, desirabilityLevel)
                         elif self.overlayType == 'Tile':
-                            self.showPlayerCase(row, column,tileDIM, origin) 
+                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
                         elif MAP.grid[column][row].building.tile.posy == row and MAP.grid[column][row].building.tile.posx == column:
                             # print(row, column)
                             imgName = 'Market'
@@ -1005,7 +1003,7 @@ class Visualizer:
                             self.showDesirabilityLevel(
                                 row, column, tileDIM, origin, desirabilityLevel)
                         elif self.overlayType == 'Tile':
-                            self.showPlayerCase(row, column,tileDIM, origin) 
+                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
                         elif MAP.grid[column][row].building.tile.posy == row and MAP.grid[column][row].building.tile.posx == column:
                             imgName = 'GranaryBase'
                             imgCode = '00001'
@@ -1083,7 +1081,7 @@ class Visualizer:
                             self.showDesirabilityLevel(
                                 row, column, tileDIM, origin, desirabilityLevel)
                         if self.overlayType == 'Tile':
-                            self.showPlayerCase(row, column,tileDIM, origin) 
+                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
                         else:
                             imgName = 'Well'
                             imgCode = '00001'
@@ -1092,29 +1090,32 @@ class Visualizer:
                             self.displayImage(row, column, tileDIM, origin,
                                               imgName, imgCode, compenX, compenY)
                     case Sign():
-                        imgName = 'Sign_'
-                        if MAP.grid[column][row].building.type == Sign_Type.Enter:
-                            imgName += 'Enter'
+                        if self.overlayType == 'Tile':
+                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
                         else:
-                            imgName += 'Exit'
-                        imgCode = 'se'
-                        compenX = cellSize * 31 / 32
-                        compenY = cellSize * 5 / 8
-                        self.displayImage(row, column, tileDIM, origin,
-                                          imgName, imgCode, compenX, compenY)
+                            imgName = 'Sign_'
+                            if MAP.grid[column][row].building.type == Sign_Type.Enter:
+                                imgName += 'Enter'
+                            else:
+                                imgName += 'Exit'
+                            imgCode = 'se'
+                            compenX = cellSize * 31 / 32
+                            compenY = cellSize * 5 / 8
+                            self.displayImage(row, column, tileDIM, origin,
+                                            imgName, imgCode, compenX, compenY)
                     case None:
                         match MAP.grid[column][row].type:
                             case Tile_Type.Water:  
                                 if self.overlayType == 'Tile':
-                                    self.showPlayerCase(row, column,tileDIM, origin) 
+                                    self.showPlayerCase(MAP,row, column,tileDIM, origin) 
                                 else:pass
                             case Tile_Type.Mountain:
                                 if self.overlayType == 'Tile':
-                                    self.showPlayerCase(row, column,tileDIM, origin) 
+                                    self.showPlayerCase(MAP,row, column,tileDIM, origin) 
                                 else:pass
                             case Tile_Type.Field:
                                 if self.overlayType == 'Tile':
-                                    self.showPlayerCase(row, column,tileDIM, origin) 
+                                    self.showPlayerCase(MAP,row, column,tileDIM, origin) 
                                 else:
                                     imgName = 'Field'
                                     imgCode = '00001'
@@ -1124,13 +1125,13 @@ class Visualizer:
                                                         imgName, imgCode, compenX, compenY)
                             case Tile_Type.Grass:
                                 if self.overlayType == 'Tile':
-                                    self.showPlayerCase(row, column,tileDIM, origin) 
+                                    self.showPlayerCase(MAP,row, column,tileDIM, origin) 
                                 else:
                                     imgName = 'Grass'
                                     imgCode = '00010'
                                     compenX = cellSize
                                     compenY = 0
-                                    self.displayImage(row, column, tileDIM, origin,
+                                    self.displayImage(MAP,row, column, tileDIM, origin,
                                                     imgName, imgCode, compenX, compenY)
                     case Senate():
                         if MAP.grid[column][row].building.burning:
@@ -1182,7 +1183,7 @@ class Visualizer:
                             self.showDesirabilityLevel(
                                 row, column, tileDIM, origin, desirabilityLevel)
                         elif self.overlayType == 'Tile':
-                                    self.showPlayerCase(row, column,tileDIM, origin) 
+                                    self.showPlayerCase(MAP,row, column,tileDIM, origin) 
                         elif MAP.grid[column][row].building.tile.posy == row and MAP.grid[column][row].building.tile.posx == column:
                             imgName = 'Senate'
                             imgCode = '00001'
@@ -1238,7 +1239,7 @@ class Visualizer:
                             self.showWaterCoverage(
                                 row, column, tileDIM, origin, posType, covered)
                         elif self.overlayType == 'Tile':
-                            self.showPlayerCase(row, column,tileDIM, origin) 
+                            self.showPlayerCase(MAP, row, column,tileDIM, origin) 
                         else:
                             imgName = 'Garden'
                             imgCode = '00001'
@@ -1296,7 +1297,7 @@ class Visualizer:
                             self.showDesirabilityLevel(
                                 row, column, tileDIM, origin, desirabilityLevel)
                         elif self.overlayType == 'Tile':
-                            self.showPlayerCase(row, column,tileDIM, origin) 
+                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
                         elif MAP.grid[column][row].building.tile.posy == row and MAP.grid[column][row].building.tile.posx == column:
                             imgName = 'Forum'
                             imgCode = '00001'
@@ -1343,7 +1344,7 @@ class Visualizer:
                             self.showBurnCollapseRisk(
                                 row, column, tileDIM, origin, posType, riskLevel)
                         elif self.overlayType == 'Tile':
-                            self.showPlayerCase(row, column,tileDIM, origin) 
+                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
                         else:
                             imgName = 'Fountain'
                             imgCode = '00001'
@@ -1653,9 +1654,15 @@ class Visualizer:
             compenY = 0
             self.displayImage(row, column, tileDIM, origin,
                               imgName, imgCode, compenX, compenY)
-    def showPlayerCase(self, row, column, tileDIM, origin):
-        if not self.prop.is_owner(row, column, self.owner.name):
+    def showPlayerCase(self,MAP, row, column, tileDIM, origin):
+        if  self.is_owner( MAP,row, column):
             imgName = 'player_case'
+            compenX = tileDIM
+            compenY = 0
+            imgCode =''
+            self.displayImage(row, column, tileDIM, origin, imgName,imgCode, compenX, compenY)
+        else:
+            imgName = 'other_player_case'
             compenX = tileDIM
             compenY = 0
             imgCode =''

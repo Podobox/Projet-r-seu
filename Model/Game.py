@@ -37,9 +37,7 @@ from random import seed, randint
 from datetime import datetime, timedelta
 from Controller.Communication import walker_type
 import Controller.Communication as com
-
-from Controller.property_possession import Property_possession
-
+from Controller.property_possession import PropertyPossession
 from Model.Player import Player
 
 TIME_PER_FRAME = 10
@@ -54,8 +52,6 @@ def building_type(b):
 class Game:
 
     def __init__(self, denarii):
-        self.owner = Player()
-        self.prop  = PropertyPossession(posx=0,posy=0, player=self.owner)
         self.map = Map()
         self.denarii = denarii
         self.population = 0
@@ -80,6 +76,7 @@ class Game:
         return string
 
     def set_initial_map(self):
+        self.prop  = PropertyPossession(self.communication , self.map)
         for y in range(0, MAP_DIM - MAP_DIM // 5):
             for x in range(y // 2):
                 self.build(x, y, Water)
@@ -133,7 +130,7 @@ class Game:
         self.map.exit_point = building
 
     def build(self, posx, posy, type):
-        # only happen when adding buildings
+            # only happen when adding buildings
         assert type in building_data, "type to build not in 'model_data'"
 
         # check emptiness of the tile
@@ -146,54 +143,61 @@ class Game:
             for y in range(starty, endy):
                 if not self.map.is_type(x, y, None):
                     return
+        if self.map.grid[posx][posy].owner is not com.ME:
+            print("you're not owner")
+            self.prop.modify_property(posx, posy)
 
-        if type in (Engineer_Post, Forum, Fountain, Garden, Granary, Market, New_House,
-                    Prefecture, Road, Senate, Well, Sign)\
-                and self.map.grid[posx][posy].type not in (Tile_Type.Field, Tile_Type.Grass):
-            return
+        if self.map.grid[posx][posy].owner is  com.ME:
 
-        if type in (Wheat_Farm,) and self.map.grid[posx][posy].type not in (Tile_Type.Field,):
-            return
 
-        if not self.pay(building_data[type].price):
-            return
-        if not self.prop.modify_property(tile=self.map.grid[posx][posy],player=None):
-            pass
+            if type in (Engineer_Post, Forum, Fountain, Garden, Granary, Market, New_House,
+                        Prefecture, Road, Senate, Well, Sign)\
+                    and self.map.grid[posx][posy].type not in (Tile_Type.Field, Tile_Type.Grass):
+                return
 
-        self.map.build(posx, posy, type)
-        # print(self.map)
+            if type in (Wheat_Farm,) and self.map.grid[posx][posy].type not in (Tile_Type.Field,):
+                return
 
-        building = self.map.grid[posx][posy].building
-        building.communication = self.communication
+            if not self.pay(building_data[type].price):
+                return
+            # if not self.prop.modify_property(tile=self.map.grid[posx][posy],player=None):
+            #     pass
 
-        if type == House:
-            additional_population = building.population
-            self.population += additional_population
-            self.unemployed += additional_population
+            self.map.build(posx, posy, type)
+            # print(self.map)
 
-        if type == Road:
-            # check every building for road connection
-            self.road_connect()
+            building = self.map.grid[posx][posy].building
+            building.communication = self.communication
 
-        else:
-            # only check for the new building because it doesn't impact the others
-            self.road_connect([building])
+            if type == House:
+                additional_population = building.population
+                self.population += additional_population
+                self.unemployed += additional_population
 
-        if type not in (Water, Tree, Rock, Other_Rock, Sign):
-            self.communication.build(posx, posy, building_type(type))
+            if type == Road:
+                # check every building for road connection
+                self.road_connect()
 
-        self.buildings.append(building)
-        # else:
-        #     self.prop.modify_property(posx, posy, player=self.owner.name)
-        #     print("property changed")
+            else:
+                # only check for the new building because it doesn't impact the others
+                self.road_connect([building])
+
+            if type not in (Water, Tree, Rock, Other_Rock, Sign):
+                self.communication.build(posx, posy, building_type(type))
+
+            self.buildings.append(building)
+    
     def destroy(self, posx, posy):
-        building = self.map.grid[posx][posy].building
-        if building is None:
-            return
-        if not self.prop.is_owner(posx, posy, player=self.owner.name):
-            print("you're not owner ")
-            self.prop.modify_property(posx, posy, player=self.owner.name)
-        else :
+
+
+        if self.map.grid[posx][posy].owner is not com.ME:
+            print("you're not owner")
+            self.prop.modify_property(posx, posy)
+
+        if self.map.grid[posx][posy].owner is  com.ME:
+            building = self.map.grid[posx][posy].building
+            if building is None:
+                return
             if isinstance(building, Sign):
                 return
 
@@ -230,15 +234,20 @@ class Game:
 
             self.map.destroy(posx, posy)
 
-        self.map.destroy(posx, posy)
+            if building_type == Road:
+                self.road_connect()
+                # for w in self.workers:
+                    # if w.spawn_road == building:
+                        # # TODO respawn a new one because his spawn point (=end point)
+                        # # got destroyed
+                       # pass
 
-        if building_type == Road:
-            self.road_connect()
 
-        self.communication.destroy(posx, posy)
-
+           
+        
 
     def job_hunt(self):
+        
         if self.unemployed < 0:
             # a house got destroyed and its inhabitant were working, we need to
             # remove them inhabitants from where they were working

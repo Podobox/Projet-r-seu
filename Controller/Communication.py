@@ -1,5 +1,6 @@
 import os
 import socket
+import subprocess
 from enum import Enum
 from Model.Player import Player
 from Model.Engineer import Engineer
@@ -78,10 +79,7 @@ class Communication:
 
     def send_message_from_py_to_c(self, message):
         # send the actions from python to c
-        self.message_queue.send(message, type=PY_TO_C)
-        # return the message that was sent
-        return message  
-        
+        self.message_queue.send(message, type=PY_TO_C) 
 
     def walker_destroy(self, posx, posy, walker_type):
         message = struct.pack("iQQQQ", MessageType.WALKER_DESTROY.value, posx, posy, 0, walker_type)
@@ -187,17 +185,31 @@ class Communication:
         try:
             message = struct.pack("i4sIQQ", MessageType.CONNECT.value, socket.inet_aton(ip), int(port), 0, 0)
         except struct.error as e:
-            raise ValueError(f"Error packing message: {e}")
+            raise ValueError(f"Error packing message: {e}")  
+        
+        # Check if c_daemon is already running
+        process = subprocess.Popen(['pgrep', 'c_daemon'], stdout=subprocess.PIPE)
+        output, _ = process.communicate()
+        if output:
+            # c_daemon is already running
+            print("c_daemon is already running")
+        else:
+            # c_daemon is not running, start it
+            print("Starting c_daemon")
+            subprocess.Popen([os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'c_daemon', 'bin', 'c_daemon'))])
 
         self.send_message_from_py_to_c(message)
+
 
         # wait for response from c daemon and unpack the game and player information
         response, _ = self.message_queue.receive(type=C_TO_PY)
         game, players = struct.unpack("iQ", response)
+        print(game, players)
 
         return game, players
    
-        # return the game it is connected to and its players # pass
+        # return the game it is connected to and its players 
+        # pass
 
     def disconnect(self):
         message = struct.pack("iQQQQ", MessageType.DISCONNECT.value, 0, 0, 0, 0)

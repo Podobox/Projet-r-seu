@@ -1,8 +1,12 @@
 import pygame as pg
 from Controller.Communication import Communication
 
+# text to print
 FONT = pg.font.Font(None, 32)
 FONT2 = pg.font.Font(None, 28)
+
+
+
 class Chat:
 
     def __init__(self, window, window_width, window_height, communication):
@@ -18,12 +22,23 @@ class Chat:
         self.memory = []
         # boolean to know when refresh screen
         self.new_input = True
-
+        self.is_selected = False
         self.communication = communication
         self.chat = self.creation()
-    
+        self.chat_selected = self.creation_selected()
+
     def update(self, now):
-        self.check_input(now)
+        mouse_pos = pg.mouse.get_pos()
+        mouse_button_pressed = pg.mouse.get_pressed()
+
+        if mouse_button_pressed[0]:
+            if (self.chat_posx <= mouse_pos[0] <= self.chat_posx + self.chat.get_width()) and (
+                self.chat_posy <= mouse_pos[1] <= self.chat_posy + self.chat.get_height()):
+                self.is_selected = True
+            else:
+                self.is_selected = False
+        if self.is_selected:
+            self.check_input(now)
         # if a message is sent, send it in peer to everyone and add it in memory
         if self.message:
             # self.communication.send(self.message)   
@@ -41,6 +56,8 @@ class Chat:
         chat.update(now)
         self.display_message(now)
         self.display_input()
+        if self.is_selected:
+            self.window.blit(self.chat_selected, (self.chat_posx - 4, self.chat_posy -2))
         self.window.blit(self.chat, (self.chat_posx, self.chat_posy))
 
 
@@ -53,6 +70,11 @@ class Chat:
         coordinate = text_surface.get_rect(center=c.get_rect().center)
         coordinate.x -= 115
         c.blit(text_surface, coordinate)
+        return c
+    
+    def creation_selected(self):
+        c = pg.Surface((self.width+8, self.height+4))
+        c.fill((180, 200, 200))
         return c
     
     def check_input(self, now):

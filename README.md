@@ -35,3 +35,9 @@ Répartition:
     - 1 sur le daemon en C (2?)
     - 1 sur la communication C/python (socket)
     - 2 sur le python
+
+ca sert a rien d'avoir un champ `owner` pour chaque tile vu qu'on a juste besoin de savoir
+si c'est nous ou pas, c'est un booleen pas un id ou quoi. De toute facon on broadcast la
+demande de propriété
+
+Pareil, le message CHANGE_OWNERSHIP ne sert a rien

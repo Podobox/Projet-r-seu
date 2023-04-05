@@ -47,6 +47,9 @@ class Controller:
 
     def __init__(self, name_save, game=None, players=None):
         # pg.init()
+        self.player = Player()
+        self.players = players
+        com.ME = self.player
         self.list_button = []
         self.MODE_DECALAGE = False
         self.ORIGIN_DECALAGE = (0, 0)
@@ -55,20 +58,17 @@ class Controller:
         self.backup = Backup(name_save)
         self.communication = Communication()
         self.game.communication = self.communication
+        if players is None:
+            self.game.take_all_ownership(self.player)
         self.game.set_initial_map()
         self.visualizer = Visualizer(self.list_button, self.game, self.backup, self.communication)
         self.building = False
         self.buttonclicked = None
         self.last_frame = time_ns()
-        self.player = Player()
-        self.players = players
-        com.ME = self.player
-        if self.players is None:
-            self.game.take_all_ownership(self.player)
 
         # Benchmarking
-        # self.bench = 0
-        # self.bench_nb = 0
+        self.bench = 0
+        self.bench_nb = 0
         self.run()
 
     def run(self):
@@ -76,10 +76,6 @@ class Controller:
         # d = Destination_Walkers(self.game.map, self.game.map.grid[1][1].building)
         for _ in range(5):
             self.game.increase_speed()
-
-        for x in range(MAP_DIM):
-            for y in range(MAP_DIM):
-                print(self.game.map.grid[x][y].owner)
 
         while True:
             self.game.advance_time()
@@ -103,8 +99,8 @@ class Controller:
 
             pg.display.update()
 
-            # for message in self.communication.check_messages():
-                # self.handle_message(message)
+            for message in self.communication.check_messages():
+                self.handle_message(message)
 
             self.wait_next_frame()
 
@@ -115,7 +111,64 @@ class Controller:
 
     def handle_message(self, message):
         match MessageType(message[0]):
-            case MessageType.REQUIRE_OWNERSHIP: pass
+            case MessageType.REQUIRE_OWNERSHIP:
+                pass
+            case MessageType.GIVE_OWNERSHIP:
+                pass
+            case MessageType.CONNECT:
+                pass
+            case MessageType.DISCONNECT:
+                pass
+            case MessageType.ACCEPT_CONNECTION:
+                pass
+            case MessageType.CHANGE_OWNERSHIP:
+                pass
+            case MessageType.BUILD:
+                self.game.build(message[1], message[2], force=True)
+            case MessageType.DESTROY:
+                self.game.destroy(message[1], message[2], force=True)
+            case MessageType.CATCH_FIRE:
+                self.game.map.grid[message[1]][message[2]].building.catch_fire(
+                    self.game.date, com=False)
+            case MessageType.PUT_OUT_FIRE:
+                self.game.map.grid[message[1]][message[2]].building.put_out_fire(
+                    self.game.date, com=False)
+            case MessageType.EVOLVE:
+                self.game.map.grid[message[1]][message[2]].building.evolve()
+            case MessageType.DEVOLVE:
+                self.game.map.grid[message[1]][message[2]].building.devolve()
+            case MessageType.MOVE_WALKER:
+                pass
+            case MessageType.REQUIRE_MONEY_OWNERSHIP:
+                pass
+            case MessageType.REQUIRE_POPULATION_OWNERSHIP:
+                pass
+            case MessageType.BURN_STAGE_INCREASE:
+                # message is (posx, posy, burn_stage)
+                self.game.map.grid[message[1]][message[2]].building.burn_stage = \
+                    message[3]
+            case MessageType.COLLAPSE_STAGE_INCREASE:
+                # message is (posx, posy, collapse_stage)
+                self.game.map.grid[message[1]][message[2]].building.collapse_stage = \
+                    message[3]
+            case MessageType.WALKER_SPAWN:
+                pass
+            case MessageType.GRANARY_STOCK:
+                # stock dans le grenier
+                # changer la destination de la market_buyer
+                pass
+            case MessageType.GRANARY_UNSTOCK:
+                pass
+            case MessageType.COLLAPSE_STAGE_RESET:
+                self.game.map.grid[message[1]][message[2]].building.collapse_stage = 0
+            case MessageType.BURN_STAGE_RESET:
+                self.game.map.grid[message[1]][message[2]].building.burn_stage = 0
+            case MessageType.MARKET_STOCK:
+                pass
+            case MessageType.MARKET_SELL:
+                pass
+            case MessageType.WALKER_DESTROY:
+                pass
 
     def wait_next_frame(self):
         time_now = time_ns()
@@ -125,10 +178,10 @@ class Controller:
         # self.bench = (sleep_time * 1e-9 + self.bench * self.bench_nb) \
             # / (self.bench_nb + 1)
         # instant_bench = ((TIME_NS_PER_FRAME - sleep_time) / TIME_NS_PER_FRAME * 100)
-        # self.bench = (((TIME_NS_PER_FRAME - sleep_time) / TIME_NS_PER_FRAME * 100)
-        # + self.bench * self.bench_nb) / (self.bench_nb + 1)
-        # self.bench_nb += 1
-        # print(self.bench)
+        self.bench = (((TIME_NS_PER_FRAME - sleep_time) / TIME_NS_PER_FRAME * 100)
+        + self.bench * self.bench_nb) / (self.bench_nb + 1)
+        self.bench_nb += 1
+        print(self.bench)
         # print(instant_bench)
         # print(sleep_time * 1e-9)
         # sleep(sleep_time * 1e-9)

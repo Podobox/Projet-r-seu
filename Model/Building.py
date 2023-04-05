@@ -64,20 +64,25 @@ class Building:
                                                        self.burn_stage)
 
             if self.burn_stage > STAGES_BEFORE_BURN:
-                self.burning = True
-                self.burning_start = time
-                self.communication.catch_fire(self.tile.posx, self.tile.posy)
+                self.catch_fire(time)
         else:
             if time - self.burning_start > timedelta(hours=BURNING_TIME_BEFORE_COLLAPSE):
                 return True
 
         return False
 
-    def put_out_fire(self):
+    def catch_fire(self, time, com=True):
+        self.burning = True
+        self.burning_start = time
+        if com:
+            self.communication.catch_fire(self.tile.posx, self.tile.posy)
+
+    def put_out_fire(self, com=True):
         self.burning = False
         self.burning_start = None
         self.burn_stage = 0
-        self.communication.put_out_fire(self.tile.posx, self.tile.posy)
+        if com:
+            self.communication.put_out_fire(self.tile.posx, self.tile.posy)
 
     # return True if collapsing, else False
     def collapse(self, multiplier):

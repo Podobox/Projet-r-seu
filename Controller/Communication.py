@@ -1,4 +1,5 @@
 import os
+import socket
 from enum import Enum
 from Model.Player import Player
 from Model.Engineer import Engineer
@@ -28,6 +29,8 @@ def walker_type(w):
 
 KEY = 1234
 PY_TO_C = 3
+C_TO_PY = 99
+
 
 class MessageType(Enum):
     REQUIRE_OWNERSHIP = 1
@@ -76,6 +79,9 @@ class Communication:
     def send_message_from_py_to_c(self, message):
         # send the actions from python to c
         self.message_queue.send(message, type=PY_TO_C)
+        # return the message that was sent
+        return message  
+        
 
     def walker_destroy(self, posx, posy, walker_type):
         message = struct.pack("iQQQQ", MessageType.WALKER_DESTROY.value, posx, posy, 0, walker_type)
@@ -178,11 +184,20 @@ class Communication:
         return
 
     def connect(self, ip, port):
-        message = struct.pack("iQQQQ", MessageType.CONNECT.value, ip, port, 0, 0)
+        try:
+            message = struct.pack("i4sIQQ", MessageType.CONNECT.value, socket.inet_aton(ip), int(port), 0, 0)
+        except struct.error as e:
+            raise ValueError(f"Error packing message: {e}")
+
         self.send_message_from_py_to_c(message)
 
-        # return the game it is connected to and its players
-        pass
+        # wait for response from c daemon and unpack the game and player information
+        response, _ = self.message_queue.receive(type=C_TO_PY)
+        game, players = struct.unpack("iQ", response)
+
+        return game, players
+   
+        # return the game it is connected to and its players # pass
 
     def disconnect(self):
         message = struct.pack("iQQQQ", MessageType.DISCONNECT.value, 0, 0, 0, 0)

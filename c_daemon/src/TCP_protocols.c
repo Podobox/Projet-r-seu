@@ -30,6 +30,7 @@ int connect_existed_players(int index) {
 
     // save player socket
     connection[index].socket = sock;
+    
 
     return 0;
 }

@@ -8,8 +8,11 @@ int maxfd;
 int res;
 int listenfd = 0;
 int existed_player = 0;
+int ind1;
 // int player_socket[PLAYER_MAX] = {0};
 // char *existed_player_IP[PLAYER_MAX] = {NULL};
+
+// envoyer la connection de python vers c = struct 3
 
 network_info connection[PLAYER_MAX] = {0};
 
@@ -40,9 +43,11 @@ int main(int argc, char **argv) {
         // connect to starting IP
         PORT = ((argc > 2) ? (uint16_t)atoi(argv[2]) : PORT);
         existed_player++;
+
         // printf("%d %s\n", PORT, existed_player_IP[0]);
         for (int index = 0; index < PLAYER_MAX; index++) {
             if (!connection[index].used) {
+                ind1 = index;
                 connection[index].IP = argv[1];
                 if ((res = connect_existed_players(index))) {
                     fprintf(stderr, "Error number %d connecting to player #%d\n", res, index);
@@ -52,9 +57,9 @@ int main(int argc, char **argv) {
         }
 
         // get list of other IP addresses
-
-        // for each connected IP, create socket, initialise addr_in
-        // and connect to them and save their socket
+        if (write(connection[ind1].socket, "/ip_demande", strlen("/ip_demande") + 1) < 0){
+            stop("cannot demande ip table");
+        }
     }
 
     print_connections();
@@ -75,6 +80,7 @@ int main(int argc, char **argv) {
             }
         }
 
+        // ajoute le timeout !!!
         // select
         if ((res = select(maxfd + 1, &readfds, NULL, NULL, NULL)) < 0 && errno != EINTR) {
             stop("Select error");
@@ -100,6 +106,7 @@ int main(int argc, char **argv) {
 
                 // save their socket fd
                 add_connection(res, newClientIP);
+                
                 print_connections();
             } else {
                 printf("Unable to retrieve the IP address of the new client\n");
@@ -142,20 +149,68 @@ int main(int argc, char **argv) {
                     } else if (charcnt < 0) {
                         stop("Error reading message");
                     }
+
                     // receive data from other
                     else {
-                        printf("IP:%s socket:%d buffer:%s\n", connection[index].IP, connection[index].socket, buffer);
+
+                        //print received message
+                        printf("Received from IP:%s socket:%d buffer:%s\n", connection[index].IP, connection[index].socket, buffer);
 
                         // new player ask the list of player in the game
                         if (!strcmp(buffer, "/ip_demande")) {
+                            printf("IN IP DEMANDE\n");
+
+                            sprintf(buffer, "/ip_response");
+
+                            // just to test
+                            sprintf(buffer, "%s %s", buffer, "192.168.71.2");
+                            sprintf(buffer, "%s %s", buffer, "192.168.71.2");
+
+
+
+                            for(int ind=0; ind < PLAYER_MAX; ind++){
+                                if(connection[ind].used && strcmp(connection[ind].IP, ip_host) && ind != index){
+                                    sprintf(buffer, "%s %s", buffer, connection[ind].IP);
+                                }
+                            }
+                            if (write(connection[index].socket, buffer, strlen(buffer) + 1) < 0) {
+                                fprintf(stderr, "Cannot send /ip_response message to player #%d\n", index);
+                            }
                         }
 
                         // new player receive the list of player in the game, they try co connect to all of them
-                        if (!strcmp(buffer, "/ip_response")) {
+                        else if (strcmp(buffer, "/ip_response")) {
+                            printf("IN IP RESPONSE\n");
+
+
+                            //separate the @IP from ip_response
+                            char *get_ip_buffer = strtok(buffer, " ");
+                            char *get_ip_player = strtok(NULL, " ");
+
+                            while(get_ip_player != '\0') {
+                                fprintf(stderr, "get_ip_player NOT NULL %s\n", get_ip_player);
+
+                                for (int ind = 0; ind < PLAYER_MAX; ind++) {
+                                    if (!connection[ind].used) {
+                                        connection[ind].IP = get_ip_player;
+                                        if ((res = connect_existed_players(ind))) {
+                                            fprintf(stderr, "Error number %d connecting to player #%d\n", res, index);
+                                        }   
+                                    }
+                                    break;
+                                }
+                                get_ip_player = strtok(NULL, " ");    
+                            }
+
+                            fprintf(stderr, "get_ip_player NULL %s\n", get_ip_player);
+
+                        }
+                        else {
+                            printf("OTHER MESSAGE\n");
+
                         }
                     }
-                    {
-                    }
+                    
                 }
             }
         }

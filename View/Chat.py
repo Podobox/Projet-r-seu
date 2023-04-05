@@ -42,15 +42,12 @@ class Chat:
         # if a message is sent, send it in peer to everyone and add it in memory
         if self.message:
             # self.communication.send(self.message)   
-            print("message print: ", self.message)
             self.memory.append((self.message, pg.time.get_ticks()))
-            print("Voici la mémoire", self.memory)
             self.message = ""
 
         if self.memory and now - self.memory[0][1] > 4000 :
             self.memory = self.memory[1:]
             
-
     def display(self, chat):
         now = pg.time.get_ticks()
         chat.update(now)
@@ -79,28 +76,26 @@ class Chat:
     
     def check_input(self, now):
         for event in pg.event.get():
-                ### deselection the chat ###
-                # if (event.type == pg.K_ESCAPE):
-                #     running = False
-                #     pg.quit()
-                #     quit(0)
-                if event.type == pg.KEYDOWN:
-                    if event.key == pg.K_BACKSPACE:
-                        self.input = self.input[:-1]
-                        self.chat = self.creation()
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_BACKSPACE:
+                    self.input = self.input[:-1]
+                    self.chat = self.creation()
 
-                    elif event.key == pg.K_RETURN and self.input:
-                        self.message = self.input
-                        self.input = ""
-                        self.chat = self.creation()
-                        
-                    else:
-                        carac = event.dict['unicode']
-                        # don't input the key enter in carac
-                        if carac != '\r':
-                            self.input = self.input + carac
+                elif event.key == pg.K_ESCAPE:
+                    self.is_selected = False
+
+                elif event.key == pg.K_RETURN and self.input:
+                    self.message = self.input
+                    self.input = ""
+                    self.chat = self.creation()
                     
-                    # self.new_input = True
+                else:
+                    carac = event.dict['unicode']
+                    # don't input the key enter in carac
+                    if carac != '\r':
+                        self.input = self.input + carac
+                
+                # self.new_input = True
 
     def display_message(self, now):
         if self.memory: 
@@ -124,6 +119,7 @@ class Chat:
                         t = 0
                         text_surface.set_alpha(t)
                     self.window.blit(text_surface, (self.chat_posx, self.chat_posy-40*(i+1)))
+
     def display_input(self):
         if self.input and self.new_input:
             text_surface = FONT.render(self.input, True, (60, 50, 50))

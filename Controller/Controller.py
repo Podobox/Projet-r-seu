@@ -1,5 +1,6 @@
 import random
-
+import subprocess
+import os
 from Model.Player import Player
 from Model.Grass import Grass
 from Model.Map import MAP_DIM
@@ -69,7 +70,9 @@ class Controller:
         # Benchmarking
         # self.bench = 0
         # self.bench_nb = 0
+        self.checkDaemon()
         self.run()
+
 
     def run(self):
         # print(self.game)
@@ -77,9 +80,9 @@ class Controller:
         for _ in range(5):
             self.game.increase_speed()
 
-        for x in range(MAP_DIM):
-            for y in range(MAP_DIM):
-                print(self.game.map.grid[x][y].owner)
+        # for x in range(MAP_DIM):
+        #     for y in range(MAP_DIM):
+        #         print(self.game.map.grid[x][y].owner)
 
         while True:
             self.game.advance_time()
@@ -140,6 +143,19 @@ class Controller:
         # No more useless sleeping
         self.checkEvents(sleep_time)
         self.last_frame = time_ns()
+
+    def checkDaemon(self):
+        # Check if c_daemon is already running
+        process = subprocess.Popen(['pgrep', 'c_daemon'], stdout=subprocess.PIPE)
+        output, _ = process.communicate()
+        if output:
+            # c_daemon is already running
+            print("c_daemon is already running")
+        else:
+            # c_daemon is not running, start it
+            print("Starting c_daemon")
+            # print([os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'c_daemon', 'bin', 'c_daemon'))])
+            subprocess.Popen([os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'c_daemon', 'bin', 'c_daemon'))])
 
     def checkEvents(self, delta_time=0):
         stop_time = time_ns() + delta_time

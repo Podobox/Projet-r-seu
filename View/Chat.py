@@ -37,6 +37,11 @@ class Chat:
                 self.is_selected = False
         if self.is_selected:
             self.check_input(now)
+        # can take control of chat with enter key
+        else:
+            for event in pg.event.get():
+                if event.type == pg.KEYDOWN and event.key == pg.K_RETURN:
+                    self.is_selected = True
         # if a message is sent, send it in peer to everyone and add it in memory
         if self.message:
             # self.communication.send(self.message)

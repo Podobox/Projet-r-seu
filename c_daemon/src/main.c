@@ -214,8 +214,8 @@ int main(int argc, char **argv) {
                                         if ((res = connect_existed_players(ind))) {
                                             fprintf(stderr, "Error number %d connecting to player #%d\n", res, index);
                                         }
+                                        break;
                                     }
-                                    break;
                                 }
                                 get_ip_player = strtok(NULL, " ");
                             }

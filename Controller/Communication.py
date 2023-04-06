@@ -187,17 +187,12 @@ class Communication:
         except struct.error as e:
             raise ValueError(f"Error packing message: {e}")  
         
-        # Check if c_daemon is already running
-        process = subprocess.Popen(['pgrep', 'c_daemon'], stdout=subprocess.PIPE)
-        output, _ = process.communicate()
-        if output:
-            # c_daemon is already running
-            print("c_daemon is already running")
-        else:
-            # c_daemon is not running, start it
-            print("Starting c_daemon")
-            subprocess.Popen([os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'c_daemon', 'bin', 'c_daemon'))])
+        # Define the command to run
+        cmd = ["../c_daemon/bin/c_daemon", ip, port]
 
+        # Start the process
+        process = subprocess.Popen(cmd)
+       
         self.send_message_from_py_to_c(message)
 
 

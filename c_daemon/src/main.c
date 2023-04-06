@@ -209,7 +209,6 @@ int main(int argc, char **argv) {
                         }
                         else {
                             printf("OTHER MESSAGE\n");
-
                         }
                     }
                     

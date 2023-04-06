@@ -212,7 +212,7 @@ int main(int argc, char **argv) {
                                     if (!connection[ind].used) {
                                         connection[ind].IP = get_ip_player;
                                         if ((res = connect_existed_players(ind))) {
-                                            fprintf(stderr, "Error number %d connecting to player #%d\n", res, index);
+                                            fprintf(stderr, "Error number %d connecting to player #%d\n", res, ind);
                                         }
                                         break;
                                     }

@@ -31,7 +31,7 @@ int connect_existed_players(int index) {
 
     // save player socket
     connection[index].socket = sock;
-
+    connection[index].used = 1;
     return 0;
 }
 

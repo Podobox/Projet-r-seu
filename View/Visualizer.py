@@ -40,6 +40,7 @@ from Controller.Button import Button
 from View.FileMenu import FileMenu
 from View.SideMenu import Menu
 from View.Minimap import Minimap
+from View.Chat import Chat
 import Controller.Communication as com
 
 from Model.Tree import Tree
@@ -113,6 +114,7 @@ class Visualizer:
         self.fileMenu = FileMenu(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, backup, game, communication)
         #self.images = dict()
         self.minimap = Minimap(self.window, WINDOW_WIDTH, WINDOW_HEIGHT)
+        self.chat = Chat(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, communication)
         self.loadImages()
         return
 
@@ -165,6 +167,8 @@ class Visualizer:
 
         self.minimap.display(map, self.deplacementX + self.tmpDeplacementX,
                              self.deplacementY + self.tmpDeplacementY)
+        
+        self.chat.display(self.chat)
 
         # Draw game barre
         self.barre.barre_function(self.game.denarii, self.game.population, self.game.date)

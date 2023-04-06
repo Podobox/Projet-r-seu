@@ -99,20 +99,23 @@ class Prefect(Random_Walkers):
                 if self.patrol_length is None:
                     self.choose_patrol()
 
-                nt = self.find_next_tile(self.map)
-                if nt is None:
-                    self.direction = None
-                    # TODO reverse direction pour éviter de revenir a la base a chaque
-                    # fois
-                    self.current_patrol = 0
-                    self.patrol_length = None
-                    # print("prefect returning")
-                    # self.state = Random_Walker_State.RETURN
-                    self.prefect_state = Prefect_State.RETURN
-                    self.date_last_frame = date
-                    return Action.NONE
+                if action:
+                    nt = self.find_next_tile(self.map)
+                    if nt is None:
+                        self.direction = None
+                        # TODO reverse direction pour éviter de revenir a la base a chaque
+                        # fois
+                        self.current_patrol = 0
+                        self.patrol_length = None
+                        # print("prefect returning")
+                        # self.state = Random_Walker_State.RETURN
+                        self.prefect_state = Prefect_State.RETURN
+                        self.date_last_frame = date
+                        return Action.NONE
 
-                self.find_direction(nt.posx, nt.posy)
+                    self.find_direction(nt.posx, nt.posy)
+                else:
+                    return
 
             dist = self.compute_dist(date)
 

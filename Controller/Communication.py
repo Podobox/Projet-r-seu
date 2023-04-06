@@ -80,7 +80,7 @@ class Communication:
     def __init__(self):
         # create fifo to communicate with c daemon
         self.message_queue = sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT)
-        self.message = None
+        self.message = []
 
     def send_message_from_py_to_c(self, message):
         # send the actions from python to c
@@ -175,9 +175,9 @@ class Communication:
         message = struct.pack("iQQQQ", MessageType.DEVOLVE.value, posx, posy, 0, 0)
         self.send_message_from_py_to_c(message)
 
-    def move_walker(self, posx, posy, building, walker_type):  # TODO in Model
-        message = struct.pack("iQQQQ", MessageType.MOVE_WALKER.value, posx, posy, building,
-                              walker_type)
+    def move_walker(self, posx, posy, walker_type, direction):  # TODO in Model
+        message = struct.pack("iQQQQ", MessageType.MOVE_WALKER.value, posx, posy,
+                              walker_type, direction)
         self.send_message_from_py_to_c(message)
 
     def ask_for_ownership(self, posx, posy, player):  # TODO in Model
@@ -198,7 +198,10 @@ class Communication:
         # check for messages from other players
         # making this function a generator might be a good idea
         # handle the message in the controller
-        yield (MessageType.DESTROY.value, 9, 9, 0, 0)
+        if len(self.message) > 0:
+            yield self.message.pop()
+        else:
+            yield (MessageType.DESTROY.value, 9, 9, 0, 0)
         return
 
     def connect(self, ip, port):

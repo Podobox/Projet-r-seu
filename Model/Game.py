@@ -43,10 +43,13 @@ import Controller.Communication as com
 TIME_PER_FRAME = 10
 
 
-def building_type(b):
+def building_type(b, to_num=True):
     buildings = [Collapsed, Engineer_Post, Forum, Fountain, Garden, Granary, House,
                  Market, New_House, Prefecture, Road, Senate, Well, Wheat_Farm]
-    return buildings.index(b)
+    if to_num:
+        return buildings.index(b)
+    else:
+        return buildings[b]
 
 
 class Game:
@@ -81,7 +84,6 @@ class Game:
                 self.build(x, y, Water)
         self.set_entry_point(MAP_DIM // 2, 0)
         self.set_exit_point(MAP_DIM // 2, MAP_DIM - 1)
-        print(MAP_DIM)
         x = MAP_DIM // 2
         for y in range(0, MAP_DIM):
             self.build(x, y, Road)
@@ -424,6 +426,7 @@ class Game:
                     continue
                 if isinstance(w, Prefect) and w.prefect_state != Prefect_State.RETURN:
                     continue
+            print(w.building.tile, com.ME)
             res = w.walk(self.date, action=(w.building.tile.owner == com.ME))
             if w.building.tile.owner == com.ME:
                 match res:

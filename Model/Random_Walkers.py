@@ -64,7 +64,9 @@ class Random_Walkers(Walkers):
                         self.state = Random_Walker_State.RETURN
                         return Action.NONE
 
-                self.find_direction(nt.posx, nt.posy)
+                    self.find_direction(nt.posx, nt.posy)
+                else:
+                    return
 
             dist = self.compute_dist(date)
 

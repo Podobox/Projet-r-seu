@@ -1,4 +1,5 @@
 #include "TCP_protocols.h"
+
 #include "global_var.h"
 
 // return 0 if no problem
@@ -30,10 +31,8 @@ int connect_existed_players(int index) {
 
     // save player socket
     connection[index].socket = sock;
-    
 
     return 0;
-
 }
 
 // return 0 if no problem
@@ -99,4 +98,24 @@ void stop(char *msg) {
     close(listenfd);
     perror(msg);
     exit(EXIT_FAILURE);
+}
+
+char *get_my_IP() {
+    struct ifaddrs *addrs, *tmp;
+    addrs = (struct ifaddrs *)malloc(sizeof(struct ifaddrs));
+    tmp = (struct ifaddrs *)malloc(sizeof(struct ifaddrs));
+    getifaddrs(addrs);
+    tmp = addrs;
+
+    while(tmp){
+        if(tmp->ifa_addr && tmp->ifa_addr->sa_family == AF_INET){
+            struct sockaddr_in *pAddr = (struct sockaddr_in *) tmp->ifa_addr;
+            if(strcmp(tmp->ifa_name, "lo")){
+                return inet_ntoa(pAddr->sin_addr);
+            }
+        }
+        tmp = tmp->ifa_next;
+    }
+    freeifaddrs(addrs);
+    return NULL;
 }

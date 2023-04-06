@@ -15,6 +15,7 @@
 #include <sys/types.h>
 #include <sys/select.h>
 #include <unistd.h>
+#include <ifaddrs.h>
 
 #define max(a, b) ((a > b) ? a : b)
 #define PLAYER_MAX 10

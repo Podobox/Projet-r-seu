@@ -28,6 +28,10 @@ int main(int argc, char **argv) {
         connection[i].IP = NULL;
     }
 
+    char *testIP = get_my_IP();
+    printf("My IP: %s\n", ((testIP == NULL) ? "nope" : testIP));
+    return 0;
+
     // get own IP address
     // create another socket, addr_in for listenfd
     // and bind and listen on listenfd
@@ -180,7 +184,7 @@ int main(int argc, char **argv) {
                             sprintf(buffer, "/ip_response");
 
                             for (int ind = 0; ind < PLAYER_MAX; ind++) {
-                                if (connection[ind].used /*&& ind != ind0 && ind != index/**/) {
+                                if (connection[ind].used && ind != ind0 && ind != index/**/) {
                                     sprintf(buffer, "%s %s", buffer, connection[ind].IP);
                                 }
                             }

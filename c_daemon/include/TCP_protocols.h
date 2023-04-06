@@ -15,4 +15,6 @@ void print_connections();
 
 void close_connection(int);
 
+char* get_my_IP();
+
 #endif

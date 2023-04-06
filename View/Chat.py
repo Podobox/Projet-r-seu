@@ -21,7 +21,6 @@ class Chat:
         self.input = ""
         self.memory = []
         # boolean to know when refresh screen
-        self.new_input = True
         self.is_selected = False
         self.communication = communication
         self.chat = self.creation()
@@ -86,7 +85,7 @@ class Chat:
                     self.input = self.input[:-1]
                     self.chat = self.creation()
 
-                elif event.key == pg.K_ESCAPE:
+                elif event.key == pg.K_ESCAPE:      
                     self.is_selected = False
 
                 elif event.key == pg.K_RETURN and self.input:
@@ -100,8 +99,6 @@ class Chat:
                     if carac != '\r':
                         self.input = self.input + carac
                 
-                # self.new_input = True
-
     def display_message(self, now):
         if self.memory: 
             # if there's just one word in memory
@@ -126,7 +123,7 @@ class Chat:
                     self.window.blit(text_surface, (self.chat_posx, self.chat_posy-40*(i+1)))
 
     def display_input(self):
-        if self.input and self.new_input:
+        if self.input:
             text_surface = FONT.render(self.input, True, (60, 50, 50))
             coordinate = text_surface.get_rect(centery=self.chat.get_rect().centery)
             coordinate.left = 75

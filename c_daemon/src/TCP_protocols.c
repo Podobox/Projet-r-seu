@@ -33,6 +33,7 @@ int connect_existed_players(int index) {
     
 
     return 0;
+
 }
 
 // return 0 if no problem

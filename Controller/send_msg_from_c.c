@@ -5,31 +5,56 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
+#include <stdint.h>
 
-#define  BUFF_SIZE  16
-#define  C_TO_PY    2
+#define  BUF_SIZE  1024
+#define  C_TO_PY   2
+#define  MESG_KEY  1234
+#define  MAX	   10
+#define  False     0
+#define  True      1
 
-typedef struct {
-	long  data_type;
-	char  data_buff[BUFF_SIZE];
-} t_data;
 
-int main(void)
+
+struct python_struct_t {
+	int32_t message_type;
+	uint64_t posx;
+	uint64_t posy;
+	uint64_t type;
+	uint64_t x;
+};
+
+struct python_struct_t *buffer;
+
+struct {
+	long  mesg_type;
+	struct python_struct_t mes;
+} message;
+
+void send_from_c()
 {
-	int      msqid;
-	t_data   data;
+	// buffer->message_type = 5;
+	message.mes.message_type = 5;
+	int msqid;
+	// msgget creates a message queue and returns identifier
+	msqid = msgget(MESG_KEY, 0666 | IPC_CREAT);
+	message.mesg_type = C_TO_PY;	
 
-	if (-1 == (msqid = msgget((key_t)1234, IPC_CREAT | 0666)))
+	int length;
+    printf("%d \n", message.mes.message_type);
+    if ((length = msgsnd(msqid, &message, sizeof(message) - sizeof(long), 0)) == -1)
 	{
-		perror("msgget() failed");
+		perror("Msgsnd() failed");
 		exit(1);
 	}
+}
 
-    data.data_type = C_TO_PY;
-    sprintf(data.data_buff, "Siu!");
-    if (-1 == msgsnd(msqid, &data, sizeof(t_data) - sizeof(long), 0))
+int main()
+{
+	buffer = calloc(sizeof(struct python_struct_t), 1);
+
+	while (True)
 	{
-		perror("msgsnd() failed");
-		exit(1);
+		send_from_c();
 	}
 }

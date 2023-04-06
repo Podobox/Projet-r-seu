@@ -48,18 +48,18 @@ class Communication:
         # send the actions from python to c
         self.message_queue.send(message, type=PY_TO_C)
 
-    def receive_message_from_c_to_py(self, message):
-        message = struct.unpack("iQQQQ", message)
-        try:
-            mq = sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT)
+    # def receive_message_from_c_to_py(self, message):
+    #     message = struct.unpack("iQQQQ", message)
+    #     try:
+    #         mq = sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT)
             
-        while True:
-            message, mtype = mq.receive(type = C_TO_PY)
-            print("*** New message received ***")
-            print(f"Receive message: {message.decode()}")
+    #     while True:
+    #         message, mtype = mq.receive(type = C_TO_PY)
+    #         print("*** New message received ***")
+    #         print(f"Receive message: {message.decode()}")
 
-        except sysv_ipc.ExistentialError:
-            print("ERROR: message queue creation failed")
+    #     except sysv_ipc.ExistentialError:
+    #         print("ERROR: message queue creation failed")
 
 
     def ask_for_money_ownership(self):

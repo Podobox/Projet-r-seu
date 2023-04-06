@@ -7,7 +7,7 @@
 // return 2 if cannot create socket
 // return 3 if cannot connect to player
 int connect_existed_players(int index) {
-    if (index >= existed_player || index >= PLAYER_MAX) {
+    if (index >= PLAYER_MAX) {
         return 1;
     }
 

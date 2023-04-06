@@ -414,3 +414,30 @@ class Controller:
                         if self.visualizer.MODE_FILE_MENU and not actionned:
                             self.visualizer.MODE_FILE_MENU = False
                     break
+
+    def chat_update(self):
+        def update(self, now):
+        mouse_pos = pg.mouse.get_pos()
+        mouse_button_pressed = pg.mouse.get_pressed()
+
+        if mouse_button_pressed[0]:
+            if (self.visualizer.chat.chat_posx <= mouse_pos[0] <= self.visualizer.chat.chat_posx + self.visualizer.chat.chat.get_width()) and (
+                self.visualizer.chat.chat_posy <= mouse_pos[1] <= self.visualizer.chat.chat_posy + self.visualizer.chat.chat.get_height()):
+                self.visualizer.chat.is_selected = True
+            else:
+                self.visualizer.chat.is_selected = False
+        if self.visualizer.chat.is_selected:
+            self.visualizer.chat.check_input(now)
+        # can take control of chat with enter key
+        # else:
+        #     for event in pg.event.get():
+        #         if event.type == pg.KEYDOWN and event.key == pg.K_RETURN:
+        #             self.visualizer.chat.is_selected = True
+        # if a message is sent, send it in peer to everyone and add it in memory
+        if self.visualizer.chat.message:
+            # self.communication.send(self.message)   
+            self.visualizer.chat.memory.append((self.message, pg.time.get_ticks()))
+            self.visualizer.chat.message = ""
+
+        if self.visualizer.chat.memory and now - self.visualizer.chat.memory[0][1] > 4000 :
+            self.visualizer.chat.memory = self.visualizer.chat.memory[1:]

@@ -171,11 +171,6 @@ int main(int argc, char **argv) {
 
                             sprintf(buffer, "/ip_response");
 
-                            // just to test
-                            sprintf(buffer, "%s %s", buffer, "192.168.71.2");
-                            sprintf(buffer, "%s %s", buffer, "192.168.71.2");
-
-
 
                             for(int ind=0; ind < PLAYER_MAX; ind++){
                                 if(connection[ind].used && strcmp(connection[ind].IP, ip_host) && ind != index){
@@ -210,8 +205,6 @@ int main(int argc, char **argv) {
                                 }
                                 get_ip_player = strtok(NULL, " ");    
                             }
-
-                            fprintf(stderr, "get_ip_player NULL %s\n", get_ip_player);
 
                         }
                         else {

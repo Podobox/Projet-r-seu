@@ -169,7 +169,11 @@ int main(int argc, char **argv) {
                         printf("Received from IP:%s socket:%d buffer:%s\n", connection[index].IP, connection[index].socket, buffer);
 
                         char cmd[BUFSIZE];
-                        for (int i = 0; i < strlen(buffer); i++) {
+                        for (int i = 0; i <= strlen(buffer); i++) {
+                            if (i == strlen(buffer)){
+                                cmd[i] = '\0';
+                                break;
+                            }
                             if (buffer[i] == ' ' || buffer[i] == '\n' || buffer[i] == '\0') {
                                 cmd[i] = '\0';
                                 break;

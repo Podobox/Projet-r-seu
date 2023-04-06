@@ -156,16 +156,20 @@ int main(int argc, char **argv) {
                         //print received message
                         printf("Received from IP:%s socket:%d buffer:%s\n", connection[index].IP, connection[index].socket, buffer);
 
+                        char cmd[BUFSIZE];
+                        for(int i=0; i < strlen(buffer); i++){
+                            if(buffer[i] == ' ' || buffer[i] == '\n' || buffer[i] == '\0'){
+                                cmd[i] = '\0';
+                                break;
+                            }
+                            cmd[i] = buffer[i];
+                        }
+
                         // new player ask the list of player in the game
-                        if (!strcmp(buffer, "/ip_demande")) {
+                        if (!strcmp(cmd, "/ip_demande")) {
                             printf("IN IP DEMANDE\n");
 
                             sprintf(buffer, "/ip_response");
-
-                            // just to test
-                            sprintf(buffer, "%s %s", buffer, "192.168.71.2");
-                            sprintf(buffer, "%s %s", buffer, "192.168.71.2");
-
 
 
                             for(int ind=0; ind < PLAYER_MAX; ind++){
@@ -179,7 +183,7 @@ int main(int argc, char **argv) {
                         }
 
                         // new player receive the list of player in the game, they try co connect to all of them
-                        else if (strcmp(buffer, "/ip_response")) {
+                        else if (!strcmp(cmd, "/ip_response")) {
                             printf("IN IP RESPONSE\n");
 
 
@@ -201,8 +205,6 @@ int main(int argc, char **argv) {
                                 }
                                 get_ip_player = strtok(NULL, " ");    
                             }
-
-                            fprintf(stderr, "get_ip_player NULL %s\n", get_ip_player);
 
                         }
                         else {

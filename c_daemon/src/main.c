@@ -28,14 +28,14 @@ int main(int argc, char **argv) {
         connection[i].IP = NULL;
     }
 
-    char *testIP = get_my_IP();
-    printf("My IP: %s\n", ((testIP == NULL) ? "nope" : testIP));
-    return 0;
+    // char *testIP = get_my_IP();
+    // printf("My IP: %s\n", ((testIP == NULL) ? "nope" : testIP));
+    // return 0;
 
     // get own IP address
     // create another socket, addr_in for listenfd
     // and bind and listen on listenfd
-    char *ip_host = gethostIP();
+    char *ip_host = get_my_IP();
     if(argc > 3){
         ip_host = argv[3];
     }

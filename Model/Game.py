@@ -80,6 +80,7 @@ class Game:
                 self.build(x, y, Water)
         self.set_entry_point(MAP_DIM // 2, 0)
         self.set_exit_point(MAP_DIM // 2, MAP_DIM - 1)
+        print(MAP_DIM)
         x = MAP_DIM // 2
         for y in range(0, MAP_DIM):
             self.build(x, y, Road)
@@ -127,7 +128,7 @@ class Game:
         building.set_type(Sign_Type.Exit)
         self.map.exit_point = building
 
-    def build(self, posx, posy, type):
+    def build(self, posx, posy, type, force=False):
         # only happen when adding buildings
         assert type in building_data, "type to build not in 'model_data'"
 
@@ -176,7 +177,7 @@ class Game:
         if type not in (Water, Tree, Rock, Other_Rock, Sign):
             self.communication.build(posx, posy, building_type(type))
 
-    def destroy(self, posx, posy):
+    def destroy(self, posx, posy, force=False):
         building = self.map.grid[posx][posy].building
         if building is None:
             return

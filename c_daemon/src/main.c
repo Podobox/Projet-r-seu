@@ -169,14 +169,18 @@ int main(int argc, char **argv) {
                         if (!strcmp(cmd, "/ip_demande")) {
                             printf("IN IP DEMANDE\n");
 
+                            // send file of the current game
+                            send_file_by_socket(connection[index].socket);
+
                             sprintf(buffer, "/ip_response");
 
-
+                            // find @IP to send
                             for(int ind=0; ind < PLAYER_MAX; ind++){
                                 if(connection[ind].used && strcmp(connection[ind].IP, ip_host) && ind != index){
                                     sprintf(buffer, "%s %s", buffer, connection[ind].IP);
                                 }
                             }
+
                             if (write(connection[index].socket, buffer, strlen(buffer) + 1) < 0) {
                                 fprintf(stderr, "Cannot send /ip_response message to player #%d\n", index);
                             }
@@ -209,6 +213,8 @@ int main(int argc, char **argv) {
                         }
                         else {
                             printf("OTHER MESSAGE\n");
+                            printf("OTHER MESSAGE\n\tReceived from IP:%s socket:%d buffer:%s\n", connection[index].IP, connection[index].socket, buffer);
+
                         }
                     }
                     

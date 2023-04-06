@@ -21,10 +21,12 @@
 #include <arpa/inet.h>
 #include <linux/if_link.h>
 
-
-
 #define max(a, b) ((a > b) ? a : b)
 #define PLAYER_MAX 10
+#define MAX_FILENAME_LENGTH 15
+
+// define the save directory
+#define SAVE_DIR "../Save"
 
 extern const int BUFSIZE;
 extern uint16_t PORT;

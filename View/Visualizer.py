@@ -1058,24 +1058,24 @@ class Visualizer:
                         compenY = cellSize * 5 / 8
                         self.displayImage(row, column, tileDIM, origin,
                                           imgName, imgCode, compenX, compenY)
-                    case None:
-                        match MAP.grid[column][row].type:
-                            case Tile_Type.Water: pass
-                            case Tile_Type.Mountain: pass
-                            case Tile_Type.Field:
-                                imgName = 'Field'
-                                imgCode = '00001'
-                                compenX = cellSize * 31 / 32
-                                compenY = cellSize / 16
-                                self.displayImage(row, column, tileDIM, origin,
-                                                  imgName, imgCode, compenX, compenY)
-                            case Tile_Type.Grass:
-                                imgName = 'Grass'
-                                imgCode = '00010'
-                                compenX = cellSize
-                                compenY = 0
-                                self.displayImage(row, column, tileDIM, origin,
-                                                  imgName, imgCode, compenX, compenY)
+                    # case None:
+                        # match MAP.grid[column][row].type:
+                            # case Tile_Type.Water: pass
+                            # case Tile_Type.Mountain: pass
+                            # case Tile_Type.Field:
+                                # imgName = 'Field'
+                                # imgCode = '00001'
+                                # compenX = cellSize * 31 / 32
+                                # compenY = cellSize / 16
+                                # self.displayImage(row, column, tileDIM, origin,
+                                                  # imgName, imgCode, compenX, compenY)
+                            # case Tile_Type.Grass:
+                                # imgName = 'Grass'
+                                # imgCode = '00010'
+                                # compenX = cellSize
+                                # compenY = 0
+                                # self.displayImage(row, column, tileDIM, origin,
+                                                  # imgName, imgCode, compenX, compenY)
                     case Senate():
                         if MAP.grid[column][row].building.burning:
                             imgName = 'Collapsed'

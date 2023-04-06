@@ -135,11 +135,11 @@ char *gethostIP() {
                 printf("getnameinfo() failed: %s\n", gai_strerror(s));
                 exit(EXIT_FAILURE);
             }
-
-            printf("\t\taddress: <%s>\n", host);
             hostIP = host;
         } 
     }
+
+    printf("Host IP: %s\n", host);
 
     freeifaddrs(ifaddr);
     return hostIP;

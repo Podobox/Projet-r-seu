@@ -58,7 +58,6 @@ class MessageType(Enum):
     BURN_STAGE_RESET = 22
     MARKET_STOCK = 23
     MARKET_SELL = 24
-    # TODO below
     WALKER_DESTROY = 25
 
 
@@ -178,7 +177,7 @@ class Communication:
         # check for messages from other players
         # making this function a generator might be a good idea
         # handle the message in the controller
-        yield None
+        yield (MessageType.DESTROY.value, 9, 9, 0, 0)
         return
 
     def connect(self, ip, port):

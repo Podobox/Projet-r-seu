@@ -15,4 +15,8 @@ void print_connections();
 
 void close_connection(int);
 
+void send_file_by_socket(int);
+
+void recv_file();
+
 #endif

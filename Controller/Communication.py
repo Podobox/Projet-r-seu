@@ -188,13 +188,12 @@ class Communication:
             raise ValueError(f"Error packing message: {e}")  
         
         # Define the command to run
-        cmd = ["../c_daemon/bin/c_daemon", ip, port]
+        cmd = ["./c_daemon/bin/c_daemon", ip, str(port)]
 
         # Start the process
         process = subprocess.Popen(cmd)
        
         self.send_message_from_py_to_c(message)
-
 
         # wait for response from c daemon and unpack the game and player information
         response, _ = self.message_queue.receive(type=C_TO_PY)

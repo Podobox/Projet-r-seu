@@ -70,32 +70,77 @@ int create_master_socket(char *ip_host) {
     return 0;
 }
 
-char *gethostIP() {
-    char hostbuffer[256];
-    char *hostIP;
-    struct hostent *host_entry;
+// char *gethostIP() {
+//     char hostbuffer[256];
+//     char *hostIP;
+//     struct hostent *host_entry;
+ 
+//     // To retrieve hostname
+//     if ((gethostname(hostbuffer, sizeof(hostbuffer))) == -1) {
+//         stop("gethostname");
+//     }
 
-    // To retrieve hostname
-    if ((gethostname(hostbuffer, sizeof(hostbuffer))) == -1) {
-        stop("gethostname");
-    }
+//     // To retrieve host information
+//     if ((host_entry = gethostbyname(hostbuffer)) == -1) {
+//         stop("gethostbyname");
+//     }
 
-    // To retrieve host information
-    if ((host_entry = gethostbyname(hostbuffer)) == -1) {
-        stop("gethostbyname");
-    }
+//     // To convert an Internet network
+//     // address into ASCII string
+//     hostIP = inet_ntoa(*((struct in_addr *)host_entry->h_addr_list[0]));
 
-    // To convert an Internet network
-    // address into ASCII string
-    hostIP = inet_ntoa(*((struct in_addr *)host_entry->h_addr_list[0]));
-
-    printf("Host IP: %s\n", hostIP);
-    hostIP[strlen(hostIP)] = '\0';
-    return hostIP;
-}
+//     printf("Host IP: %s\n", hostIP);
+//     hostIP[strlen(hostIP)] = '\0';
+//     return hostIP;
+// }
 
 void stop(char *msg) {
     close(listenfd);
     perror(msg);
     exit(EXIT_FAILURE);
+}
+
+
+char *gethostIP() {
+
+    struct ifaddrs *ifaddr;
+    int family, s;
+    char host[NI_MAXHOST];
+    char *hostIP;
+
+
+    if (getifaddrs(&ifaddr) == -1) {
+        stop("getifaddrs");
+    }
+
+    /* Walk through linked list, maintaining head pointer so we
+        can free list later */
+
+    for (struct ifaddrs *ifa = ifaddr; ifa != NULL;
+            ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr == NULL)
+            continue;
+
+        family = ifa->ifa_addr->sa_family;
+
+        /* For an AF_INET* interface address, display the address */
+
+        if (family == AF_INET) {
+            s = getnameinfo(ifa->ifa_addr,
+                    (family == AF_INET) ? sizeof(struct sockaddr_in) :
+                                            sizeof(struct sockaddr_in6),
+                    host, NI_MAXHOST,
+                    NULL, 0, NI_NUMERICHOST);
+            if (s != 0) {
+                printf("getnameinfo() failed: %s\n", gai_strerror(s));
+                exit(EXIT_FAILURE);
+            }
+
+            printf("\t\taddress: <%s>\n", host);
+            hostIP = host;
+        } 
+    }
+
+    freeifaddrs(ifaddr);
+    return hostIP;
 }

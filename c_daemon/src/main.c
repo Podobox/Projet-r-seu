@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
     // create another socket, addr_in for listenfd
     // and bind and listen on listenfd
     char *ip_host = get_my_IP();
-    if(argc > 3){
+    if (argc > 3) {
         ip_host = argv[3];
     }
     if ((res = create_master_socket(ip_host))) {
@@ -69,6 +69,10 @@ int main(int argc, char **argv) {
                 // get list of other IP addresses
                 if (write(connection[index].socket, "/ip_demande", strlen("/ip_demande") + 1) < 0) {
                     stop("cannot demande ip table");
+                }
+                // demand the initial state of the game
+                if (write(connection[index].socket, "/init_state_demand", sizeof("/init_state_demand") + 1) < 0) {
+                    stop("cannot demand initial state");
                 }
                 break;
             }
@@ -170,7 +174,7 @@ int main(int argc, char **argv) {
 
                         char cmd[BUFSIZE];
                         for (int i = 0; i <= strlen(buffer); i++) {
-                            if (i == strlen(buffer)){
+                            if (i == strlen(buffer)) {
                                 cmd[i] = '\0';
                                 break;
                             }
@@ -188,7 +192,7 @@ int main(int argc, char **argv) {
                             sprintf(buffer, "/ip_response");
 
                             for (int ind = 0; ind < PLAYER_MAX; ind++) {
-                                if (connection[ind].used && ind != ind0 && ind != index/**/) {
+                                if (connection[ind].used && ind != ind0 && ind != index /**/) {
                                     sprintf(buffer, "%s %s", buffer, connection[ind].IP);
                                 }
                             }
@@ -219,7 +223,8 @@ int main(int argc, char **argv) {
                                 }
                                 get_ip_player = strtok(NULL, " ");
                             }
-
+                        } else if (!strcmp(cmd, "/init_state_demand")) {
+                            // get file from python
                         } else {
                             printf("OTHER MESSAGE\n");
                         }

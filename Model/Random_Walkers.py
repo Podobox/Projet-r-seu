@@ -66,6 +66,7 @@ class Random_Walkers(Walkers):
 
                     self.find_direction(nt.posx, nt.posy)
                 else:
+                    self.date_last_frame = date
                     return
 
             dist = self.compute_dist(date)
@@ -81,7 +82,8 @@ class Random_Walkers(Walkers):
                     self.state = Random_Walker_State.RETURN
 
             self.date_last_frame = date
-            return self.action_while(date)
+            if action:
+                return self.action_while(date)
 
     def choose_patrol(self):
         # seed()

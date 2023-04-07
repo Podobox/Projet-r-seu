@@ -116,6 +116,7 @@ class Prefect(Random_Walkers):
 
                     self.find_direction(nt.posx, nt.posy)
                 else:
+                    self.date_last_frame = date
                     return
 
             dist = self.compute_dist(date)

@@ -96,6 +96,9 @@ class Controller:
         # for x in range(0, 20):
             # for y in range(1):
                 # self.game.map.grid[x][y].owner = None
+        for x in range(MAP_DIM):
+            for y in range(MAP_DIM):
+                self.game.map.grid[x][y].owner = None
 
         while True:
             self.game.advance_time()
@@ -166,9 +169,10 @@ class Controller:
             case MessageType.DEVOLVE:
                 self.game.map.grid[message[1]][message[2]].building.devolve()
             case MessageType.MOVE_WALKER:
+                # TODO never called
                 b = self.game.map.grid[message[1]][message[2]].building
                 w = None
-                t = walker_type(message[4], to_num=False)
+                t = walker_type(message[3], to_num=False)
                 if t == Engineer: w = b.engineer
                 elif t == Farm_Boy: w = b.farm_boy
                 elif t == Market_Buyer: w = b.buyer

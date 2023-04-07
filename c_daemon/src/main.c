@@ -133,7 +133,6 @@ int main(int argc, char **argv) {
 
                 // save their socket fd
                 add_connection(res, newClientIP);
-
                 print_connections();
             } else {
                 printf("Unable to retrieve the IP address of the new client\n");

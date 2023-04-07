@@ -242,14 +242,14 @@ class Communication:
         # Start the process
         process = subprocess.Popen(cmd)
        
-        self.send_message_from_py_to_c(message)
+        # self.send_message_from_py_to_c(message)
 
         # wait for response from c daemon and unpack the game and player information
-        response, _ = self.message_queue.receive(type=C_TO_PY)
-        game, players = struct.unpack("iQ", response)
-        print(game, players)
+        # response, _ = self.message_queue.receive(type=C_TO_PY)
+        # game, players = struct.unpack("iQ", response)
+        # print(game, players)
 
-        return game, players
+        # return game, players
    
         # return the game it is connected to and its players 
         # pass

@@ -53,9 +53,14 @@ void send_file_by_socket(int sockfd) {
     //     }
     // }
 
+<<<<<<< HEAD
     /*sprintf(cwd,"%s/Save/online_game",cwd);*/
     strcat(cwd, "/Save/online_game");
     printf("$PWD: %s\n", cwd);
+=======
+    sprintf(cwd,"%s/Save/online_game",cwd);
+    printf("$PWD sent file: %s\n", cwd);
+>>>>>>> f106eaf (error send file)
     fp = fopen(cwd, "r");
     if (fp == NULL) {
         stop("File not found.\n");
@@ -88,12 +93,13 @@ void recv_file(int sockfd) {
     mkdir(SAVE_DIR, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
     // create a new file in the save directory
-    char filename[MAX_FILENAME_LENGTH];
-    sprintf(filename, "%s/online_game", SAVE_DIR);
+    char cwd[BUFSIZE];
+    getcwd(cwd, sizeof(cwd));
 
-    printf("in %s, ", filename);
+    sprintf(cwd,"%s/Save/on_game",cwd);
+    printf("$PWD received file: %s\n", cwd);
 
-    FILE* fp = fopen(filename, "w");
+    FILE* fp = fopen(cwd, "w");
     if (fp == NULL) {
         printf("Error creating file.\n");
         return;

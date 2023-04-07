@@ -231,6 +231,7 @@ class Communication:
         self.send_message_from_py_to_c(message)
 
     def connect(self, ip, port):
+        nom = "online_game"
         try:
             message = struct.pack("i4sIQQ", MessageType.CONNECT.value, socket.inet_aton(ip), int(port), 0, 0)
         except struct.error as e:
@@ -240,16 +241,15 @@ class Communication:
         cmd = ["./c_daemon/bin/c_daemon", ip, str(port)]
 
         # Start the process
-        process = subprocess.Popen(cmd)
-       
+        process = subprocess.Popen(cmd) 
         self.send_message_from_py_to_c(message)
 
         # wait for response from c daemon and unpack the game and player information
+        # to comment
         response, _ = self.message_queue.receive(type=C_TO_PY)
         game, players = struct.unpack("iQ", response)
-        print(game, players)
 
-        return game, players
+        return nom, players
    
         # return the game it is connected to and its players 
         # pass

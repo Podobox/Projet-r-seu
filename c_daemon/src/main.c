@@ -21,6 +21,10 @@ fd_set readfds;
 struct sockaddr_in master_addr = {};
 
 int main(int argc, char **argv) {
+    char buffer[BUFSIZE];
+    bzero(buffer, BUFSIZE);
+    int charcnt;
+
     // initialiser la connection
     for (int i = 0; i < PLAYER_MAX; i++) {
         connection[i].used = 0;
@@ -67,17 +71,19 @@ int main(int argc, char **argv) {
                     fprintf(stderr, "Error number %d connecting to player #%d\n", res, index);
                 }
 
-                // get file to start the game
-                if (write(connection[index].socket, "/file_transfer", strlen("/file_transfer") + 1) < 0){
-                    stop("cannot send message for file transfer");
-                }
-                recv_file(connection[index].socket);
-                
-
                 // get list of other IP addresses
                 if (write(connection[index].socket, "/ip_demande", strlen("/ip_demande") + 1) < 0) {
                     stop("cannot demande ip table");
                 }
+                
+                // get file to start the game
+                if (write(connection[index].socket, "/file_transfer", strlen("/file_transfer") + 1) < 0){
+                    stop("cannot send message for file transfer");
+                }
+
+                recv_file(connection[index].socket);
+
+                
                 // demand the initial state of the game
                 if (write(connection[index].socket, "/init_state_demand", strlen("/init_state_demand") + 1) < 0) {
                     stop("cannot demand initial state");
@@ -138,9 +144,7 @@ int main(int argc, char **argv) {
                 printf("Unable to retrieve the IP address of the new client\n");
             }
         } else if (FD_ISSET(STDIN_FILENO, &readfds)) {
-            char buffer[BUFSIZE];
             bzero(buffer, BUFSIZE);
-            int charcnt;
             if ((charcnt = read(STDIN_FILENO, buffer, BUFSIZE - 1)) < 0) {
                 stop("Standard input error");
             }
@@ -164,8 +168,6 @@ int main(int argc, char **argv) {
         else {
             for (int index = 0; index < PLAYER_MAX; index++) {
                 if (FD_ISSET(connection[index].socket, &readfds)) {
-                    char buffer[BUFSIZE];
-                    int charcnt;
                     bzero(buffer, BUFSIZE);
 
                     // this player has disconnected
@@ -209,7 +211,7 @@ int main(int argc, char **argv) {
                             }
 
                             if (write(connection[index].socket, buffer, strlen(buffer) + 1) < 0) {
-                                fprintf(stderr, "Cannot send /ip_response message to player #%d\n", index);
+                                fprintf(stderr, "\tCannot send /ip_response message to player #%d\n", index);
                             }
                         }
 
@@ -221,14 +223,14 @@ int main(int argc, char **argv) {
                             char *get_ip_buffer = strtok(buffer, " ");
                             char *get_ip_player = strtok(NULL, " ");
 
-                            while (get_ip_player != '\0') {
-                                fprintf(stderr, "get_ip_player NOT NULL %s\n", get_ip_player);
+                            while (*get_ip_player != '\0') {
+                                fprintf(stderr, "\tget_ip_player NOT NULL %s\n", get_ip_player);
 
                                 for (int ind = 0; ind < PLAYER_MAX; ind++) {
                                     if (!connection[ind].used) {
                                         connection[ind].IP = get_ip_player;
                                         if ((res = connect_existed_players(ind))) {
-                                            fprintf(stderr, "Error number %d connecting to player #%d\n", res, ind);
+                                            fprintf(stderr, "\tError number %d connecting to player #%d\n", res, ind);
                                         }
                                         break;
                                     }
@@ -240,13 +242,21 @@ int main(int argc, char **argv) {
                         
                         else if (!strcmp(cmd, "/file_transfer")){
                             printf("IN FILE TRANSFER\n");
-
                             // send file of the current game
                             send_file_by_socket(connection[index].socket);
+                        }
 
-                        } else if (!strcmp(cmd, "/init_state_demand")) {
+                        // else if (!strcmp(cmd, "/file_start")){
+                        //     printf("IN FILE START\n");
+                        //     recv_file(connection[index].socket);
+                        // } 
+                         
+                        
+                        else if (!strcmp(cmd, "/init_state_demand")) {
                             // get file from python
-                        } else {
+                        } 
+                        
+                        else {
                             printf("OTHER MESSAGE\n");
                         }
                     }

@@ -40,6 +40,7 @@ void print_connections() {
 void send_file_by_socket(int sockfd) {
     FILE *fp;
     char buffer[BUFSIZE];
+    long file_size;
 
     // TO DO 
     // get the name of the file
@@ -55,44 +56,64 @@ void send_file_by_socket(int sockfd) {
 
     /*sprintf(cwd,"%s/Save/online_game",cwd);*/
     strcat(cwd, "/Save/online_game");
-    printf("$PWD: %s\n", cwd);
-    fp = fopen(cwd, "r");
-    if (fp == NULL) {
+    printf("\t$PWD: %s\n", cwd);
+
+    // sent info to start sending file
+    if (write(sockfd, "/file_start", strlen("/file_start") + 1) < 0) {
+        stop("cannot send file_start info");
+    }
+
+    if ((fp = fopen(cwd, "r"))== NULL) {
         stop("File not found.\n");
+    }
+
+    // Determine the size of the file
+    fseek(fp, 0, SEEK_END);
+    file_size = ftell(fp);
+    rewind(fp);
+
+    sprintf(buffer, "/file_size %ld", file_size);
+    printf("\tsent = %s\n", buffer);
+    if (write(sockfd, buffer, strlen(buffer) + 1) < 0) {
+        stop("cannot send file_size info");
     }
 
     // read in the file and send
     int size;
     while ((size = fread(buffer, 1, BUFSIZE - 1, fp)) == BUFSIZE - 1) {
         buffer[size] = '\0';
-        printf("sent buffer %d: %s\n", size ,buffer);
+        printf("\tsent buffer %d: %s\n", size ,buffer);
         if (write(sockfd, buffer, size) < 0) {
             stop("error in sending file");
         }
     }
+
     buffer[size] = '\0';
     if (write(sockfd, buffer, size) < 0) {
         stop("send");
     }
+    printf("\tsent buffer %d: %s\n", size ,buffer);
+
 
     fclose(fp);
 
-    printf("File sent succesfully\n");
+    printf("\tFile sent succesfully\n");
 
 }
 
 void recv_file(int sockfd) {
-   char buffer[BUFSIZE];
+    printf("IN IP RESPONSE\n");
 
-    // create the directory if it doesn't exist
-    mkdir(SAVE_DIR, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    char buffer[BUFSIZE];
+    long file_size;
+    char *cmd;
+    int total_bytes_read = 0;
 
     // create a new file in the save directory
     char cwd[BUFSIZE];
     getcwd(cwd, sizeof(cwd));
-
-    strcat(cwd, "/online_game");
-    printf("$PWD received file: %s\n", cwd);
+    strcat(cwd, "/Save/on_game");
+    printf("\t$PWD received file: %s\n", cwd);
 
     FILE* fp = fopen(cwd, "w");
     if (fp == NULL) {
@@ -100,25 +121,54 @@ void recv_file(int sockfd) {
         return;
     }
 
-    printf("start recv_file()\n");
+    printf("\tstart recv_file()\n");
     int valread;
-    while ((valread = read(sockfd, buffer, BUFSIZE - 1)) == BUFSIZE - 1) {
 
+
+    valread = read(sockfd, buffer, BUFSIZE - 1);
+    cmd = strtok(buffer, " ");
+
+    // get the file size to verify the file is sent correctly
+    file_size = atoi(strtok(NULL, " "));
+    printf("cmd in recv_file, file size = %ld\n", file_size);
+    printf("in recv_file, total bytes read = %d\n", total_bytes_read);
+
+
+    while ( total_bytes_read + BUFSIZE - 1 <= file_size ) {
+
+        valread = read(sockfd, buffer, BUFSIZE - 1);
         buffer[valread] = '\0';
-        printf("recv buffer %d: %s\n", valread,  buffer);
         fwrite(buffer, 1, valread, fp);
+        total_bytes_read += BUFSIZE - 1; 
+        printf("\trecv buffer, total_bytes_read = %d, valread = %dB: %s\n", total_bytes_read, valread,  buffer);
+        
     }
 
+    valread = read(sockfd, buffer, BUFSIZE - 1);
     if (valread != 0) {
         buffer[valread] = '\0';
-        fwrite(buffer, 1, valread, fp);      
+        // printf("\trecv buffer, total_bytes_read = %d, valread = %dB: %s\n", total_bytes_read, valread,  buffer);
+        fwrite(buffer, 1, valread, fp);  
+        total_bytes_read += valread; 
     }
 
-
-    printf("end recv_file()\n");
-    
     fclose(fp);
+
+
+    printf("in recv_file out while, total bytes read = %d\n", total_bytes_read);
+    if(total_bytes_read == file_size) {
+        printf("\tReceived file of %ld successfully\n", file_size);
+        // return 0;
+    }
+    else {
+        printf("\tReceived file of %ld unsuccessfully\n", file_size);
+        // return 1;
+    }
+
+    
 }
+
+
 
 
 

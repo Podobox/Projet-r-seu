@@ -286,14 +286,16 @@ def enter_connect_game():
                         pygame.display.flip()
                         continue
                     ip, port = ip_port.split("/")
-                    game, players = communication.connect(ip, int(port))
+                    nom, players = communication.connect(ip, int(port))
+                    backup = Backup(nom)
+                    game = backup.load(nom)
                     if game is None:
                         erreur = "host does not exist"
                         text_erreur = font.render(erreur, True, (255, 0, 0))
                         screen.blit(text_erreur, ((x[0] / 2) - 50, (x[1] / 3) + 100))
                         pygame.display.flip()
                     else:
-                        Controller(ip_port, game='online_game')
+                        Controller(nom, game=game)
                 else:
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:

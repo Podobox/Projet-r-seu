@@ -34,7 +34,10 @@ struct {
 void send_from_c()
 {
 	// buffer->message_type = 5;
-	message.mes.message_type = 5;
+	message.mes.message_type = 7;
+    message.mes.posx = 12;
+    message.mes.posy = 12;
+    message.mes.type = 2;
 	int msqid;
 	// msgget creates a message queue and returns identifier
 	msqid = msgget(MESG_KEY, 0666 | IPC_CREAT);
@@ -53,7 +56,7 @@ int main()
 {
 	buffer = calloc(sizeof(struct python_struct_t), 1);
 
-	while (True)
+	/*while (True)*/
 	{
 		send_from_c();
 	}

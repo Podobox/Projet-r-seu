@@ -81,6 +81,7 @@ class Message(Enum):
 
 class Communication:
     def __init__(self):
+        sysv_ipc.MessageQueue.remove(sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT))
         # create fifo to communicate with c daemon
         self.message_queue = sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT)
         self.message = Queue(-1)

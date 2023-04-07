@@ -85,19 +85,19 @@ class Controller:
         for _ in range(5):
             self.game.increase_speed()
 
-        for x in range(10, 15):
-            for y in range(2, 20):
-                self.game.destroy(x, y)
+        # for x in range(10, 15):
+            # for y in range(2, 20):
+                # self.game.destroy(x, y)
 
-        for x in range(13, 15):
-            for y in range(2, 8):
-                self.game.build(x, y, New_House)
-        for x in range(13, 15):
-            for y in range(2, 8):
-                self.game.map.grid[x][y].owner = None
-        for x in range(0, 20):
-            for y in range(1):
-                self.game.map.grid[x][y].owner = None
+        # for x in range(13, 15):
+            # for y in range(2, 8):
+                # self.game.build(x, y, New_House)
+        # for x in range(13, 15):
+            # for y in range(2, 8):
+                # self.game.map.grid[x][y].owner = None
+        # for x in range(0, 20):
+            # for y in range(1):
+                # self.game.map.grid[x][y].owner = None
 
         while True:
             self.game.advance_time()
@@ -132,6 +132,7 @@ class Controller:
         return
 
     def handle_message(self, message):
+        print(f"received {message}")
         match MessageType(message[0]):
             case MessageType.REQUIRE_OWNERSHIP:
                 if self.game.map.grid[message[1]][message[2]].owner == com.ME:
@@ -298,20 +299,6 @@ class Controller:
                     pg.quit()
                     exit()
                 case pg.KEYDOWN:
-                    if event.key == pg.K_a:
-                        self.communication.message.append((
-                            MessageType.WALKER_SPAWN.value, 14, 7, 0,
-                            walker_type(Migrant)))
-                    if event.key == pg.K_b:
-                        self.communication.message.append((
-                            MessageType.WALKER_DESTROY.value, 14, 7, 0,
-                            walker_type(Migrant)))
-                    if event.key == pg.K_c:
-                        self.communication.message.append((
-                            MessageType.DESTROY.value, 14, 7, 0, 0))
-                    if event.key == pg.K_d:
-                        self.communication.message.append((
-                            MessageType.BUILD.value, 14, 7, building_type(House), 0))
                     print("Pressed ", event.unicode)
                 case pg.KEYUP:
                     print("Released ", event.unicode)

@@ -429,7 +429,7 @@ class Game:
                     continue
                 if isinstance(w, Prefect) and w.prefect_state != Prefect_State.RETURN:
                     continue
-            print(w.building.tile, com.ME)
+            # print(w.building.tile, com.ME)
             res = w.walk(self.date, action=(w.building.tile.owner == com.ME))
             if w.building.tile.owner == com.ME:
                 match res:

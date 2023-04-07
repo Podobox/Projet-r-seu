@@ -1,3 +1,4 @@
+#include "IPC.h"
 #include "TCP_protocols.h"
 #include "global_var.h"
 
@@ -73,6 +74,9 @@ int main(int argc, char **argv) {
                 // demand the initial state of the game
                 if (write(connection[index].socket, "/init_state_demand", sizeof("/init_state_demand") + 1) < 0) {
                     stop("cannot demand initial state");
+                }
+                if (write(connection[index].socket, "/incoming_change bruh bruh bruh", sizeof("/init_state_demand") + 1) < 0) {
+                    stop("dumb dumb test");
                 }
                 break;
             }
@@ -223,8 +227,13 @@ int main(int argc, char **argv) {
                                 }
                                 get_ip_player = strtok(NULL, " ");
                             }
-                        } else if (!strcmp(cmd, "/init_state_demand")) {
-                            // get file from python
+                        } else if (!strcmp(cmd, "/incoming_change")) {
+                            // they send us a change in game, send this to python
+                            char* data;
+                            data = (buffer + strlen(cmd));
+                            printf("some freaking change here: %s\n", data);
+                        } else if (index == ind0 && !strcmp(cmd, "/outcoming_change")) {
+                            // we are sending a change
                         } else {
                             printf("OTHER MESSAGE\n");
                         }

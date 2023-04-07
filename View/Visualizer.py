@@ -45,8 +45,6 @@ from View.Chat import Chat
 import Controller.Communication as com
 from Model.Tree import Tree
 from Model.Water import Water
-from Controller.property_possession import PropertyPossession
-from Model.Player import Player
 from View.PlayersConnect import PLayerConnected
 
 # Get full screen size
@@ -93,7 +91,6 @@ class Visualizer:
     zoom = DEFAULT_ZOOM
     MODE_FILE_MENU = False
     showPlayers = False
-
     buildingMode = False
 
     def __init__(self, list_button, game, backup, communication):
@@ -389,28 +386,23 @@ class Visualizer:
         # overlap
         for row in range(MAP_DIM):
             for column in range(MAP_DIM):
-      
                 if MAP.is_type(column, row, Road):
-                    if self.overlayType == 'Tile':
-                        self.showPlayerCase(MAP, row, column,tileDIM, origin) 
-                    else:
-    
-                        roadType = 0
-                        roadType += 1 if (column >
-                                        0 and MAP.is_type(column - 1, row, Road)) else 0
-                        roadType += 2 if (row > 0 and MAP.is_type(column, row - 1, Road)) else 0
-                        roadType += 4 if (column <
-                                        MAP_DIM and MAP.is_type(column + 1, row, Road)) else 0
-                        roadType += 8 if (row <
-                                        MAP_DIM and MAP.is_type(column, row + 1, Road)) else 0
-                        if roadType == 0:
-                            roadType = 5
-                        imgCode = '000' + (f'0{roadType}' if roadType < 10 else f'{roadType}')
-                        imgName = 'Road'
-                        compenX = cellSize
-                        compenY = 0
-                        self.displayImage(row, column, tileDIM, origin,
-                                        imgName, imgCode, compenX, compenY)
+                    roadType = 0
+                    roadType += 1 if (column >
+                                      0 and MAP.is_type(column - 1, row, Road)) else 0
+                    roadType += 2 if (row > 0 and MAP.is_type(column, row - 1, Road)) else 0
+                    roadType += 4 if (column <
+                                      MAP_DIM and MAP.is_type(column + 1, row, Road)) else 0
+                    roadType += 8 if (row <
+                                      MAP_DIM and MAP.is_type(column, row + 1, Road)) else 0
+                    if roadType == 0:
+                        roadType = 5
+                    imgCode = '000' + (f'0{roadType}' if roadType < 10 else f'{roadType}')
+                    imgName = 'Road'
+                    compenX = cellSize
+                    compenY = 0
+                    self.displayImage(row, column, tileDIM, origin,
+                                      imgName, imgCode, compenX, compenY)
                 elif MAP.is_type(column, row, None):
                     if self.overlayType == 'Desirability':
                         desirabilityLevel = MAP.grid[column][row].desirability
@@ -504,9 +496,6 @@ class Visualizer:
                             desirabilityLevel = MAP.grid[column][row].building.tile.desirability
                             self.showDesirabilityLevel(
                                 row, column, tileDIM, origin, desirabilityLevel)
-                        elif self.overlayType == 'Tile':
-                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
-                       
                         else:
                             houseNames = {
                                 1: 'SmallTent', 2: 'LargeTent', 3: 'SmallShack', 4: 'LargeShack'}

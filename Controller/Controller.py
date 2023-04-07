@@ -113,8 +113,12 @@ class Controller:
             pg.display.update()
 
             # for message in self.communication.check_messages():
+<<<<<<< HEAD
                 # self.handle_message(message)
 
+=======
+            #     self.handle_message()
+>>>>>>> 6a97858449dc6e689e357a1998f2a8860491ddd7
 
             self.wait_next_frame()
 

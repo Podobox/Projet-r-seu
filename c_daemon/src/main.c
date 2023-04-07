@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
                     stop("cannot demande ip table");
                 }
                 // demand the initial state of the game
-                if (write(connection[index].socket, "/init_state_demand", sizeof("/init_state_demand") + 1) < 0) {
+                if (write(connection[index].socket, "/init_state_demand", strlen("/init_state_demand") + 1) < 0) {
                     stop("cannot demand initial state");
                 }
                         
@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
             }
 
             // accept connection with new player
-            int len = sizeof(master_addr);
+            unsigned int len = sizeof(master_addr);
             if ((res = accept(listenfd, (struct sockaddr *)&master_addr, &len)) < 0) {
                 stop("Error accepting new player");
             }
@@ -183,7 +183,7 @@ int main(int argc, char **argv) {
                         printf("Received from IP:%s socket:%d buffer:%s\n", connection[index].IP, connection[index].socket, buffer);
 
                         char cmd[BUFSIZE];
-                        for (int i = 0; i <= strlen(buffer); i++) {
+                        for (long unsigned int i = 0; i <= strlen(buffer); i++) {
                             if (i == strlen(buffer)) {
                                 cmd[i] = '\0';
                                 break;
@@ -203,7 +203,9 @@ int main(int argc, char **argv) {
 
                             for (int ind = 0; ind < PLAYER_MAX; ind++) {
                                 if (connection[ind].used && ind != ind0 && ind != index /**/) {
-                                    sprintf(buffer, "%s %s", buffer, connection[ind].IP);
+                                    /*sprintf(buffer, "%s %s", buffer, connection[ind].IP);*/
+                                    strcat(buffer, " ");
+                                    strcat(buffer, connection[ind].IP);
                                 }
                             }
 
@@ -220,7 +222,7 @@ int main(int argc, char **argv) {
                             char *get_ip_buffer = strtok(buffer, " ");
                             char *get_ip_player = strtok(NULL, " ");
 
-                            while (get_ip_player != '\0') {
+                            while (*get_ip_player != '\0') {
                                 fprintf(stderr, "get_ip_player NOT NULL %s\n", get_ip_player);
 
                                 for (int ind = 0; ind < PLAYER_MAX; ind++) {

@@ -53,7 +53,8 @@ void send_file_by_socket(int sockfd) {
     //     }
     // }
 
-    sprintf(cwd,"%s/Save/online_game",cwd);
+    /*sprintf(cwd,"%s/Save/online_game",cwd);*/
+    strcat(cwd, "/Save/online_game");
     printf("$PWD: %s\n", cwd);
     fp = fopen(cwd, "r");
     if (fp == NULL) {
@@ -90,6 +91,7 @@ void recv_file(int sockfd) {
     char filename[MAX_FILENAME_LENGTH];
     sprintf(filename, "%s/online_game", SAVE_DIR);
 
+    printf("in %s, ", filename);
 
     FILE* fp = fopen(filename, "w");
     if (fp == NULL) {

@@ -81,7 +81,7 @@ char *get_my_IP() {
     struct ifaddrs *addrs, *tmp;
     addrs = (struct ifaddrs *)malloc(sizeof(struct ifaddrs));
     tmp = (struct ifaddrs *)malloc(sizeof(struct ifaddrs));
-    getifaddrs(addrs);
+    getifaddrs(&addrs);
     tmp = addrs;
 
     while(tmp){

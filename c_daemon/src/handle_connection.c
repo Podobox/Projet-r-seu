@@ -91,7 +91,7 @@ void recv_file(int sockfd) {
     char cwd[BUFSIZE];
     getcwd(cwd, sizeof(cwd));
 
-    sprintf(cwd,"%s/on_game", SAVE_DIR);
+    strcat(cwd, "/online_game");
     printf("$PWD received file: %s\n", cwd);
 
     FILE* fp = fopen(cwd, "w");

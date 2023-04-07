@@ -293,7 +293,7 @@ def enter_connect_game():
                         screen.blit(text_erreur, ((x[0] / 2) - 50, (x[1] / 3) + 100))
                         pygame.display.flip()
                     else:
-                        Controller(ip_port, game=game)
+                        Controller(ip_port, game='online_game')
                 else:
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:

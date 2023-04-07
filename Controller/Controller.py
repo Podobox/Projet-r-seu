@@ -265,6 +265,9 @@ class Controller:
                                     elif self.buttonclicked.game != -1:
                                         self.buttonclicked.action(self.buttonclicked.game)
 
+                                    elif self.buttonclicked.player_avatars != -1:
+                                        self.buttonclicked.action(self.buttonclicked.player_avatars)
+                                    
                                     else:
                                         self.buttonclicked.action()
                                         actionned = True

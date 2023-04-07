@@ -59,7 +59,8 @@ a = False
 param = False
 start_new_game = False
 avatar_select = False
-global avatar_name 
+avatar_name = ""
+player_list =[]
 
 def button(panel, mouse):
     # soit 275 la largeur et 30 la hauteur de chaque panel
@@ -321,7 +322,6 @@ def saved():
                         a = True
                         enter_saved_game()
                         # for i in Save:
-
 def selector_avatar_connect():
     global menu_page
     global running
@@ -330,6 +330,7 @@ def selector_avatar_connect():
     global start_new_game
     global avatar_select
     global a
+    global player_list
 
     x = screen.get_size()
     avatar_images = []
@@ -337,15 +338,17 @@ def selector_avatar_connect():
     avatar_names = ["Julius", "Octavius", "Brutus", "Minerve","Dozer", "Persephone"]
     avatar_x_positions = [x[0] / 6 - 100, x[0] / 2 - 100, 5 * x[0] / 6 - 100, x[0] / 6 - 100, x[0] / 2 - 100, 5 * x[0] / 6 - 100]
     avatar_y_positions = [x[1] / 3, x[1] / 3, x[1] / 3, 2 * x[1] / 3, 2 * x[1] / 3, 2 * x[1] / 3]
+    avatars_selectionnes = []
 
     for i in range(len(avatar_names)):
-        avatar_image = pygame.image.load(f"./Images/play_menu/{avatar_names[i]}.png").convert_alpha()
-        avatar_image = pygame.transform.scale(avatar_image, (200, 200))
-        avatar_rect = avatar_image.get_rect()
-        avatar_rect.x = avatar_x_positions[i]
-        avatar_rect.y = avatar_y_positions[i]
-        avatar_images.append(avatar_image)
-        avatar_rects.append(avatar_rect)
+        if avatar_names[i] not in avatars_selectionnes:
+            avatar_image = pygame.image.load(f"./Images/play_menu/{avatar_names[i]}.png").convert_alpha()
+            avatar_image = pygame.transform.scale(avatar_image, (200, 200))
+            avatar_rect = avatar_image.get_rect()
+            avatar_rect.x = avatar_x_positions[i]
+            avatar_rect.y = avatar_y_positions[i]
+            avatar_images.append(avatar_image)
+            avatar_rects.append(avatar_rect)
 
     while avatar_select: 
         back_1 = pygame.image.load('Images/_fired_00001.png')
@@ -363,21 +366,29 @@ def selector_avatar_connect():
                 quit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 for i in range(len(avatar_names)):
-                    if avatar_rects[i].collidepoint(event.pos):
+                    if avatar_rects[i].collidepoint(event.pos) and avatar_names[i] not in avatars_selectionnes:
+                        avatars_selectionnes.append(avatar_names[i])
                         avatar_select = False
+                        add_player(idPlayer, avatar_names[i])
                         a = True
                         print(f"Selected {avatar_names[i]}")
+
                         enter_connect_game()
                         break
 
         for i in range(len(avatar_names)):
-            # pygame.draw.rect(screen, (255, 255, 255), avatar_rects[i], 5)
-            screen.blit(avatar_images[i], (avatar_rects[i].x + 5, avatar_rects[i].y + 5))
-            font = pygame.font.SysFont(None, 40)
-            text = font.render(avatar_names[i], True, (255, 0, 0))
-            screen.blit(text, (avatar_rects[i].x + 50, avatar_rects[i].y + 215))
+            if avatar_names[i] not in avatars_selectionnes:
+                screen.blit(avatar_images[i], (avatar_rects[i].x + 5, avatar_rects[i].y + 5))
+                font = pygame.font.SysFont(None, 40)
+                text = font.render(avatar_names[i], True, (255, 0, 0))
+                screen.blit(text, (avatar_rects[i].x + 50, avatar_rects[i].y + 215))
 
         pygame.display.flip()
+
+player_list = []
+def add_player(name, avatar):
+    player = {'name': name, 'avatar': avatar}
+    player_list.append(player)
 
 def connect():
     global saved_games_menu

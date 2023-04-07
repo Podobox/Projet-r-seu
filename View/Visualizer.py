@@ -2,6 +2,7 @@ from operator import imod
 from turtle import window_width
 import pygame as pg
 import tkinter as tk
+import pygame
 
 from Controller.barre_jeu import Barre
 from Model.Engineer_Post import Engineer_Post
@@ -95,7 +96,7 @@ class Visualizer:
     buildingMode = False
 
     def __init__(self, list_button, game, backup, communication):
-        # Create pygame window
+        # Create pg window
         self.game = game
         global WINDOW_HEIGHT, WINDOW_WIDTH
         self.window = pg.display.set_mode(
@@ -103,7 +104,9 @@ class Visualizer:
         WINDOW_WIDTH, WINDOW_HEIGHT = self.window.get_size()
         self.GAME_WIDTH = WINDOW_WIDTH
         self.GAME_HEIGHT = WINDOW_HEIGHT
-        self.menu = Menu(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, self.game, self.isoToCart, self)
+        self.imgavatar = PLayerConnected(self.window, WINDOW_WIDTH, WINDOW_HEIGHT)
+
+        self.menu = Menu(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, self.game, self.isoToCart, self, self.imgavatar)
         self.menu_displayed = False
         self.list_button = list_button
         self.zoom = DEFAULT_ZOOM
@@ -113,7 +116,7 @@ class Visualizer:
         self.fileMenu = FileMenu(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, backup, game, communication)
         #self.images = dict()
         self.minimap = Minimap(self.window, WINDOW_WIDTH, WINDOW_HEIGHT)
-        self.imgavatar = PLayerConnected(self.window, WINDOW_WIDTH, WINDOW_HEIGHT)
+        # self.show_new_window(self.window)
 
         self.chat = Chat(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, communication)
         self.loadImages()
@@ -1674,7 +1677,7 @@ class Visualizer:
             imgCode =''
             self.displayImage(row, column, tileDIM, origin, imgName,imgCode, compenX, compenY)
 
-
+    
     def showDesirabilityLevel(self, row, column, tileDim, origin, desirabilityLevel):
         desirabilityLevel = desirabilityLevel // 4
         if desirabilityLevel < -3:
@@ -1707,6 +1710,29 @@ class Visualizer:
             [compenX, compenY] = compenVal[desirabilityLevel]
         self.displayImage(row, column, tileDim, origin,
                           imgName, imgCode, compenX, compenY)
+        
+
+
+
+    def show_new_window(self, window_parent):
+        pygame.init()
+        self.window_size = (800, 600)
+        self.new_window = pygame.display.set_mode(self.window_size)
+        
+        # Position de la nouvelle fenêtre en dessous de la fenêtre parente
+        new_window_x = window_parent.get_rect().x
+        new_window_y = window_parent.get_rect().y + window_parent.get_rect().h + 10 # 10 pixels de décalage
+        self.new_window.get_rect().move_ip(new_window_x, new_window_y)
+        
+        self.new_window.fill((255, 255, 255))
+        pygame.display.set_caption("Nouvelle fenêtre")
+        
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    return
+            pygame.display.update()
 
 # Things left to render:
 # Granary's Crane

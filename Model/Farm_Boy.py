@@ -2,6 +2,7 @@ from Model.Destination_Walkers import Destination_Walkers
 from Model.Walkers import Action
 from Model.Granary import Granary
 from enum import Enum
+import Controller.Communication as com
 
 
 class Farm_Boy_State(Enum):
@@ -39,8 +40,8 @@ class Farm_Boy(Destination_Walkers):
                     self.map.grid[self.granary.tile.posx][self.granary.tile.posy].building \
                     and action:
                 if self.granary.stock():
-                    self.farm.communication.granary_stock(self.farm.tile.posx,
-                                                          self.farm.tile.posy)
+                    com.communication.granary_stock(self.farm.tile.posx,
+                                                    self.farm.tile.posy)
                     self.destination = (self.spawn_road.tile.posx, self.spawn_road.tile.posy)
                     self.state = Farm_Boy_State.TO_FARM
         else:  # TO_FARM

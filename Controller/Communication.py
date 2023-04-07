@@ -2,13 +2,6 @@ import os
 from time import time_ns
 from enum import Enum
 from Model.Player import Player
-from Model.Engineer import Engineer
-from Model.Farm_Boy import Farm_Boy
-from Model.Market_Buyer import Market_Buyer
-from Model.Market_Trader import Market_Trader
-from Model.Migrant import Migrant
-from Model.Prefect import Prefect
-from Model.Tax_Collector import Tax_Collector
 import sys
 import sysv_ipc
 import re
@@ -21,13 +14,6 @@ from time import sleep, time_ns
 
 ME = None
 
-
-def walker_type(w, to_num=True):
-    walkers = [Engineer, Farm_Boy, Market_Buyer, Market_Trader, Migrant, Prefect, Tax_Collector]
-    if to_num:
-        return walkers.index(w)
-    else:
-        return walkers[w]
 
 
 # if bug with population : add event for job offered in a specific building
@@ -255,6 +241,7 @@ class Communication:
         pass
 
 
+communication = Communication()
 
 """ TEST
 Sender = Communication()

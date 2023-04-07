@@ -91,7 +91,7 @@ class Visualizer:
 
     buildingMode = False
 
-    def __init__(self, list_button, game, backup, communication):
+    def __init__(self, list_button, game, backup):
         # Create pygame window
         self.game = game
         global WINDOW_HEIGHT, WINDOW_WIDTH
@@ -107,7 +107,7 @@ class Visualizer:
         self.images = {zoom: dict() for zoom in cellSizeDict}
         self.barre = Barre(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, False, self)
         # self.barre.barre_function()
-        self.fileMenu = FileMenu(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, backup, game, communication)
+        self.fileMenu = FileMenu(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, backup, game)
         #self.images = dict()
         self.minimap = Minimap(self.window, WINDOW_WIDTH, WINDOW_HEIGHT)
         self.loadImages()

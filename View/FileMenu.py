@@ -8,18 +8,18 @@ from Model.Prefecture import Prefecture
 from Model.Engineer_Post import Engineer_Post
 from Model.House import House
 from Controller.Backup import Backup
+import Controller.Communication as com
 
 
 class FileMenu:
 
-    def __init__(self, window, window_width, window_height, backup, game, communication):
+    def __init__(self, window, window_width, window_height, backup, game):
         self.window = window
         self.window_width = window_width
         self.window_height = window_height
         self.coefficient = 0.28
         self.backup = backup
         self.game = game
-        self.communication = communication
 
         self.AddButtons()
 
@@ -42,7 +42,7 @@ class FileMenu:
         return self.list_button
 
     def quit(self):
-        self.communication.disconnect()
+        com.communication.disconnect()
         exit()
         return
 

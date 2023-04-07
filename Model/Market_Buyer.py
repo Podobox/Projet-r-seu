@@ -2,6 +2,7 @@ from Model.Destination_Walkers import Destination_Walkers
 from Model.Walkers import Action
 from Model.Granary import Granary
 from enum import Enum
+import Controller.Communication as com
 
 
 class Market_Buyer_State(Enum):
@@ -26,8 +27,8 @@ class Market_Buyer(Destination_Walkers):
             if action and self.granary == \
                     self.map.grid[self.granary.tile.posx][self.granary.tile.posy].building:
                 if self.granary.unstock():
-                    self.granary.communication.granary_unstock(self.market.tile.posx,
-                                                               self.market.tile.posy)
+                    com.communication.granary_unstock(self.market.tile.posx,
+                                                      self.market.tile.posy)
                     self.destination = (self.spawn_road.tile.posx, self.spawn_road.tile.posy)
                     self.state = Market_Buyer_State.TO_MARKET
         else:  # TO_MARKET
@@ -41,8 +42,8 @@ class Market_Buyer(Destination_Walkers):
                                             self.granary.road_connection.tile.posy)
                     # cartload can't be refused because we left only when there was place
                     self.market.stock()
-                    self.market.communication.market_stock(self.market.tile.posx,
-                                                           self.market.tile.posy)
+                    com.communication.market_stock(self.market.tile.posx,
+                                                   self.market.tile.posy)
                     self.state = Market_Buyer_State.TO_GRANARY
 
     def action_post(self):

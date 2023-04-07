@@ -1,7 +1,7 @@
 from Model.Building import Building
 from Model.Market_Buyer import Market_Buyer
 from Model.Market_Trader import Market_Trader
-from Controller.Communication import walker_type
+import Controller.Communication as com
 
 
 class Market(Building):
@@ -44,8 +44,6 @@ class Market(Building):
         if self.buyer is None:
             if self.is_active():
                 self.buyer = Market_Buyer(map, self.road_connection, self)
-                self.communication.walker_spawn(self.tile.posx, self.tile.posy,
-                                                walker_type(Market_Buyer))
                 return True
         else:
             if not self.is_active():
@@ -56,8 +54,6 @@ class Market(Building):
         if self.trader is None:
             if self.is_active():
                 self.trader = Market_Trader(self, self.road_connection, map)
-                self.communication.walker_spawn(self.tile.posx, self.tile.posy,
-                                                walker_type(Market_Trader))
                 return True
         else:
             if not self.is_active():

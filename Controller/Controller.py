@@ -8,7 +8,7 @@ from Model.Rock import Rock
 from Model.Tree import Tree
 from Model.Water import Water
 from View.Visualizer import Visualizer, cellSizeDict
-from Model.Game import Game, building_type
+from Model.Game import Game, building_type, walker_type
 from Model.House import House
 from Model.Prefecture import Prefecture
 from Model.Engineer_Post import Engineer_Post
@@ -29,7 +29,7 @@ from time import time_ns, sleep
 from Controller.Backup import Backup
 from Model.Destination_Walkers import Destination_Walkers
 from random import randint
-from Controller.Communication import Communication, MessageType, walker_type
+from Controller.Communication import Communication, MessageType
 import Controller.Communication as com
 from Model.Farm_Boy import Farm_Boy_State, Farm_Boy
 from Model.Market_Buyer import Market_Buyer_State, Market_Buyer
@@ -64,12 +64,10 @@ class Controller:
         # game is actually always set so changing the money here won't do anything
         self.game = Game(100000) if game is None else game
         self.backup = Backup(name_save)
-        self.communication = Communication()
-        self.game.communication = self.communication
         if players is None:
             self.game.take_all_ownership(self.player)
         self.game.set_initial_map()
-        self.visualizer = Visualizer(self.list_button, self.game, self.backup, self.communication)
+        self.visualizer = Visualizer(self.list_button, self.game, self.backup)
         self.building = False
         self.buttonclicked = None
         self.last_frame = time_ns()
@@ -121,7 +119,7 @@ class Controller:
 
             pg.display.update()
 
-            for message in self.communication.check_messages():
+            for message in com.communication.check_messages():
                 self.handle_message(message)
 
             self.wait_next_frame()
@@ -137,7 +135,7 @@ class Controller:
             case MessageType.REQUIRE_OWNERSHIP:
                 if self.game.map.grid[message[1]][message[2]].owner == com.ME:
                     self.game.map.grid[message[1]][message[2]] = None
-                    self.communication.give_ownership(message[1], message[2], message[3])
+                    com.communication.give_ownership(message[1], message[2], message[3])
             case MessageType.GIVE_OWNERSHIP:
                 # not handled here
                 pass

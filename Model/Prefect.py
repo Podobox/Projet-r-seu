@@ -1,4 +1,5 @@
 from Model.Random_Walkers import Random_Walkers, Random_Walker_State
+import Controller.Communication as com
 from Model.Walkers import Action
 from Model.Map import MAP_DIM
 from enum import Enum
@@ -61,8 +62,8 @@ class Prefect(Random_Walkers):
                             self.direction = None
                             return
                         b.burn_stage = 0
-                        self.prefecture.communication.burn_stage_reset(self.prefecture.tile.posx,
-                                                                       self.prefecture.tile.posy)
+                        com.communication.burn_stage_reset(self.prefecture.tile.posx,
+                                                           self.prefecture.tile.posy)
         elif self.prefect_state == Prefect_State.GOING_TO_FIRE:
             # print("prefect going to fire")
             pass

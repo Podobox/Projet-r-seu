@@ -1,6 +1,7 @@
 from Model.Building import Building
 from enum import Enum
 from dataclasses import dataclass
+import Controller.Communication as com
 
 
 class House_Level(Enum):
@@ -101,4 +102,4 @@ class House(Building):
                 self.food -= 1
             if self.food < 0:
                 self.food = 0
-            self.communication.house_eat(self.tile.posx, self.tile.posy, buf - self.food)
+            com.communication.house_eat(self.tile.posx, self.tile.posy, buf - self.food)

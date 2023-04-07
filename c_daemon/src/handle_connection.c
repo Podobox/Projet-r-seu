@@ -53,14 +53,9 @@ void send_file_by_socket(int sockfd) {
     //     }
     // }
 
-<<<<<<< HEAD
     /*sprintf(cwd,"%s/Save/online_game",cwd);*/
     strcat(cwd, "/Save/online_game");
     printf("$PWD: %s\n", cwd);
-=======
-    sprintf(cwd,"%s/Save/online_game",cwd);
-    printf("$PWD sent file: %s\n", cwd);
->>>>>>> f106eaf (error send file)
     fp = fopen(cwd, "r");
     if (fp == NULL) {
         stop("File not found.\n");

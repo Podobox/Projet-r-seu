@@ -221,7 +221,7 @@ int main(int argc, char **argv) {
                             char *get_ip_buffer = strtok(buffer, " ");
                             char *get_ip_player = strtok(NULL, " ");
 
-                            while (*get_ip_player != '\0') {
+                            while (get_ip_player != '\0') {
                                 fprintf(stderr, "get_ip_player NOT NULL %s\n", get_ip_player);
 
                                 for (int ind = 0; ind < PLAYER_MAX; ind++) {

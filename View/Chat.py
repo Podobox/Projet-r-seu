@@ -8,6 +8,7 @@ FONT2 = pg.font.Font(None, 28)
 
 class Chat:
 
+    def __init__(self, window, window_width, window_height, communication):
         self.window = window
         self.window_width = window_width
         self.window_height = window_height
@@ -37,11 +38,6 @@ class Chat:
                 self.is_selected = False
         if self.is_selected:
             self.check_input(now)
-        # can take control of chat with enter key
-        else:
-            for event in pg.event.get():
-                if event.type == pg.KEYDOWN and event.key == pg.K_RETURN:
-                    self.is_selected = True
         # if a message is sent, send it in peer to everyone and add it in memory
         if self.message:
             self.communication.send_chat_message(self.message)
@@ -78,28 +74,26 @@ class Chat:
 
     def check_input(self, now):
         for event in pg.event.get():
-                ### deselection the chat ###
-                # if (event.type == pg.K_ESCAPE):
-                #     running = False
-                #     pg.quit()
-                #     quit(0)
-                if event.type == pg.KEYDOWN:
-                    if event.key == pg.K_BACKSPACE:
-                        self.input = self.input[:-1]
-                        self.chat = self.creation()
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_BACKSPACE:
+                    self.input = self.input[:-1]
+                    self.chat = self.creation()
 
-                    elif event.key == pg.K_RETURN and self.input:
-                        self.message = self.input
-                        self.input = ""
-                        self.chat = self.creation()
-                        
-                    else:
-                        carac = event.dict['unicode']
-                        # don't input the key enter in carac
-                        if carac != '\r':
-                            self.input = self.input + carac
-                    
-                    # self.new_input = True
+                elif event.key == pg.K_ESCAPE:
+                    self.is_selected = False
+
+                elif event.key == pg.K_RETURN and self.input:
+                    self.message = self.input
+                    self.input = ""
+                    self.chat = self.creation()
+
+                else:
+                    carac = event.dict['unicode']
+                    # don't input the key enter in carac
+                    if carac != '\r':
+                        self.input = self.input + carac
+
+                # self.new_input = True
 
     def display_message(self, now):
         if self.memory:

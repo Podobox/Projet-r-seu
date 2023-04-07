@@ -9,7 +9,7 @@ from Model.Rock import Rock
 from Model.Tree import Tree
 from Model.Water import Water
 from View.Visualizer import Visualizer, cellSizeDict
-from Model.Game import Game
+from Model.Game import Game, building_type, walker_type
 from Model.House import House
 from Model.Prefecture import Prefecture
 from Model.Engineer_Post import Engineer_Post
@@ -32,6 +32,14 @@ from Model.Destination_Walkers import Destination_Walkers
 from random import randint
 from Controller.Communication import Communication, MessageType
 import Controller.Communication as com
+from Model.Farm_Boy import Farm_Boy_State, Farm_Boy
+from Model.Market_Buyer import Market_Buyer_State, Market_Buyer
+from Model.Market_Trader import Market_Trader
+from Model.Migrant import Migrant
+from Model.Engineer import Engineer
+from Model.Prefect import Prefect
+from Model.Tax_Collector import Tax_Collector
+from Model.Walkers import Direction
 
 FRAMES_PER_SECONDS = 10
 TIME_NS_PER_FRAME = 1 / FRAMES_PER_SECONDS * 1e9
@@ -57,12 +65,10 @@ class Controller:
         # game is actually always set so changing the money here won't do anything
         self.game = Game(100000) if game is None else game
         self.backup = Backup(name_save)
-        self.communication = Communication()
-        self.game.communication = self.communication
         if players is None:
             self.game.take_all_ownership(self.player)
         self.game.set_initial_map()
-        self.visualizer = Visualizer(self.list_button, self.game, self.backup, self.communication)
+        self.visualizer = Visualizer(self.list_button, self.game, self.backup)
         self.building = False
         self.buttonclicked = None
         self.last_frame = time_ns()
@@ -83,6 +89,19 @@ class Controller:
         # for x in range(MAP_DIM):
         #     for y in range(MAP_DIM):
         #         print(self.game.map.grid[x][y].owner)
+        # for x in range(10, 15):
+            # for y in range(2, 20):
+                # self.game.destroy(x, y)
+
+        # for x in range(13, 15):
+            # for y in range(2, 8):
+                # self.game.build(x, y, New_House)
+        # for x in range(13, 15):
+            # for y in range(2, 8):
+                # self.game.map.grid[x][y].owner = None
+        # for x in range(0, 20):
+            # for y in range(1):
+                # self.game.map.grid[x][y].owner = None
 
         while True:
             self.game.advance_time()
@@ -106,7 +125,7 @@ class Controller:
 
             pg.display.update()
 
-            for message in self.communication.check_messages():
+            for message in com.communication.check_messages():
                 self.handle_message(message)
 
             self.wait_next_frame()
@@ -117,21 +136,29 @@ class Controller:
         return
 
     def handle_message(self, message):
+        print(f"received {message}")
         match MessageType(message[0]):
             case MessageType.REQUIRE_OWNERSHIP:
-                pass
+                if self.game.map.grid[message[1]][message[2]].owner == com.ME:
+                    self.game.map.grid[message[1]][message[2]] = None
+                    com.communication.give_ownership(message[1], message[2], message[3])
             case MessageType.GIVE_OWNERSHIP:
+                # not handled here
                 pass
             case MessageType.CONNECT:
-                pass
+                Backup("online_game").save(self.game)
+                com.accept_connect()
             case MessageType.DISCONNECT:
-                pass
+                # message sent only to me, i take all the tiles
+                self.game.map.grid[message[1]][message[2]].owner = com.ME
             case MessageType.ACCEPT_CONNECTION:
                 pass
             case MessageType.CHANGE_OWNERSHIP:
+                # not necessary
                 pass
             case MessageType.BUILD:
-                self.game.build(message[1], message[2], force=True)
+                self.game.build(message[1], message[2],
+                                building_type(message[3], to_num=False), force=True)
             case MessageType.DESTROY:
                 self.game.destroy(message[1], message[2], force=True)
             case MessageType.CATCH_FIRE:
@@ -145,7 +172,17 @@ class Controller:
             case MessageType.DEVOLVE:
                 self.game.map.grid[message[1]][message[2]].building.devolve()
             case MessageType.MOVE_WALKER:
-                pass
+                b = self.game.map.grid[message[1]][message[2]].building
+                w = None
+                t = walker_type(message[4], to_num=False)
+                if t == Engineer: w = b.engineer
+                elif t == Farm_Boy: w = b.farm_boy
+                elif t == Market_Buyer: w = b.buyer
+                elif t == Market_Trader: w = b.trader
+                elif t == Migrant: w = b.migrant
+                elif t == Prefect: w = b.prefect
+                elif t == Tax_Collector: w = b.tax_collector
+                w.direction = Direction(message[4])
             case MessageType.REQUIRE_MONEY_OWNERSHIP:
                 pass
             case MessageType.REQUIRE_POPULATION_OWNERSHIP:
@@ -159,23 +196,79 @@ class Controller:
                 self.game.map.grid[message[1]][message[2]].building.collapse_stage = \
                     message[3]
             case MessageType.WALKER_SPAWN:
-                pass
+                b = self.game.map.grid[message[1]][message[2]].building
+                t = walker_type(message[4], to_num=False)
+                if t == Engineer:
+                    b.engineer_do(self.game.map)
+                    self.game.walkers.append(b.engineer)
+                elif t == Farm_Boy:
+                    b.deliver(self.game.map)
+                    self.game.walkers.append(b.farm_boy)
+                elif t == Market_Buyer:
+                    b.fill(self.game.map)
+                    self.game.walkers.append(b.buyer)
+                elif t == Market_Trader:
+                    b.trade(self.game.map)
+                    self.game.walkers.append(b.trader)
+                elif t == Migrant:
+                    b.migrate(self.game.map, force=True)
+                    self.game.walkers.append(b.migrant)
+                elif t == Prefect:
+                    b.prefect_do(self.game.map)
+                    self.game.walkers.append(b.prefect)
+                elif t == Tax_Collector:
+                    b.collect(self.game.map)
+                    self.game.walkers.append(b.tax_collector)
             case MessageType.GRANARY_STOCK:
-                # stock dans le grenier
-                # changer la destination de la market_buyer
-                pass
+                # farm boy
+                fb = self.game.map.grid[message[1]][message[2]].building.farm_boy
+                fb.granary.stock()
+                fb.destination = (fb.spawn_road.tile.posx, fb.spawn_road.tile.posy)
+                fb.state = Farm_Boy_State.TO_FARM
             case MessageType.GRANARY_UNSTOCK:
-                pass
+                # market buyer
+                mb = self.game.map.grid[message[1]][message[2]].building.buyer
+                mb.granary.unstock()
+                mb.destination = (mb.spawn_road.tile.posx, mb.spawn_road.tile.posy)
+                mb.state = Market_Buyer_State.TO_MARKET
             case MessageType.COLLAPSE_STAGE_RESET:
                 self.game.map.grid[message[1]][message[2]].building.collapse_stage = 0
             case MessageType.BURN_STAGE_RESET:
                 self.game.map.grid[message[1]][message[2]].building.burn_stage = 0
             case MessageType.MARKET_STOCK:
-                pass
+                # market buyer
+                mb = self.game.map.grid[message[1]][message[2]].building.buyer
+                mb.market.stock()
+                if mb.granary.road_connection is None:
+                    mb.destination = (mb.granary.tile.posx, mb.granary.tile.posy)
+                else:
+                    mb.destination = (mb.granary.road_connection.tile.posx,
+                                      mb.granary.road_connection.tile.posy)
+                mb.state = Market_Buyer_State.TO_GRANARY
             case MessageType.MARKET_SELL:
-                pass
+                # market trader
+                mt = self.game.map.grid[message[1]][message[2]].building.trader
+                mt.market.sell(message[3])
             case MessageType.WALKER_DESTROY:
-                pass
+                b = self.game.map.grid[message[1]][message[2]].building
+                w = None
+                t = walker_type(message[4], to_num=False)
+                if t == Engineer: w = b.engineer
+                elif t == Farm_Boy: w = b.farm_boy
+                elif t == Market_Buyer: w = b.buyer
+                elif t == Market_Trader: w = b.trader
+                elif t == Migrant: w = b.migrant
+                elif t == Prefect: w = b.prefect
+                elif t == Tax_Collector: w = b.tax_collector
+                self.game.remove_from_walkers(w)
+            case MessageType.HOUSE_FOOD_STOCK:
+                self.game.map.grid[message[1]][message[2]].food += message[3]
+            case MessageType.HOUSE_EAT:
+                self.game.map.grid[message[1]][message[2]].food -= message[3]
+            case MessageType.SPEND_MONEY:
+                self.game.denarii -= message[3]
+            case MessageType.COLLECT_MONEY:
+                self.game.denarii += message[3]
 
     def wait_next_frame(self):
         time_now = time_ns()
@@ -185,9 +278,9 @@ class Controller:
         # self.bench = (sleep_time * 1e-9 + self.bench * self.bench_nb) \
             # / (self.bench_nb + 1)
         # instant_bench = ((TIME_NS_PER_FRAME - sleep_time) / TIME_NS_PER_FRAME * 100)
-        self.bench = (((TIME_NS_PER_FRAME - sleep_time) / TIME_NS_PER_FRAME * 100)
-        + self.bench * self.bench_nb) / (self.bench_nb + 1)
-        self.bench_nb += 1
+        # self.bench = (((TIME_NS_PER_FRAME - sleep_time) / TIME_NS_PER_FRAME * 100)
+                      # + self.bench * self.bench_nb) / (self.bench_nb + 1)
+        # self.bench_nb += 1
         # print(self.bench)
         # print(instant_bench)
         # print(sleep_time * 1e-9)

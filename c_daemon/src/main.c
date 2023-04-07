@@ -8,7 +8,8 @@ int maxfd;
 int res;
 int listenfd = 0;
 int existed_player = 0;
-int ind1;
+// index of self
+int ind0;
 // int player_socket[PLAYER_MAX] = {0};
 // char *existed_player_IP[PLAYER_MAX] = {NULL};
 
@@ -27,10 +28,17 @@ int main(int argc, char **argv) {
         connection[i].IP = NULL;
     }
 
+    // char *testIP = get_my_IP();
+    // printf("My IP: %s\n", ((testIP == NULL) ? "nope" : testIP));
+    // return 0;
+
     // get own IP address
     // create another socket, addr_in for listenfd
     // and bind and listen on listenfd
-    char *ip_host = gethostIP();
+    char *ip_host = get_my_IP();
+    if (argc > 3) {
+        ip_host = argv[3];
+    }
     if ((res = create_master_socket(ip_host))) {
         fprintf(stderr, "Error number %d creating listening socket\n", res);
         return (EXIT_FAILURE);
@@ -38,6 +46,13 @@ int main(int argc, char **argv) {
 
     // add host master in the connection list
     add_connection(listenfd, ip_host);
+
+    for (int i = 0; i < PLAYER_MAX; i++) {
+        if (connection[i].used) {
+            ind0 = i;
+            break;
+        }
+    }
 
     if (argc > 1) {
         // connect to starting IP
@@ -47,28 +62,31 @@ int main(int argc, char **argv) {
         // printf("%d %s\n", PORT, existed_player_IP[0]);
         for (int index = 0; index < PLAYER_MAX; index++) {
             if (!connection[index].used) {
-                ind1 = index;
                 connection[index].IP = argv[1];
                 if ((res = connect_existed_players(index))) {
                     fprintf(stderr, "Error number %d connecting to player #%d\n", res, index);
                 }
+
+                // get file to start the game
+                if (write(connection[index].socket, "/file_transfer", strlen("/file_transfer") + 1) < 0){
+                    stop("cannot send message for file transfer");
+                }
+                recv_file(connection[index].socket);
+                
+
+                // get list of other IP addresses
+                if (write(connection[index].socket, "/ip_demande", strlen("/ip_demande") + 1) < 0) {
+                    stop("cannot demande ip table");
+                }
+                // demand the initial state of the game
+                if (write(connection[index].socket, "/init_state_demand", sizeof("/init_state_demand") + 1) < 0) {
+                    stop("cannot demand initial state");
+                }
+                        
                 break;
             }
         }
 
-        // get list of other IP addresses
-        if (write(connection[ind1].socket, "/file_transfer", strlen("/file_transfer") + 1) < 0){
-            stop("cannot send message for file transfer");
-        }
-        else{
-            recv_file(connection[ind1].socket);
-        }
-
-        
-        // get list of other IP addresses
-        if (write(connection[ind1].socket, "/ip_demande", strlen("/ip_demande") + 1) < 0){
-            stop("cannot demande ip table");
-        }
     }
 
     print_connections();
@@ -115,7 +133,7 @@ int main(int argc, char **argv) {
 
                 // save their socket fd
                 add_connection(res, newClientIP);
-                
+
                 print_connections();
             } else {
                 printf("Unable to retrieve the IP address of the new client\n");
@@ -161,13 +179,16 @@ int main(int argc, char **argv) {
 
                     // receive data from other
                     else {
-
-                        //print received message
+                        // print received message
                         printf("Received from IP:%s socket:%d buffer:%s\n", connection[index].IP, connection[index].socket, buffer);
 
                         char cmd[BUFSIZE];
-                        for(int i=0; i < strlen(buffer); i++){
-                            if(buffer[i] == ' ' || buffer[i] == '\n' || buffer[i] == '\0'){
+                        for (int i = 0; i <= strlen(buffer); i++) {
+                            if (i == strlen(buffer)) {
+                                cmd[i] = '\0';
+                                break;
+                            }
+                            if (buffer[i] == ' ' || buffer[i] == '\n' || buffer[i] == '\0') {
                                 cmd[i] = '\0';
                                 break;
                             }
@@ -180,9 +201,8 @@ int main(int argc, char **argv) {
 
                             sprintf(buffer, "/ip_response");
 
-                            // find @IP to send
-                            for(int ind=0; ind < PLAYER_MAX; ind++){
-                                if(connection[ind].used && strcmp(connection[ind].IP, ip_host) && ind != index){
+                            for (int ind = 0; ind < PLAYER_MAX; ind++) {
+                                if (connection[ind].used && ind != ind0 && ind != index /**/) {
                                     sprintf(buffer, "%s %s", buffer, connection[ind].IP);
                                 }
                             }
@@ -200,30 +220,35 @@ int main(int argc, char **argv) {
                             char *get_ip_buffer = strtok(buffer, " ");
                             char *get_ip_player = strtok(NULL, " ");
 
-                            while(get_ip_player != '\0') {
+                            while (get_ip_player != '\0') {
                                 fprintf(stderr, "get_ip_player NOT NULL %s\n", get_ip_player);
 
                                 for (int ind = 0; ind < PLAYER_MAX; ind++) {
                                     if (!connection[ind].used) {
                                         connection[ind].IP = get_ip_player;
                                         if ((res = connect_existed_players(ind))) {
-                                            fprintf(stderr, "Error number %d connecting to player #%d\n", res, index);
-                                        }   
+                                            fprintf(stderr, "Error number %d connecting to player #%d\n", res, ind);
+                                        }
+                                        break;
                                     }
-                                    break;
                                 }
-                                get_ip_player = strtok(NULL, " ");    
+                                get_ip_player = strtok(NULL, " ");
                             }
 
                         }
                         
                         else if (!strcmp(cmd, "/file_transfer")){
-                            
+                            printf("IN FILE TRANSFER\n");
+
                             // send file of the current game
                             send_file_by_socket(connection[index].socket);
+
+                        } else if (!strcmp(cmd, "/init_state_demand")) {
+                            // get file from python
+                        } else {
+                            printf("OTHER MESSAGE\n");
                         }
                     }
-                    
                 }
             }
         }

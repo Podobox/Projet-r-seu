@@ -28,19 +28,21 @@ class Random_Walkers(Walkers):
         string += f"{self.current_patrol}"
         return string
 
-    def walk(self, date):
+    def walk(self, date, action=True):
         if self.state == Random_Walker_State.RETURN:
-            if self.walk_to_destination(date):
+            if self.walk_to_destination(date, action):
                 self.destination = None
                 self.last_direction = None
                 self.direction = None
                 self.state = Random_Walker_State.RANDOM
                 # print("going random")
-                if self.can_go_back():
-                    return Action.NONE
-                else:
-                    return Action.DESTROY_SELF
-            return self.action_while(date)
+                if action:
+                    if self.can_go_back():
+                        return Action.NONE
+                    else:
+                        return Action.DESTROY_SELF
+            if action:
+                return self.action_while(date)
         else:  # RANDOM
             if self.date_last_frame is None:
                 self.date_last_frame = date
@@ -50,18 +52,21 @@ class Random_Walkers(Walkers):
                 if self.patrol_length is None:
                     self.choose_patrol()
 
-                nt = self.find_next_tile(self.map)
-                if nt is None:
-                    self.direction = None
-                    # TODO reverse direction pour éviter de revenir a la base a chaque
-                    # fois
-                    self.current_patrol = 0
-                    self.patrol_length = None
-                    # print("returning")
-                    self.state = Random_Walker_State.RETURN
-                    return Action.NONE
+                if action:
+                    nt = self.find_next_tile(self.map)
+                    if nt is None:
+                        self.direction = None
+                        # TODO reverse direction pour éviter de revenir a la base a chaque
+                        # fois
+                        self.current_patrol = 0
+                        self.patrol_length = None
+                        # print("returning")
+                        self.state = Random_Walker_State.RETURN
+                        return Action.NONE
 
-                self.find_direction(nt.posx, nt.posy)
+                    self.find_direction(nt.posx, nt.posy)
+                else:
+                    return
 
             dist = self.compute_dist(date)
 
@@ -79,12 +84,14 @@ class Random_Walkers(Walkers):
             return self.action_while(date)
 
     def choose_patrol(self):
-        seed()
-        p = random()
-        if p < self.long_patrol_probability:
-            self.patrol_length = self.long_patrol
-        else:
-            self.patrol_length = self.short_patrol
+        # seed()
+        # p = random()
+        # if p < self.long_patrol_probability:
+            # self.patrol_length = self.long_patrol
+        # else:
+            # self.patrol_length = self.short_patrol
+        # no sync needed
+        self.patrol_length = self.short_patrol
 
     def find_next_tile(self, map):
         x = int(self.posx)
@@ -110,6 +117,6 @@ class Random_Walkers(Walkers):
 
     def can_go_back(self):
         assert False, "virtual fuction call"
-    
+
     def action_post(self):
         pass

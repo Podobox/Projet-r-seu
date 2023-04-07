@@ -1,36 +1,27 @@
 import os
 import socket
 import subprocess
+from time import time_ns
 from enum import Enum
 from Model.Player import Player
-from Model.Engineer import Engineer
-from Model.Farm_Boy import Farm_Boy
-from Model.Market_Buyer import Market_Buyer
-from Model.Market_Trader import Market_Trader
-from Model.Migrant import Migrant
-from Model.Prefect import Prefect
-from Model.Tax_Collector import Tax_Collector
 import sys
 import sysv_ipc
 import re
 import pickle
 import struct
+from queue import Queue
+from time import sleep, time_ns
 # import pygame
 #from Model.Player import Player
 
 ME = None
 
 
-def walker_type(w):
-    walkers = [Engineer, Farm_Boy, Market_Buyer, Market_Trader, Migrant, Prefect, Tax_Collector]
-    return walkers.index(w)
-
-
 # if bug with population : add event for job offered in a specific building
 
 KEY = 1234
 PY_TO_C = 3
-C_TO_PY = 99
+C_TO_PY = 2
 
 
 class MessageType(Enum):
@@ -59,7 +50,12 @@ class MessageType(Enum):
     MARKET_STOCK = 23
     MARKET_SELL = 24
     WALKER_DESTROY = 25
-
+    HOUSE_FOOD_STOCK = 26
+    HOUSE_EAT = 27
+    SPEND_MONEY = 28
+    COLLECT_MONEY = 29
+    # TODO below
+    # change state of walkers ?
 
 
 class Message(Enum):
@@ -72,23 +68,60 @@ class Message(Enum):
 
 class Communication:
     def __init__(self):
+        sysv_ipc.MessageQueue.remove(sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT))
         # create fifo to communicate with c daemon
         self.message_queue = sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT)
-        self.message = None
+        self.message = Queue(-1)
 
     def send_message_from_py_to_c(self, message):
         # send the actions from python to c
         self.message_queue.send(message, type=PY_TO_C) 
+
+    def receive_message_from_c_to_py(self):
+        # send the actions from c to python
+        try:
+            message, type = self.message_queue.receive(type=C_TO_PY, block=False)
+            self.message.put(struct.unpack("iQQQQ", message))
+            return True
+        except sysv_ipc.BusyError:
+            return False
+
+    def receive_unique_message_from_c_to_py(self, id):
+        # send the actions from c to python
+        try:
+            message, type = self.message_queue.receive(type=id, block=False)
+            self.message.put(struct.unpack("iQQQQ", message))
+            return True
+        except sysv_ipc.BusyError:
+            return False
+
+    def spend_money(self, amount):
+        message = struct.pack("iQQQQ", MessageType.SPEND_MONEY.value, 0, 0, amount, 0)
+        self.send_message_from_py_to_c(message)
+
+    def collect_money(self, amount):
+        message = struct.pack("iQQQQ", MessageType.COLLECT_MONEY.value, 0, 0, amount, 0)
+        self.send_message_from_py_to_c(message)
+
+    def house_food_stock(self, posx, posy, stock):
+        message = struct.pack("iQQQQ", MessageType.HOUSE_FOOD_STOCK.value, posx, posy, stock, 0)
+        self.send_message_from_py_to_c(message)
+
+    def house_eat(self, posx, posy, quantity):
+        message = struct.pack("iQQQQ", MessageType.HOUSE_EAT.value, posx, posy, quantity, 0)
+        self.send_message_from_py_to_c(message)
 
     def walker_destroy(self, posx, posy, walker_type):
         message = struct.pack("iQQQQ", MessageType.WALKER_DESTROY.value, posx, posy, 0, walker_type)
         self.send_message_from_py_to_c(message)
 
     def market_stock(self, posx, posy):
+        # coordinates of the building the walker belongs to
         message = struct.pack("iQQQQ", MessageType.MARKET_STOCK.value, posx, posy, 0, 0)
         self.send_message_from_py_to_c(message)
 
     def market_sell(self, posx, posy, quantity):
+        # coordinates of the building the walker belongs to
         message = struct.pack("iQQQQ", MessageType.MARKET_STOCK.value, posx, posy,
                               quantity, 0)
         self.send_message_from_py_to_c(message)
@@ -104,10 +137,12 @@ class Communication:
         self.send_message_from_py_to_c(message)
 
     def granary_unstock(self, posx, posy):
+        # coordinates of the building the walker belongs to
         message = struct.pack("iQQQQ", MessageType.GRANARY_UNSTOCK.value, posx, posy, 0, 0)
         self.send_message_from_py_to_c(message)
 
     def granary_stock(self, posx, posy):
+        # coordinates of the building the walker belongs to
         message = struct.pack("iQQQQ", MessageType.GRANARY_STOCK.value, posx, posy, 0, 0)
         self.send_message_from_py_to_c(message)
 
@@ -157,28 +192,43 @@ class Communication:
         message = struct.pack("iQQQQ", MessageType.DEVOLVE.value, posx, posy, 0, 0)
         self.send_message_from_py_to_c(message)
 
-    def move_walker(self, posx, posy, building, walker_type):  # TODO in Model
-        message = struct.pack("iQQQQ", MessageType.MOVE_WALKER.value, posx, posy, building,
-                              walker_type)
+    def move_walker(self, posx, posy, walker_type, direction):  # TODO in Model
+        message = struct.pack("iQQQQ", MessageType.MOVE_WALKER.value, posx, posy,
+                              walker_type, direction)
         self.send_message_from_py_to_c(message)
 
     def ask_for_ownership(self, posx, posy, player, me):  # TODO in Model
-        message = struct.pack("iQQQQ", MessageType.REQUIRE_OWNERSHIP.value, posx, posy, player, 0)
-        self.send_message_from_py_to_c(message)
-        # wait for answer and return
-        message = struct.pack("iQQQQ", MessageType.CHANGE_OWNERSHIP.value, posx, posy, me, 0)
+        unique_id = time_ns()
+        message = struct.pack("iQQQQ", MessageType.REQUIRE_OWNERSHIP.value, posx, posy,
+                              player, unique_id)
         self.send_message_from_py_to_c(message)
 
-    def give_ownership(self, posx, posy):  # TODO in Model
-        message = struct.pack("iQQQQ", MessageType.GIVE_OWNERSHIP.value, posx, posy, 0, 0)
+        # TODO timeout ?
+        while not self.receive_message_from_c_to_py(unique_id):
+            message = struct.unpack("iQQQQ", self.message.get())
+            if message[0] == MessageType.GIVE_OWNERSHIP.value and message[1] == posx \
+                    and message[2] == posy and message[4] == unique_id:
+                return
+            else:
+                assert False, f"clé unique identique: {message}"
+
+    def give_ownership(self, posx, posy, unique_id):
+        message = struct.pack("iQQQQ", MessageType.GIVE_OWNERSHIP.value, posx, posy, 0,
+                              unique_id)
         self.send_message_from_py_to_c(message)
 
     def check_messages(self):
         # check for messages from other players
         # making this function a generator might be a good idea
         # handle the message in the controller
-        yield (MessageType.DESTROY.value, 9, 9, 0, 0)
+
+        while self.receive_message_from_c_to_py():
+            yield self.message.get()
         return
+
+    def accept_connect(self):
+        message = struct.pack("iQQQQ", MessageType.CONNECT.value, 0, 0, 0, 0)
+        self.send_message_from_py_to_c(message)
 
     def connect(self, ip, port):
         try:
@@ -203,23 +253,24 @@ class Communication:
    
         # return the game it is connected to and its players 
         # pass
+        while self.receive_message_from_c_to_py():
+            game = pickle.loads(self.message.get())
+            return (game, None)
+        # return the game it is connected to and its players
 
-    def disconnect(self):
-        message = struct.pack("iQQQQ", MessageType.DISCONNECT.value, 0, 0, 0, 0)
+    def disconnect(self, posx, posy):
+        message = struct.pack("iQQQQ", MessageType.DISCONNECT.value, posx, posy, 0, 0)
         self.send_message_from_py_to_c(message)
         # cleanly disconnectand release all owned objects
         # if done well I believe the process is the same wether there are players still
         # connected or not
         pass
 
-    def create(self):
-        # create a game a make it available for others to connect
-        # return the game
-        # probably not the best file for this function
-        pass
+
+communication = Communication()
 
 """ TEST
-Sender = Communication() 
+Sender = Communication()
 Sender.evolve(9, 5) #11
 Sender.devolve(9, 6) #12
 Sender.diconnect() #4
@@ -230,3 +281,10 @@ Sender.put_out_fire(10, 9)
 """
 # if (str(string) == 'end' or str(string) == 'exit' or str(string) == ''):
 #     break
+
+# Sender = Communication()
+# while (True):
+    # for i in Sender.check_messages():
+        # print(i)
+    # sleep(1)
+    # Sender.receive_message_from_c_to_py()

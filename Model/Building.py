@@ -1,6 +1,7 @@
 from datetime import timedelta
 from math import floor
 from random import random
+import Controller.Communication as com
 
 
 COLLAPSE_PROBABILITY = 0.0005
@@ -35,7 +36,6 @@ class Building:
         self.collapsed = False
         # Added to cover the full building like the real game - Tuan
         self.water_coverage = False
-        self.communication = None  # will be set by Game
 
     def __str__(self):
         string = self.__repr__()
@@ -60,7 +60,7 @@ class Building:
             if random() < multiplier - f:
                 self.burn_stage += 1 if random() > (1 - BURN_PROBABILITY) else 0
             if self.burn_stage != bs_buf:
-                self.communication.burn_stage_increase(self.tile.posx, self.tile.posy,
+                com.communication.burn_stage_increase(self.tile.posx, self.tile.posy,
                                                        self.burn_stage)
 
             if self.burn_stage > STAGES_BEFORE_BURN:
@@ -71,18 +71,18 @@ class Building:
 
         return False
 
-    def catch_fire(self, time, com=True):
+    def catch_fire(self, time, comm=True):
         self.burning = True
         self.burning_start = time
-        if com:
-            self.communication.catch_fire(self.tile.posx, self.tile.posy)
+        if comm:
+            com.communication.catch_fire(self.tile.posx, self.tile.posy)
 
-    def put_out_fire(self, com=True):
+    def put_out_fire(self, comm=True):
         self.burning = False
         self.burning_start = None
         self.burn_stage = 0
-        if com:
-            self.communication.put_out_fire(self.tile.posx, self.tile.posy)
+        if comm:
+            com.communication.put_out_fire(self.tile.posx, self.tile.posy)
 
     # return True if collapsing, else False
     def collapse(self, multiplier):
@@ -93,7 +93,7 @@ class Building:
         if random() < multiplier - f:
             self.collapse_stage += 1 if random() > (1 - COLLAPSE_PROBABILITY) else 0
         if self.collapse_stage != cs_buf:
-            self.communication.collapse_stage_increase(self.tile.posx, self.tile.posy,
+            com.communication.collapse_stage_increase(self.tile.posx, self.tile.posy,
                                                        self.collapse_stage)
 
         return self.collapse_stage > STAGES_BEFORE_COLLAPSE

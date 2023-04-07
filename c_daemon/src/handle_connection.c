@@ -41,7 +41,7 @@ void send_file_by_socket(int sockfd) {
     FILE *fp;
     char buffer[BUFSIZE];
 
-    fp = fopen("/home/dini/Documents/S6/Projet reseaux/Projet-r-seu/Save/demo_nourriture", "rb");
+    fp = fopen("/home/dini/Documents/S6/Projet reseaux/Projet-r-seu/Save/fifi", "r");
     if (fp == NULL) {
         stop("File not found.\n");
     }
@@ -63,11 +63,11 @@ void send_file_by_socket(int sockfd) {
     fclose(fp);
 
     // Send a message to indicate the end of the file transfer
-    sprintf(buffer, "/file_transfer_end");
-    if (write(sockfd, buffer, strlen(buffer) + 1) < 0) {
-        fprintf(stderr, "Error sending end of file transfer message.\n");
-    }
-    printf("sent buffer: %s\n", buffer);
+    // sprintf(buffer, "/file_transfer_end");
+    // if (write(sockfd, buffer, strlen(buffer) + 1) < 0) {
+    //     fprintf(stderr, "Error sending end of file transfer message.\n");
+    // }
+    // printf("sent buffer: %s\n", buffer);
     printf("File sent succesfully\n");
 
 }
@@ -80,7 +80,7 @@ void recv_file(int sockfd) {
 
     // create a new file in the save directory
     char filename[MAX_FILENAME_LENGTH];
-    sprintf(filename, "%s/Test", SAVE_DIR);
+    sprintf(filename, "%s/test", SAVE_DIR);
 
 
     FILE* fp = fopen(filename, "w");
@@ -94,20 +94,29 @@ void recv_file(int sockfd) {
     while ((valread = read(sockfd, buffer, BUFSIZE - 1)) == BUFSIZE - 1) {
 
         // Check if the received message indicates the end of the file transfer
-        if (!strcmp(buffer, "/file_transfer_end")) {
-            printf("sent buffer: %s\n", buffer);
-            break;
-        }
+        // if (!strcmp(buffer, "/file_transfer_end")) {
+        //     printf("recv buffer: %s\n", buffer);
+        //     break;
+        // }
 
         buffer[valread] = '\0';
         printf("recv buffer: %s\n", buffer);
         fwrite(buffer, 1, strlen(buffer), fp);
     }
 
-    // if (valread != 0) {
-    //     buffer[valread] = '\0';
-    //     fwrite(buffer, 1, strlen(buffer), fp);
-    // }
+    if (valread != 0) {
+        // printf("sent buffer END: %s\n", buffer);
+
+        // if (!strcmp(buffer, "/file_transfer_end")) {
+        //     printf("sent buffer END: %s\n", buffer);
+        // } 
+        // else {}
+
+        buffer[valread] = '\0';
+        fwrite(buffer, 1, strlen(buffer), fp);
+        
+    }
+
 
     printf("end recv_file()\n");
     

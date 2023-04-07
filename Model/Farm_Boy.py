@@ -2,6 +2,7 @@ from Model.Destination_Walkers import Destination_Walkers
 from Model.Walkers import Action
 from Model.Granary import Granary
 from enum import Enum
+import Controller.Communication as com
 
 
 class Farm_Boy_State(Enum):
@@ -22,9 +23,9 @@ class Farm_Boy(Destination_Walkers):
     def __repr__(self):
         return "Farm_Boy"
 
-    def find_destination(self):
+    def find_destination(self, action):
         if self.state == Farm_Boy_State.WAITING_FARM:
-            if self.farm.ready_to_collect:
+            if self.farm.ready_to_collect and action:
                 self.granary = self.map.find_closest(int(self.posx), int(self.posy), Granary)
                 if self.granary is not None:
                     if self.granary.road_connection is None:
@@ -36,8 +37,11 @@ class Farm_Boy(Destination_Walkers):
                     self.state = Farm_Boy_State.TO_GRANARY
         elif self.state == Farm_Boy_State.TO_GRANARY:
             if self.granary == \
-                    self.map.grid[self.granary.tile.posx][self.granary.tile.posy].building:
+                    self.map.grid[self.granary.tile.posx][self.granary.tile.posy].building \
+                    and action:
                 if self.granary.stock():
+                    com.communication.granary_stock(self.farm.tile.posx,
+                                                    self.farm.tile.posy)
                     self.destination = (self.spawn_road.tile.posx, self.spawn_road.tile.posy)
                     self.state = Farm_Boy_State.TO_FARM
         else:  # TO_FARM

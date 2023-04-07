@@ -15,7 +15,7 @@ class Tax_Collector(Random_Walkers):
     def __repr__(self):
         return "Tax_Collector"
 
-    def find_destination(self):
+    def find_destination(self, action):
         self.destination = (self.forum.road_connection.tile.posx,
                             self.forum.road_connection.tile.posy)
 

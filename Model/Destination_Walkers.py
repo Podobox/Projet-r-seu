@@ -14,9 +14,10 @@ class Destination_Walkers(Walkers):
         string += f"\n\tDestination: {str(self.destination)}"
         return string
 
-    def walk(self, date):
-        if self.walk_to_destination(date):
-            return self.action_post()
+    def walk(self, date, action=True):
+        if self.walk_to_destination(date, action):
+            if action:
+                return self.action_post()
 
     def find_destination(self):
         assert False, "virtual function call"

@@ -24,17 +24,16 @@ from Model.Walkers import Action
 from Model.Engineer import Engineer
 from Model.Farm_Boy import Farm_Boy
 from Model.Tax_Collector import Tax_Collector
-from Model.Migrant import Migrant
 from Model.Market_Buyer import Market_Buyer
 from Model.Market_Trader import Market_Trader
-from Model.Prefect import Prefect
+from Model.Prefect import Prefect, Prefect_State
+from Model.Random_Walkers import Random_Walkers, Random_Walker_State
 
 from Model.Map import Map, MAP_DIM
 from Model.Models_Data import building_data
 from Model.Tile import Tile_Type
 from random import seed, randint
 from datetime import datetime, timedelta
-from Controller.Communication import walker_type
 import Controller.Communication as com
 
 
@@ -42,10 +41,21 @@ import Controller.Communication as com
 TIME_PER_FRAME = 10
 
 
-def building_type(b):
+def building_type(b, to_num=True):
     buildings = [Collapsed, Engineer_Post, Forum, Fountain, Garden, Granary, House,
                  Market, New_House, Prefecture, Road, Senate, Well, Wheat_Farm]
-    return buildings.index(b)
+    if to_num:
+        return buildings.index(b)
+    else:
+        return buildings[b]
+
+
+def walker_type(w, to_num=True):
+    walkers = [Engineer, Farm_Boy, Market_Buyer, Market_Trader, Migrant, Prefect, Tax_Collector]
+    if to_num:
+        return walkers.index(w)
+    else:
+        return walkers[w]
 
 
 class Game:
@@ -80,7 +90,6 @@ class Game:
                 self.build(x, y, Water)
         self.set_entry_point(MAP_DIM // 2, 0)
         self.set_exit_point(MAP_DIM // 2, MAP_DIM - 1)
-        print(MAP_DIM)
         x = MAP_DIM // 2
         for y in range(0, MAP_DIM):
             self.build(x, y, Road)
@@ -106,7 +115,10 @@ class Game:
     # return True if it was payed, else False
     def pay(self, price):
         if self.denarii >= price:
+            if price == 0:
+                return True
             self.denarii -= price
+            com.communication.spend_money(price)
             return True
         return False
 
@@ -158,7 +170,6 @@ class Game:
         # print(self.map)
 
         building = self.map.grid[posx][posy].building
-        building.communication = self.communication
 
         if type == House:
             additional_population = building.population
@@ -175,7 +186,7 @@ class Game:
         self.buildings.append(building)
 
         if type not in (Water, Tree, Rock, Other_Rock, Sign):
-            self.communication.build(posx, posy, building_type(type))
+            com.communication.build(posx, posy, building_type(type))
 
     def destroy(self, posx, posy, force=False):
         building = self.map.grid[posx][posy].building
@@ -221,7 +232,7 @@ class Game:
         if building_type == Road:
             self.road_connect()
 
-        self.communication.destroy(posx, posy)
+        com.communication.destroy(posx, posy)
 
     def job_hunt(self):
         if self.unemployed < 0:
@@ -383,19 +394,19 @@ class Game:
             if isinstance(b, House) and b.tile.owner is com.ME:
                 diff = b.evolve()
                 if diff != 0:
-                    self.communication.evolve(b.tile.posx, b.tile.posy)
+                    com.communication.evolve(b.tile.posx, b.tile.posy)
                 self.population += diff
                 self.unemployed += diff
                 diff = b.devolve()
                 if diff != 0:
-                    self.communication.devolve(b.tile.posx, b.tile.posy)
+                    com.communication.devolve(b.tile.posx, b.tile.posy)
                 self.population += diff
                 self.unemployed += diff
             elif isinstance(b, New_House) and b.tile.owner is com.ME:
                 if self.map.entry_point is not None and b.migrate(self.map):
-                    self.communication.walker_spawn(self.map.entry_point.tile.posx,
-                                                    self.map.entry_point.tile.posy,
-                                                    walker_type(Migrant))
+                    com.communication.walker_spawn(self.map.entry_point.tile.posx,
+                                                   self.map.entry_point.tile.posy,
+                                                   walker_type(Migrant))
                     self.add_to_walkers(b.migrant)
 
     def fill_market(self):
@@ -419,38 +430,38 @@ class Game:
     def walk(self):
         for w in self.walkers:
             if w.building.tile.owner != com.ME:
-                continue
-            res = w.walk(self.date)
-            match res:
-                case Action.NONE: pass
-                case Action.BUILD_HOUSE:
-                    self.denarii += 2
-                    x, y = w.house.tile.posx, w.house.tile.posy
-                    self.destroy(x, y)
-                    self.build(x, y, House)
-                    self.remove_from_walkers(w)
-                case Action.DESTROY_SELF:
-                    match w:
-                        case Market_Buyer():
-                            w.market.buyer = None
-                            self.communication.walker_destroy(w.building.posx, w.building.posy,
-                                                              walker_type(Market_Buyer))
-                        case Migrant():
-                            self.communication.walker_destroy(w.building.posx, w.building.posy,
-                                                              walker_type(Migrant))
-                        case Farm_Boy():
-                            self.communication.walker_destroy(w.building.posx, w.building.posy,
-                                                              walker_type(Farm_Boy))
-                            w.farm.farm.boy = None
-                        case Engineer():
-                            self.communication.walker_destroy(w.building.posx, w.building.posy,
-                                                              walker_type(Engineer))
-                            w.post.engineer = None
-                    self.remove_from_walkers(w)
-                case _:
-                    if isinstance(w, Tax_Collector) and type(res) is float:
-                        self.denarii += res
-                        print(f"new balance: {self.denarii:.8}")
+                if isinstance(w, Random_Walkers) and w.state == Random_Walker_State.RANDOM:
+                    continue
+                if isinstance(w, Prefect) and w.prefect_state != Prefect_State.RETURN:
+                    continue
+            # print(w.building.tile, com.ME)
+            res = w.walk(self.date, action=(w.building.tile.owner == com.ME))
+            if w.building.tile.owner == com.ME:
+                match res:
+                    case Action.NONE: pass
+                    case Action.BUILD_HOUSE:
+                        self.denarii += 2
+                        com.communication.collect_money(2)
+                        x, y = w.house.tile.posx, w.house.tile.posy
+                        self.destroy(x, y)
+                        self.build(x, y, House)
+                        self.remove_from_walkers(w)
+                    case Action.DESTROY_SELF:
+                        match w:
+                            case Market_Buyer():
+                                w.market.buyer = None
+                            case Migrant():
+                                w.house.migrant = None
+                            case Farm_Boy():
+                                w.farm.farm.boy = None
+                            case Engineer():
+                                w.post.engineer = None
+                        self.remove_from_walkers(w)
+                    case _:
+                        if isinstance(w, Tax_Collector) and type(res) is float:
+                            self.denarii += res
+                            com.communication.collect_money(res)
+                            print(f"new balance: {self.denarii:.8}")
 
     def engineer(self):
         for b in self.buildings:
@@ -485,6 +496,11 @@ class Game:
     def add_to_walkers(self, w):
         self.walkers.append(w)
         self.walkers.sort(key=lambda w: w.posy + w.posx)
+        com.communication.walker_spawn(w.building.tile.posx, w.building.tile.posy,
+                                       walker_type(type(w)))
 
     def remove_from_walkers(self, w):
         self.walkers.remove(w)
+        com.communication.walker_destroy(w.building.tile.posx,
+                                         w.building.tile.posy,
+                                         walker_type(type(w)))

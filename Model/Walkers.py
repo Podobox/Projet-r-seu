@@ -116,17 +116,18 @@ class Walkers:
             assert False, "wrong direction"
 
     # reurn True if at destination, else False
-    def walk_to_destination(self, date):
+    def walk_to_destination(self, date, action):
         # print(f"({self.posx}, {self.posy})")
         if self.date_last_frame is None:
             self.date_last_frame = date
             return False
 
         if self.destination is None:
-            self.find_destination()
+            self.find_destination(action)
             if (int(self.posx), int(self.posy)) == self.destination:
                 # destination is our position
-                self.action_post()
+                if action:
+                    self.action_post()
                 self.destination = None
             self.date_last_frame = date
             return False

@@ -1,5 +1,6 @@
 from Model.Random_Walkers import Random_Walkers
 from Model.Map import MAP_DIM
+import Controller.Communication as com
 
 
 class Engineer(Random_Walkers):
@@ -14,7 +15,7 @@ class Engineer(Random_Walkers):
     def __repr__(self):
         return "Engineer"
 
-    def find_destination(self):
+    def find_destination(self, action):
         self.destination = (self.post.tile.posx, self.post.tile.posy)
 
     def action_while(self, date):
@@ -32,8 +33,8 @@ class Engineer(Random_Walkers):
         for b in bs:
             if b is not None:
                 b.collapse_stage = 0
-                self.post.communication.collapse_stage_reset(self.post.tile.posx,
-                                                             self.post.tile.posy)
+                com.communication.collapse_stage_reset(self.post.tile.posx,
+                                                       self.post.tile.posy)
 
     def can_go_back(self):
         return self.post == self.map.grid[int(self.posx)][int(self.posy)].building and self.post.is_active() and self.post.road_connection is not None

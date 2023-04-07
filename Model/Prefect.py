@@ -1,4 +1,5 @@
 from Model.Random_Walkers import Random_Walkers, Random_Walker_State
+import Controller.Communication as com
 from Model.Walkers import Action
 from Model.Map import MAP_DIM
 from enum import Enum
@@ -26,7 +27,7 @@ class Prefect(Random_Walkers):
     def __repr__(self):
         return "Prefect"
 
-    def find_destination(self):
+    def find_destination(self, action):
         if self.prefect_state == Prefect_State.RETURN:
             self.destination = (self.prefecture.tile.posx, self.prefecture.tile.posy)
         elif self.prefect_state == Prefect_State.ROAMING:
@@ -61,8 +62,8 @@ class Prefect(Random_Walkers):
                             self.direction = None
                             return
                         b.burn_stage = 0
-                        self.prefecture.communication.burn_stage_reset(self.prefecture.tile.posx,
-                                                                       self.prefecture.tile.posy)
+                        com.communication.burn_stage_reset(self.prefecture.tile.posx,
+                                                           self.prefecture.tile.posy)
         elif self.prefect_state == Prefect_State.GOING_TO_FIRE:
             # print("prefect going to fire")
             pass
@@ -75,19 +76,21 @@ class Prefect(Random_Walkers):
                 self.prefect_state = Prefect_State.ROAMING
             pass
 
-    def walk(self, date):
+    def walk(self, date, action):
         if self.prefect_state == Prefect_State.RETURN:
-            self.action_while(date)
+            if action:
+                self.action_while(date)
             if self.walk_to_destination(date):
                 self.destination = None
                 self.direction = None
                 # self.state = Random_Walker_State.RANDOM
                 self.prefect_state = Prefect_State.ROAMING
                 # print("prefect going random")
-                if self.can_go_back():
-                    return Action.NONE
-                else:
-                    return Action.DESTROY_SELF
+                if action:
+                    if self.can_go_back():
+                        return Action.NONE
+                    else:
+                        return Action.DESTROY_SELF
         if self.prefect_state == Prefect_State.ROAMING:
             if self.date_last_frame is None:
                 self.date_last_frame = date
@@ -97,20 +100,23 @@ class Prefect(Random_Walkers):
                 if self.patrol_length is None:
                     self.choose_patrol()
 
-                nt = self.find_next_tile(self.map)
-                if nt is None:
-                    self.direction = None
-                    # TODO reverse direction pour éviter de revenir a la base a chaque
-                    # fois
-                    self.current_patrol = 0
-                    self.patrol_length = None
-                    # print("prefect returning")
-                    # self.state = Random_Walker_State.RETURN
-                    self.prefect_state = Prefect_State.RETURN
-                    self.date_last_frame = date
-                    return Action.NONE
+                if action:
+                    nt = self.find_next_tile(self.map)
+                    if nt is None:
+                        self.direction = None
+                        # TODO reverse direction pour éviter de revenir a la base a chaque
+                        # fois
+                        self.current_patrol = 0
+                        self.patrol_length = None
+                        # print("prefect returning")
+                        # self.state = Random_Walker_State.RETURN
+                        self.prefect_state = Prefect_State.RETURN
+                        self.date_last_frame = date
+                        return Action.NONE
 
-                self.find_direction(nt.posx, nt.posy)
+                    self.find_direction(nt.posx, nt.posy)
+                else:
+                    return
 
             dist = self.compute_dist(date)
 
@@ -126,13 +132,16 @@ class Prefect(Random_Walkers):
                     self.prefect_state = Prefect_State.RETURN
 
             self.date_last_frame = date
-            return self.action_while(date)
+            if action:
+                return self.action_while(date)
         elif self.prefect_state == Prefect_State.GOING_TO_FIRE:
             if self.walk_to_destination(date):
                 self.prefect_state = Prefect_State.PUTING_OUT
-            self.action_while(date)
+            if action:
+                self.action_while(date)
         else:  # PUTING_OUT
-            self.action_while(date)
+            if action:
+                self.action_while(date)
             self.date_last_frame = date
 
     def can_go_back(self):

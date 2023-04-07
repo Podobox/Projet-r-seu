@@ -1,6 +1,6 @@
 from Model.Building import Building
 from Model.Prefect import Prefect
-from Controller.Communication import walker_type
+import Controller.Communication as com
 
 
 class Prefecture(Building):
@@ -17,8 +17,6 @@ class Prefecture(Building):
         if self.prefect is None:
             if self.is_active():
                 self.prefect = Prefect(self, self.road_connection, map)
-                self.communication.walker_spawn(self.tile.posx, self.tile.posy,
-                                                walker_type(Prefect))
                 return True
         else:
             if not self.is_active():

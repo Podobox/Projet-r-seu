@@ -304,12 +304,12 @@ class Controller:
                 case pg.MOUSEBUTTONDOWN:
                     print("MouseButtonDown")
                     if event.button == pg.BUTTON_LEFT:
-                        # print("Left button pressed at (x, y) = ", event.pos)
+                        print("Left button pressed at (x, y) = ", event.pos)
 
                         print("self.building est a : ", self.building)
                         # ------------------------------------------------------------------------------------Faire en clique droit
                     elif event.button == pg.BUTTON_RIGHT:
-                        # print("Right button pressed at (x, y) = ", event.pos)
+                        print("Right button pressed at (x, y) = ", event.pos)
                         if event.pos[0] <= self.visualizer.GAME_WIDTH and event.pos[1] <= self.visualizer.GAME_HEIGHT:
                             self.MODE_DECALAGE = True
                             self.ORIGIN_DECALAGE = event.pos
@@ -325,9 +325,9 @@ class Controller:
                             self.building = False
                             self.visualizer.changeBuildingMode()
                             self.final_pos = None
-                        # print("Left button released at (x, y) = ", event.pos)
+                        print("Left button released at (x, y) = ", event.pos)
                     elif event.button == pg.BUTTON_RIGHT:
-                        # print("Right button released at (x, y) = ", event.pos)
+                        print("Right button released at (x, y) = ", event.pos)
                         if self.MODE_DECALAGE:
                             self.MODE_DECALAGE = False
                             mouse_pos = event.pos
@@ -388,10 +388,10 @@ class Controller:
                     if left_button_pressed:
                         actionned = False
                         if not(self.building):
-                            # print("into not(self.building)")
+                            print("into not(self.building)")
                             for button in self.list_button:
                                 if button.listener_rect(mouse_pos):
-                                    # print("button clicked")
+                                    print("button clicked")
                                     self.buttonclicked = button
 
                                     if self.buttonclicked.building != -1:
@@ -414,30 +414,3 @@ class Controller:
                         if self.visualizer.MODE_FILE_MENU and not actionned:
                             self.visualizer.MODE_FILE_MENU = False
                     break
-
-    def chat_update(self):
-        def update(self, now):
-        mouse_pos = pg.mouse.get_pos()
-        mouse_button_pressed = pg.mouse.get_pressed()
-
-        if mouse_button_pressed[0]:
-            if (self.visualizer.chat.chat_posx <= mouse_pos[0] <= self.visualizer.chat.chat_posx + self.visualizer.chat.chat.get_width()) and (
-                self.visualizer.chat.chat_posy <= mouse_pos[1] <= self.visualizer.chat.chat_posy + self.visualizer.chat.chat.get_height()):
-                self.visualizer.chat.is_selected = True
-            else:
-                self.visualizer.chat.is_selected = False
-        if self.visualizer.chat.is_selected:
-            self.visualizer.chat.check_input(now)
-        # can take control of chat with enter key
-        # else:
-        #     for event in pg.event.get():
-        #         if event.type == pg.KEYDOWN and event.key == pg.K_RETURN:
-        #             self.visualizer.chat.is_selected = True
-        # if a message is sent, send it in peer to everyone and add it in memory
-        if self.visualizer.chat.message:
-            # self.communication.send(self.message)   
-            self.visualizer.chat.memory.append((self.message, pg.time.get_ticks()))
-            self.visualizer.chat.message = ""
-
-        if self.visualizer.chat.memory and now - self.visualizer.chat.memory[0][1] > 4000 :
-            self.visualizer.chat.memory = self.visualizer.chat.memory[1:]

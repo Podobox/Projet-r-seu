@@ -86,7 +86,6 @@ class Chat:
                     self.message = self.input
                     self.input = ""
                     self.chat = self.creation()
-
                 else:
                     carac = event.dict['unicode']
                     # don't input the key enter in carac

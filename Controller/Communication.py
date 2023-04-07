@@ -14,7 +14,7 @@ import re
 import pickle
 import struct
 from queue import Queue
-from time import sleep
+from time import sleep, time_ns
 # import pygame
 #from Model.Player import Player
 
@@ -83,6 +83,15 @@ class Communication:
         # send the actions from c to python
         try:
             message, type = self.message_queue.receive(type=C_TO_PY, block=False)
+            self.message.put(struct.unpack("iQQQQ", message))
+            return True
+        except sysv_ipc.BusyError:
+            return False
+
+    def receive_unique_message_from_c_to_py(self, id):
+        # send the actions from c to python
+        try:
+            message, type = self.message_queue.receive(type=id, block=False)
             self.message.put(struct.unpack("iQQQQ", message))
             return True
         except sysv_ipc.BusyError:
@@ -171,14 +180,22 @@ class Communication:
         self.send_message_from_py_to_c(message)
 
     def ask_for_ownership(self, posx, posy, player, me):  # TODO in Model
-        message = struct.pack("iQQQQ", MessageType.REQUIRE_OWNERSHIP.value, posx, posy, player, 0)
-        self.send_message_from_py_to_c(message)
-        # wait for answer and return
-        message = struct.pack("iQQQQ", MessageType.CHANGE_OWNERSHIP.value, posx, posy, me, 0)
+        unique_id = time_ns()
+        message = struct.pack("iQQQQ", MessageType.REQUIRE_OWNERSHIP.value, posx, posy,
+                              player, unique_id)
         self.send_message_from_py_to_c(message)
 
-    def give_ownership(self, posx, posy):  # TODO in Model
-        message = struct.pack("iQQQQ", MessageType.GIVE_OWNERSHIP.value, posx, posy, 0, 0)
+        while not self.receive_message_from_c_to_py(unique_id):
+            message = struct.unpack("iQQQQ", self.message.get())
+            if message[0] == MessageType.GIVE_OWNERSHIP.value and message[1] == posx \
+                    and message[2] == posy and message[4] == unique_id:
+                return
+            else:
+                assert False, f"clé unique identique: {message}"
+
+    def give_ownership(self, posx, posy, unique_id):  # TODO in Model
+        message = struct.pack("iQQQQ", MessageType.GIVE_OWNERSHIP.value, posx, posy, 0,
+                              unique_id)
         self.send_message_from_py_to_c(message)
 
     def check_messages(self):

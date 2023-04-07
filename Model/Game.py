@@ -338,7 +338,7 @@ class Game:
             self.paused = False
             print("unpause")
         else:
-            #self.speed = self.paused
+            # self.speed = self.paused
             self.paused = self.speed
             self.speed = 0
             print("pause")
@@ -429,11 +429,11 @@ class Game:
 
     def walk(self):
         for w in self.walkers:
-            if w.building.tile.owner != com.ME:
-                if isinstance(w, Random_Walkers) and w.state == Random_Walker_State.RANDOM:
-                    continue
-                if isinstance(w, Prefect) and w.prefect_state != Prefect_State.RETURN:
-                    continue
+            # if w.building.tile.owner != com.ME:
+                # if isinstance(w, Random_Walkers) and w.state == Random_Walker_State.RANDOM:
+                    # continue
+                # if isinstance(w, Prefect) and w.prefect_state != Prefect_State.RETURN:
+                    # continue
             # print(w.building.tile, com.ME)
             res = w.walk(self.date, action=(w.building.tile.owner == com.ME))
             if w.building.tile.owner == com.ME:
@@ -459,9 +459,9 @@ class Game:
                         self.remove_from_walkers(w)
                     case _:
                         if isinstance(w, Tax_Collector) and type(res) is float:
-                            self.denarii += res
-                            com.communication.collect_money(res)
-                            print(f"new balance: {self.denarii:.8}")
+                            self.denarii += int(res)
+                            com.communication.collect_money(int(res))
+                            print(f"new balance: {self.denarii}")
 
     def engineer(self):
         for b in self.buildings:

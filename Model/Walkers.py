@@ -75,6 +75,7 @@ class Walkers:
 
     # return True if middle was passed, False else
     def move(self, dist):
+        # print(f"moving {dist} to {self.direction}")
         middle_passed = False
         if self.direction == Direction.LEFT:
             self.posx = self.posx

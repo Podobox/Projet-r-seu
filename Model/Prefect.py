@@ -80,7 +80,7 @@ class Prefect(Random_Walkers):
         if self.prefect_state == Prefect_State.RETURN:
             if action:
                 self.action_while(date)
-            if self.walk_to_destination(date):
+            if self.walk_to_destination(date, action):
                 self.destination = None
                 self.direction = None
                 # self.state = Random_Walker_State.RANDOM
@@ -116,6 +116,7 @@ class Prefect(Random_Walkers):
 
                     self.find_direction(nt.posx, nt.posy)
                 else:
+                    self.date_last_frame = date
                     return
 
             dist = self.compute_dist(date)

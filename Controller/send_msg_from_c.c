@@ -34,10 +34,11 @@ struct {
 void send_from_c()
 {
 	// buffer->message_type = 5;
-	message.mes.message_type = 7;
-    message.mes.posx = 12;
-    message.mes.posy = 12;
-    message.mes.type = 2;
+	message.mes.message_type = 13;
+    message.mes.posx = 16;
+    message.mes.posy = 11;
+    message.mes.type = 5;
+    message.mes.x = 3;
 	int msqid;
 	// msgget creates a message queue and returns identifier
 	msqid = msgget(MESG_KEY, 0666 | IPC_CREAT);

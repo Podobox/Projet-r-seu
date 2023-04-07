@@ -121,3 +121,5 @@ class Map:
                         for yy in range(y - 5 if y - 5 >= 0 else 0, y + 5 + 1 if y + 5 + 1 < MAP_DIM else MAP_DIM):
                             # print(f"({xx}, {yy})")
                             self.grid[xx][yy].water_coverage = True
+                            if isinstance(self.grid[xx][yy].building, Building):
+                                self.grid[xx][yy].building.water_coverage = True

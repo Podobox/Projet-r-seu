@@ -13,7 +13,7 @@ class Market_Trader(Random_Walkers):
     def __repr__(self):
         return "Market_Trader"
 
-    def find_destination(self):
+    def find_destination(self, action):
         self.destination = (self.market.road_connection.tile.posx,
                             self.market.road_connection.tile.posy)
 
@@ -35,7 +35,11 @@ class Market_Trader(Random_Walkers):
                     # 1 year worth of food
                     food_wanted = 6 * b.population - b.food
                     sold = self.market.sell(food_wanted)
+                    self.market.communication.market_sell(self.market.tile.posx,
+                                                          self.market.tile.posy, sold)
                     b.food += sold
+                    self.market.communication.house_food_stock(b.tile.posx, b.tile.posy,
+                                                               sold)
 
     def can_go_back(self):
         return self.market.road_connection == self.map.grid[int(self.posx)][int(self.posy)].building and self.market.is_active() and self.market.road_connection is not None

@@ -23,7 +23,6 @@ class Market(Building):
     def stock(self):
         if self.is_active() and not self.stock_greater_than(self.capacity - 100):
             self.current_stock += 100  # a cartload is broken down in 100 units
-            self.communication.market_stock(self.tile.posx, self.tile.posy)
             return True
         else:
             return False
@@ -33,12 +32,10 @@ class Market(Building):
         if self.is_active():
             if self.stock_greater_than(n):
                 self.current_stock -= n
-                self.communication.market_sell(self.tile.posx, self.tile.posy, n)
                 return n
             else:
                 ret = self.current_stock
                 self.current_stock = 0
-                self.communication.market_sell(self.tile.posx, self.tile.posy, ret)
                 return ret
         else:
             return 0

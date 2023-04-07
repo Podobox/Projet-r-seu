@@ -19,7 +19,7 @@ class Migrant(Destination_Walkers):
         string += f"\n\tSpawn: {self.spawn_road}"
         return string
 
-    def find_destination(self):
+    def find_destination(self, action):
         if not self.leaving and self.house.tile.building is not self.house:
             self.destination = (self.map.exit_point.tile.posx,
                                 self.map.exit_point.tile.posy)

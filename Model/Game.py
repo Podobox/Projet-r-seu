@@ -27,7 +27,8 @@ from Model.Tax_Collector import Tax_Collector
 from Model.Migrant import Migrant
 from Model.Market_Buyer import Market_Buyer
 from Model.Market_Trader import Market_Trader
-from Model.Prefect import Prefect
+from Model.Prefect import Prefect, Prefect_State
+from Model.Random_Walkers import Random_Walkers, Random_Walker_State
 
 from Model.Map import Map, MAP_DIM
 from Model.Models_Data import building_data
@@ -42,10 +43,13 @@ import Controller.Communication as com
 TIME_PER_FRAME = 10
 
 
-def building_type(b):
+def building_type(b, to_num=True):
     buildings = [Collapsed, Engineer_Post, Forum, Fountain, Garden, Granary, House,
                  Market, New_House, Prefecture, Road, Senate, Well, Wheat_Farm]
-    return buildings.index(b)
+    if to_num:
+        return buildings.index(b)
+    else:
+        return buildings[b]
 
 
 class Game:
@@ -80,7 +84,6 @@ class Game:
                 self.build(x, y, Water)
         self.set_entry_point(MAP_DIM // 2, 0)
         self.set_exit_point(MAP_DIM // 2, MAP_DIM - 1)
-        print(MAP_DIM)
         x = MAP_DIM // 2
         for y in range(0, MAP_DIM):
             self.build(x, y, Road)
@@ -106,7 +109,10 @@ class Game:
     # return True if it was payed, else False
     def pay(self, price):
         if self.denarii >= price:
+            if price == 0:
+                return True
             self.denarii -= price
+            self.communication.spend_money(price)
             return True
         return False
 
@@ -419,38 +425,45 @@ class Game:
     def walk(self):
         for w in self.walkers:
             if w.building.tile.owner != com.ME:
-                continue
-            res = w.walk(self.date)
-            match res:
-                case Action.NONE: pass
-                case Action.BUILD_HOUSE:
-                    self.denarii += 2
-                    x, y = w.house.tile.posx, w.house.tile.posy
-                    self.destroy(x, y)
-                    self.build(x, y, House)
-                    self.remove_from_walkers(w)
-                case Action.DESTROY_SELF:
-                    match w:
-                        case Market_Buyer():
-                            w.market.buyer = None
-                            self.communication.walker_destroy(w.building.posx, w.building.posy,
-                                                              walker_type(Market_Buyer))
-                        case Migrant():
-                            self.communication.walker_destroy(w.building.posx, w.building.posy,
-                                                              walker_type(Migrant))
-                        case Farm_Boy():
-                            self.communication.walker_destroy(w.building.posx, w.building.posy,
-                                                              walker_type(Farm_Boy))
-                            w.farm.farm.boy = None
-                        case Engineer():
-                            self.communication.walker_destroy(w.building.posx, w.building.posy,
-                                                              walker_type(Engineer))
-                            w.post.engineer = None
-                    self.remove_from_walkers(w)
-                case _:
-                    if isinstance(w, Tax_Collector) and type(res) is float:
-                        self.denarii += res
-                        print(f"new balance: {self.denarii:.8}")
+                if isinstance(w, Random_Walkers) and w.state == Random_Walker_State.RANDOM:
+                    continue
+                if isinstance(w, Prefect) and w.prefect_state != Prefect_State.RETURN:
+                    continue
+            print(w.building.tile, com.ME)
+            res = w.walk(self.date, action=(w.building.tile.owner == com.ME))
+            if w.building.tile.owner == com.ME:
+                match res:
+                    case Action.NONE: pass
+                    case Action.BUILD_HOUSE:
+                        self.denarii += 2
+                        self.communication.collect_money(2)
+                        x, y = w.house.tile.posx, w.house.tile.posy
+                        self.destroy(x, y)
+                        self.build(x, y, House)
+                        self.remove_from_walkers(w)
+                    case Action.DESTROY_SELF:
+                        match w:
+                            case Market_Buyer():
+                                w.market.buyer = None
+                                self.communication.walker_destroy(w.building.posx, w.building.posy,
+                                                                  walker_type(Market_Buyer))
+                            case Migrant():
+                                self.communication.walker_destroy(w.building.posx, w.building.posy,
+                                                                  walker_type(Migrant))
+                            case Farm_Boy():
+                                self.communication.walker_destroy(w.building.posx, w.building.posy,
+                                                                  walker_type(Farm_Boy))
+                                w.farm.farm.boy = None
+                            case Engineer():
+                                self.communication.walker_destroy(w.building.posx, w.building.posy,
+                                                                  walker_type(Engineer))
+                                w.post.engineer = None
+                        self.remove_from_walkers(w)
+                    case _:
+                        if isinstance(w, Tax_Collector) and type(res) is float:
+                            self.denarii += res
+                            self.communication.collect_money(res)
+                            print(f"new balance: {self.denarii:.8}")
 
     def engineer(self):
         for b in self.buildings:

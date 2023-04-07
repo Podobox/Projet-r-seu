@@ -14,7 +14,7 @@ class Engineer(Random_Walkers):
     def __repr__(self):
         return "Engineer"
 
-    def find_destination(self):
+    def find_destination(self, action):
         self.destination = (self.post.tile.posx, self.post.tile.posy)
 
     def action_while(self, date):

@@ -15,13 +15,11 @@ from time import sleep, time_ns
 ME = None
 
 
-
 # if bug with population : add event for job offered in a specific building
 
 KEY = 1234
 PY_TO_C = 3
 C_TO_PY = 2
-
 
 
 class MessageType(Enum):
@@ -56,6 +54,7 @@ class MessageType(Enum):
     COLLECT_MONEY = 29
     # TODO below
     # change state of walkers ?
+
 
 class Message(Enum):
     type: MessageType  # int
@@ -229,9 +228,19 @@ class Communication:
         message = struct.pack("iQQQQ", MessageType.CONNECT.value, ip, port, 0, 0)
         self.send_message_from_py_to_c(message)
 
+        while self.receive_message_from_c_to_py():
+            game = pickle.loads(self.message.get())
+            return (game, None)
         # return the game it is connected to and its players
-        pass
 
+    ######################################################################
+    ######################################################################
+    ######################################################################
+    # TODO
+    # send to only one player
+    ######################################################################
+    ######################################################################
+    ######################################################################
     def disconnect(self, posx, posy):
         message = struct.pack("iQQQQ", MessageType.DISCONNECT.value, posx, posy, 0, 0)
         self.send_message_from_py_to_c(message)

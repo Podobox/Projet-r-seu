@@ -9,6 +9,7 @@ from Model.Engineer_Post import Engineer_Post
 from Model.House import House
 from Controller.Backup import Backup
 import Controller.Communication as com
+from Model.Map import MAP_DIM
 
 
 class FileMenu:
@@ -42,7 +43,10 @@ class FileMenu:
         return self.list_button
 
     def quit(self):
-        com.communication.disconnect()
+        for x in range(MAP_DIM):
+            for y in range(MAP_DIM):
+                if self.game.map.grid[x][y].owner is not None:
+                    com.communication.disconnect(x, y)
         exit()
         return
 

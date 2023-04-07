@@ -42,12 +42,11 @@ from View.SideMenu import Menu
 from View.Minimap import Minimap
 from View.Chat import Chat
 import Controller.Communication as com
-
 from Model.Tree import Tree
 from Model.Water import Water
 from Controller.property_possession import PropertyPossession
 from Model.Player import Player
-
+from View.PlayersConnect import PLayerConnected
 
 # Get full screen size
 root = tk.Tk()
@@ -114,6 +113,8 @@ class Visualizer:
         self.fileMenu = FileMenu(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, backup, game, communication)
         #self.images = dict()
         self.minimap = Minimap(self.window, WINDOW_WIDTH, WINDOW_HEIGHT)
+        self.imgavatar = PLayerConnected(self.window, WINDOW_WIDTH, WINDOW_HEIGHT)
+
         self.chat = Chat(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, communication)
         self.loadImages()
         return
@@ -167,6 +168,7 @@ class Visualizer:
 
         self.minimap.display(map, self.deplacementX + self.tmpDeplacementX,
                              self.deplacementY + self.tmpDeplacementY)
+        self.imgavatar.display()
         
         self.chat.display(self.chat)
 

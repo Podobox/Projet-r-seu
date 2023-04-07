@@ -123,6 +123,8 @@ class Menu:
             (self.coefficient
             * 158.117), self.window_height - (self.coefficient * 25), self.changeOverlay,
             self.coefficient /9.5, overlay="Tile"),
+            Button(self.window, "/Images/Connected_Player.png", self.window_width - 300 , self.window_height-1040 , self.changeOverlay,
+            self.coefficient /9.5, "show_players"),
     
             Button(self.window, "/Images/desirability_overlay.png", self.window_width -
                    (self.coefficient

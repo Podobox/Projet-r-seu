@@ -67,10 +67,47 @@ int main(int argc, char **argv) {
                 if ((res = connect_existed_players(index))) {
                     fprintf(stderr, "Error number %d connecting to player #%d\n", res, index);
                 }
+                char buffer[BUFSIZE];
+                int charcnt;
                 // get list of other IP addresses
                 if (write(connection[index].socket, "/ip_demande", strlen("/ip_demande") + 1) < 0) {
                     stop("cannot demande ip table");
                 }
+
+                ////////////////////////////////////
+                /// Copy the part of the code handling ip_response here
+                ////////////////////////////////////
+                /// I believe that what it did was sending the 3 messages in a row so
+                /// fast that the other client only saw 1 of them and not the other 2
+                /// I'm not sure about the explanation but at least it works
+                if((charcnt = read(connection[index].socket, buffer, BUFSIZE)) < 0) {
+                    stop("Error reading message");
+                } else {
+                    printf("IN IP RESPONSE\n");
+
+
+                    // separate the @IP from ip_response
+                    char *get_ip_buffer = strtok(buffer, " ");
+                    char *get_ip_player = strtok(NULL, " ");
+
+
+                    while (get_ip_player != NULL) {
+                        fprintf(stderr, "get_ip_player NOT NULL %s\n", get_ip_player);
+
+                        for (int ind = 0; ind < PLAYER_MAX; ind++) {
+                            if (!connection[ind].used) {
+                                connection[ind].IP = get_ip_player;
+                                if ((res = connect_existed_players(ind))) {
+                                    fprintf(stderr, "Error number %d connecting to player #%d\n", res, ind);
+                                }
+                                break;
+                            }
+                        }
+                        get_ip_player = strtok(NULL, " ");
+                    }
+                }
+                ////////////////////////////////////
+
                 // demand the initial state of the game
                 if (write(connection[index].socket, "/init_state_demand", strlen("/init_state_demand") + 1) < 0) {
                     stop("cannot demand initial state");
@@ -116,7 +153,7 @@ int main(int argc, char **argv) {
             }
 
             // accept connection with new player
-            int len = sizeof(master_addr);
+            unsigned int len = sizeof(master_addr);
             if ((res = accept(listenfd, (struct sockaddr *)&master_addr, &len)) < 0) {
                 stop("Error accepting new player");
             }
@@ -178,7 +215,7 @@ int main(int argc, char **argv) {
                         printf("Received from IP:%s socket:%d buffer:%s\n", connection[index].IP, connection[index].socket, buffer);
 
                         char cmd[BUFSIZE];
-                        for (int i = 0; i <= strlen(buffer); i++) {
+                        for (unsigned long int i = 0; i <= strlen(buffer); i++) {
                             if (i == strlen(buffer)) {
                                 cmd[i] = '\0';
                                 break;
@@ -198,9 +235,12 @@ int main(int argc, char **argv) {
 
                             for (int ind = 0; ind < PLAYER_MAX; ind++) {
                                 if (connection[ind].used && ind != ind0 && ind != index /**/) {
-                                    sprintf(buffer, "%s %s", buffer, connection[ind].IP);
+                                    /*sprintf(buffer, "%s %s", buffer, connection[ind].IP);*/
+                                    strcat(buffer, " ");
+                                    strcat(buffer, connection[ind].IP);
                                 }
                             }
+                            printf("answering %s\n", buffer);
                             if (write(connection[index].socket, buffer, strlen(buffer) + 1) < 0) {
                                 fprintf(stderr, "Cannot send /ip_response message to player #%d\n", index);
                             }
@@ -210,11 +250,13 @@ int main(int argc, char **argv) {
                         else if (!strcmp(cmd, "/ip_response")) {
                             printf("IN IP RESPONSE\n");
 
+
                             // separate the @IP from ip_response
                             char *get_ip_buffer = strtok(buffer, " ");
                             char *get_ip_player = strtok(NULL, " ");
 
-                            while (get_ip_player != '\0') {
+
+                            while (get_ip_player != NULL) {
                                 fprintf(stderr, "get_ip_player NOT NULL %s\n", get_ip_player);
 
                                 for (int ind = 0; ind < PLAYER_MAX; ind++) {

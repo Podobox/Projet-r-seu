@@ -28,6 +28,7 @@ def walker_type(w):
 
 KEY = 1234
 PY_TO_C = 3
+C_TO_PY = 2
 
 class MessageType(Enum):
     REQUIRE_OWNERSHIP = 1
@@ -75,6 +76,11 @@ class Communication:
     def send_message_from_py_to_c(self, message):
         # send the actions from python to c
         self.message_queue.send(message, type=PY_TO_C)
+
+    def receive_message_from_c_to_py(self):
+        # send the actions from c to python
+        message = self.message_queue.receive(type=C_TO_PY)
+        print(struct.unpack("iQQQQ", message.decode()))
 
     def walker_destroy(self, posx, posy, walker_type):
         message = struct.pack("iQQQQ", MessageType.WALKER_DESTROY.value, posx, posy, 0, walker_type)
@@ -198,6 +204,8 @@ class Communication:
         pass
 
 """ TEST
+
+
 Sender = Communication() 
 Sender.evolve(9, 5) #11
 Sender.devolve(9, 6) #12
@@ -209,3 +217,9 @@ Sender.put_out_fire(10, 9)
 """
 # if (str(string) == 'end' or str(string) == 'exit' or str(string) == ''):
 #     break
+
+Sender = Communication()
+while (True):
+    Sender.receive_message_from_c_to_py()
+
+

@@ -72,10 +72,10 @@ int main(int argc, char **argv) {
                     stop("cannot demande ip table");
                 }
                 // demand the initial state of the game
-                if (write(connection[index].socket, "/init_state_demand", sizeof("/init_state_demand") + 1) < 0) {
+                if (write(connection[index].socket, "/init_state_demand", strlen("/init_state_demand") + 1) < 0) {
                     stop("cannot demand initial state");
                 }
-                if (write(connection[index].socket, "/incoming_change bruh bruh bruh", sizeof("/init_state_demand") + 1) < 0) {
+                if (write(connection[index].socket, "/incoming_change bruh bruh bruh", strlen("/incoming_change bruh bruh bruh") + 1) < 0) {
                     stop("dumb dumb test");
                 }
                 break;
@@ -100,6 +100,7 @@ int main(int argc, char **argv) {
                 maxfd = max(maxfd, connection[index].socket);
             }
         }
+        maxfd++;
 
         // ajoute le timeout !!!
         // select
@@ -229,6 +230,7 @@ int main(int argc, char **argv) {
                             }
                         } else if (!strcmp(cmd, "/incoming_change")) {
                             // they send us a change in game, send this to python
+                            perror("Freaking bruh");
                             char* data;
                             data = (buffer + strlen(cmd));
                             printf("some freaking change here: %s\n", data);

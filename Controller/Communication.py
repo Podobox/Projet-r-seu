@@ -13,6 +13,8 @@ import sysv_ipc
 import re
 import pickle
 import struct
+from queue import Queue
+from time import sleep
 # import pygame
 #from Model.Player import Player
 
@@ -29,6 +31,7 @@ def walker_type(w):
 KEY = 1234
 PY_TO_C = 3
 C_TO_PY = 2
+
 
 class MessageType(Enum):
     REQUIRE_OWNERSHIP = 1
@@ -58,7 +61,6 @@ class MessageType(Enum):
     WALKER_DESTROY = 25
 
 
-
 class Message(Enum):
     type: MessageType  # int
     posx: int  # llu
@@ -71,7 +73,7 @@ class Communication:
     def __init__(self):
         # create fifo to communicate with c daemon
         self.message_queue = sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT)
-        self.message = None
+        self.message = Queue(-1)
 
     def send_message_from_py_to_c(self, message):
         # send the actions from python to c
@@ -79,8 +81,12 @@ class Communication:
 
     def receive_message_from_c_to_py(self):
         # send the actions from c to python
-        message = self.message_queue.receive(type=C_TO_PY)
-        print(struct.unpack("iQQQQ", message.decode()))
+        try:
+            message, type = self.message_queue.receive(type=C_TO_PY, block=False)
+            self.message.put(struct.unpack("iQQQQ", message))
+            return True
+        except sysv_ipc.BusyError:
+            return False
 
     def walker_destroy(self, posx, posy, walker_type):
         message = struct.pack("iQQQQ", MessageType.WALKER_DESTROY.value, posx, posy, 0, walker_type)
@@ -179,7 +185,9 @@ class Communication:
         # check for messages from other players
         # making this function a generator might be a good idea
         # handle the message in the controller
-        yield (MessageType.DESTROY.value, 9, 9, 0, 0)
+
+        while self.receive_message_from_c_to_py():
+            yield self.message.get()
         return
 
     def connect(self, ip, port):
@@ -203,10 +211,9 @@ class Communication:
         # probably not the best file for this function
         pass
 
+
 """ TEST
-
-
-Sender = Communication() 
+Sender = Communication()
 Sender.evolve(9, 5) #11
 Sender.devolve(9, 6) #12
 Sender.diconnect() #4
@@ -218,8 +225,9 @@ Sender.put_out_fire(10, 9)
 # if (str(string) == 'end' or str(string) == 'exit' or str(string) == ''):
 #     break
 
-Sender = Communication()
-while (True):
-    Sender.receive_message_from_c_to_py()
-
-
+# Sender = Communication()
+# while (True):
+    # for i in Sender.check_messages():
+        # print(i)
+    # sleep(1)
+    # Sender.receive_message_from_c_to_py()

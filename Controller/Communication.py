@@ -224,6 +224,10 @@ class Communication:
             yield self.message.get()
         return
 
+    def accept_connect(self):
+        message = struct.pack("iQQQQ", MessageType.CONNECT.value, 0, 0, 0, 0)
+        self.send_message_from_py_to_c(message)
+
     def connect(self, ip, port):
         message = struct.pack("iQQQQ", MessageType.CONNECT.value, ip, port, 0, 0)
         self.send_message_from_py_to_c(message)

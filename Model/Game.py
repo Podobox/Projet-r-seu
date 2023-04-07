@@ -459,9 +459,9 @@ class Game:
                         self.remove_from_walkers(w)
                     case _:
                         if isinstance(w, Tax_Collector) and type(res) is float:
-                            self.denarii += res
-                            com.communication.collect_money(res)
-                            print(f"new balance: {self.denarii:.8}")
+                            self.denarii += int(res)
+                            com.communication.collect_money(int(res))
+                            print(f"new balance: {self.denarii}")
 
     def engineer(self):
         for b in self.buildings:

@@ -157,10 +157,10 @@ class Controller:
                 self.game.destroy(message[1], message[2], force=True)
             case MessageType.CATCH_FIRE:
                 self.game.map.grid[message[1]][message[2]].building.catch_fire(
-                    self.game.date, com=False)
+                    self.game.date)
             case MessageType.PUT_OUT_FIRE:
                 self.game.map.grid[message[1]][message[2]].building.put_out_fire(
-                    self.game.date, com=False)
+                    self.game.date)
             case MessageType.EVOLVE:
                 self.game.map.grid[message[1]][message[2]].building.evolve()
             case MessageType.DEVOLVE:

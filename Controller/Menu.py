@@ -118,7 +118,7 @@ def menu():
                     # start_new_game = 1
                     menu_page = 0
                     avatar_select =1
-                    selector_avatar()
+                    selector_avatar_connect()
                     # Controller()
 
                 if (button(load_game_rect, mouse)):
@@ -223,41 +223,7 @@ def start():
                                 enter_start_game()
 
 def enter_start_game():
-    global param
-    x = screen.get_size()
-    font = pygame.font.Font(None, 24)
-    nom = ""
-    # pygame.display.flip()
-    while param:
-
-        for event in pygame.event.get():
-            if event.type == pygame.K_ESCAPE:
-                running = False
-                pygame.quit()
-                quit(0)
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_BACKSPACE:
-                    nom = nom[:-1]
-                    screen.blit(zone_de_texte, ((x[0] / 2) - 150, (x[1] / 3) + 50))
-                    text_2 = font.render(nom, True, (0, 0, 0))
-                    screen.blit(text_2, (x[0] / 2 - 100, (x[1] / 3) + 70))
-                    pygame.display.flip()
-                elif event.key == pygame.K_RETURN:
-                    game = Game(1000)
-                    (Backup(nom)).save(game)
-                    Controller(nom, game=game)
-                else:
-                    if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_ESCAPE:
-                            pygame.quit()
-                            quit(0)
-                    carac = event.dict['unicode']
-                    nom = nom + carac
-                    screen.blit(zone_de_texte, ((x[0] / 2) - 150, (x[1] / 3) + 50))
-                    text_2 = font.render(nom, True, (0, 0, 0))
-                    screen.blit(text_2, (x[0] / 2 - 100, (x[1] / 3) + 70))
-                    pygame.display.flip()
-def enter_start_game():
+    print("start game")
     global param
     x = screen.get_size()
     font = pygame.font.Font(None, 24)
@@ -369,11 +335,14 @@ def selector_avatar_connect():
                     if avatar_rects[i].collidepoint(event.pos) and avatar_names[i] not in avatars_selectionnes:
                         avatars_selectionnes.append(avatar_names[i])
                         avatar_select = False
-                        add_player(idPlayer, avatar_names[i])
+                        add_player(1, "Octavius")
+
+                        Controller.players_ip.append(2)
+                        print(Controller.players_ip[0])
+                        add_player(Controller.players_ip[0], "avatar_names[i]")
                         a = True
                         print(f"Selected {avatar_names[i]}")
-
-                        enter_connect_game()
+                        start()
                         break
 
         for i in range(len(avatar_names)):
@@ -386,8 +355,8 @@ def selector_avatar_connect():
         pygame.display.flip()
 
 player_list = []
-def add_player(name, avatar):
-    player = {'name': name, 'avatar': avatar}
+def add_player(id, avatar):
+    player = {'id': id, 'avatar': avatar}
     player_list.append(player)
 
 def connect():

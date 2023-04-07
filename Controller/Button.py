@@ -6,7 +6,7 @@ from PIL import Image
 class Button():
 
 
-    def __init__(self, window, path, x, y, action, coefficient=1, building=-1, overlay=-1, game=-1, player_avatars=-1):#(self, path, x, y, dx, dy, action):
+    def __init__(self, window, path, x, y, action, coefficient=1, building=-1, overlay=-1, game=-1):#(self, path, x, y, dx, dy, action):
         self.x = x
         self.y = y
         self.action = action
@@ -16,7 +16,6 @@ class Button():
         self.coefficient = coefficient
         self.building = building
         self.game = game
-        self.player_avatars = player_avatars
         self.obj = self.initObj()
 
     def display(self):

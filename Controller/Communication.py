@@ -56,6 +56,7 @@ class MessageType(Enum):
     MARKET_SELL = 24
     # TODO below
     WALKER_DESTROY = 25
+    PLAYER_ID = 40
 
 
 

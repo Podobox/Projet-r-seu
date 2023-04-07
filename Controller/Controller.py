@@ -44,10 +44,12 @@ class Controller:
     init_pos = None
     final_pos = None
     ORIGIN_DECALAGE = (0, 0)
+    players_ip =[]
 
     def __init__(self, name_save, game=None, players=None):
         # pg.init()
         self.list_button = []
+        self.players_ip = []
         self.MODE_DECALAGE = False
         self.ORIGIN_DECALAGE = (0, 0)
         # game is actually always set so changing the money here won't do anything
@@ -77,9 +79,9 @@ class Controller:
         for _ in range(5):
             self.game.increase_speed()
 
-        for x in range(MAP_DIM):
-            for y in range(MAP_DIM):
-                print(self.game.map.grid[x][y].owner)
+        # for x in range(MAP_DIM):
+        #     for y in range(MAP_DIM):
+        #         print(self.game.map.grid[x][y].owner)
 
         self.game.map.grid[9][9].owner = None
         self.game.map.grid[8][9].owner = None
@@ -122,8 +124,12 @@ class Controller:
         return
 
     def handle_message(self, message):
+
         match MessageType(message[0]):
             case MessageType.REQUIRE_OWNERSHIP: pass
+            case MessageType.PLAYER_ID : 
+                players_ip= players_ip.append(message[0])
+                print(players_ip[0])
 
     def wait_next_frame(self):
         time_now = time_ns()
@@ -265,8 +271,8 @@ class Controller:
                                     elif self.buttonclicked.game != -1:
                                         self.buttonclicked.action(self.buttonclicked.game)
 
-                                    elif self.buttonclicked.player_avatars != -1:
-                                        self.buttonclicked.action(self.buttonclicked.player_avatars)
+                                    # elif self.buttonclicked.player_avatars != -1:
+                                    #     self.buttonclicked.action(self.buttonclicked.player_avatars)
                                     
                                     else:
                                         self.buttonclicked.action()

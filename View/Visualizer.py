@@ -92,6 +92,7 @@ class Visualizer:
     GAME_HEIGHT = WINDOW_HEIGHT
     zoom = DEFAULT_ZOOM
     MODE_FILE_MENU = False
+    showPlayers = False
 
     buildingMode = False
 
@@ -106,7 +107,7 @@ class Visualizer:
         self.GAME_HEIGHT = WINDOW_HEIGHT
         self.imgavatar = PLayerConnected(self.window, WINDOW_WIDTH, WINDOW_HEIGHT)
 
-        self.menu = Menu(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, self.game, self.isoToCart, self, self.imgavatar)
+        self.menu = Menu(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, self.game, self.isoToCart, self)
         self.menu_displayed = False
         self.list_button = list_button
         self.zoom = DEFAULT_ZOOM
@@ -171,7 +172,7 @@ class Visualizer:
 
         self.minimap.display(map, self.deplacementX + self.tmpDeplacementX,
                              self.deplacementY + self.tmpDeplacementY)
-        self.imgavatar.display()
+        # self.imgavatar.show_players_connected()
         
         self.chat.display(self.chat)
 
@@ -179,6 +180,9 @@ class Visualizer:
         self.barre.barre_function(self.game.denarii, self.game.population, self.game.date)
         self.list_button = (set(self.list_button) | set([self.barre.fileButton]))
 
+        if self.showPlayers:
+            self.display_new_wind()
+        
         return self.list_button
 
     def update_walker(self, w, cellSize, tileDIM, origin):
@@ -1712,27 +1716,16 @@ class Visualizer:
                           imgName, imgCode, compenX, compenY)
         
 
+    def display_new_wind(self):
 
+        print("newww windoooooow")
+        main_surface = self.window
+        popup_surface = pygame.Surface((400, 300))
+        popup_surface.fill((255, 255, 255))
+        popup_rect = popup_surface.get_rect(center=main_surface.get_rect().center)
+        main_surface.blit(popup_surface, popup_rect)
+        pygame.display.flip()
 
-    def show_new_window(self, window_parent):
-        pygame.init()
-        self.window_size = (800, 600)
-        self.new_window = pygame.display.set_mode(self.window_size)
-        
-        # Position de la nouvelle fenêtre en dessous de la fenêtre parente
-        new_window_x = window_parent.get_rect().x
-        new_window_y = window_parent.get_rect().y + window_parent.get_rect().h + 10 # 10 pixels de décalage
-        self.new_window.get_rect().move_ip(new_window_x, new_window_y)
-        
-        self.new_window.fill((255, 255, 255))
-        pygame.display.set_caption("Nouvelle fenêtre")
-        
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    return
-            pygame.display.update()
 
 # Things left to render:
 # Granary's Crane

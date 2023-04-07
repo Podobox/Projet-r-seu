@@ -24,14 +24,13 @@ from View import PlayersConnect
 
 class Menu:
 
-    def __init__(self, window, window_width, window_height, game, isoToCart, visualizer, playersConnect):
+    def __init__(self, window, window_width, window_height, game, isoToCart, visualizer):
         self.window = window
         self.visualizer = visualizer
         self.window_width = window_width
         self.window_height = window_height
         self.game = game
         self.isoToCart = isoToCart
-        self.playersConnect = playersConnect
 
         scriptDir = sys.path[0]
         imagePath = os.path.join(scriptDir + "/Images/play_menu/menu.png")
@@ -209,5 +208,8 @@ class Menu:
         self.visualizer.showGrid = not self.visualizer.showGrid
         return
     
+    # def showPlayers(self):
+    #     self.playersConnect.show_players_connected()
     def showPlayers(self):
-        self.playersConnect.show_players_connected()
+        self.visualizer.showPlayers = not self.visualizer.showPlayers
+

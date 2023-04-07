@@ -28,8 +28,10 @@ class PLayerConnected :
         screen = pygame.display.set_mode(screen_size)
         pygame.display.set_caption("Connected Players")
         avatar_images = []
-        for avatar in Controller.Menu.player_list:
-            avatar_image = pygame.image.load(f"./Images/play_menu/{avatar['avatar']}.png").convert_alpha()
+        for i in range(len(Controller.Menu.player_list)-1):
+            player = Controller.Menu.player_list[i]
+            name = player['avatar']
+            avatar_image = pygame.image.load(f"./Images/play_menu/{name}.png").convert_alpha()
             avatar_image = pygame.transform.scale(avatar_image, (100, 100))
             avatar_images.append(avatar_image)
 

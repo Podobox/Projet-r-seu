@@ -109,7 +109,10 @@ class Game:
     # return True if it was payed, else False
     def pay(self, price):
         if self.denarii >= price:
+            if price == 0:
+                return True
             self.denarii -= price
+            self.communication.spend_money(price)
             return True
         return False
 
@@ -433,6 +436,7 @@ class Game:
                     case Action.NONE: pass
                     case Action.BUILD_HOUSE:
                         self.denarii += 2
+                        self.communication.collect_money(2)
                         x, y = w.house.tile.posx, w.house.tile.posy
                         self.destroy(x, y)
                         self.build(x, y, House)
@@ -458,6 +462,7 @@ class Game:
                     case _:
                         if isinstance(w, Tax_Collector) and type(res) is float:
                             self.denarii += res
+                            self.communication.collect_money(res)
                             print(f"new balance: {self.denarii:.8}")
 
     def engineer(self):

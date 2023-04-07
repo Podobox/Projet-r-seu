@@ -259,6 +259,10 @@ class Controller:
                 self.game.map.grid[message[1]][message[2]].food += message[3]
             case MessageType.HOUSE_EAT:
                 self.game.map.grid[message[1]][message[2]].food -= message[3]
+            case MessageType.SPEND_MONEY:
+                self.game.denarii -= message[3]
+            case MessageType.COLLECT_MONEY:
+                self.game.denarii += message[3]
 
     def wait_next_frame(self):
         time_now = time_ns()

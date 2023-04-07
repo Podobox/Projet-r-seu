@@ -62,10 +62,10 @@ class MessageType(Enum):
     WALKER_DESTROY = 25
     HOUSE_FOOD_STOCK = 26
     HOUSE_EAT = 27
+    SPEND_MONEY = 28
+    COLLECT_MONEY = 29
     # TODO below
     # change state of walkers ?
-    SPEND_MONEY = 28  # build, destroy
-    COLLECT_MONEY = 28 # tax collector
 
 
 class Message(Enum):
@@ -85,6 +85,14 @@ class Communication:
     def send_message_from_py_to_c(self, message):
         # send the actions from python to c
         self.message_queue.send(message, type=PY_TO_C)
+
+    def spend_money(self, amount):
+        message = struct.pack("iQQQQ", MessageType.SPEND_MONEY.value, 0, 0, amount, 0)
+        self.send_message_from_py_to_c(message)
+
+    def collect_money(self, amount):
+        message = struct.pack("iQQQQ", MessageType.COLLECT_MONEY.value, 0, 0, amount, 0)
+        self.send_message_from_py_to_c(message)
 
     def house_food_stock(self, posx, posy, stock):
         message = struct.pack("iQQQQ", MessageType.HOUSE_FOOD_STOCK.value, posx, posy, stock, 0)

@@ -17,6 +17,6 @@ void close_connection(int);
 
 void send_file_by_socket(int);
 
-void recv_file();
+void recv_file(int);
 
 #endif

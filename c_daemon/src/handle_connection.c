@@ -37,70 +37,83 @@ void print_connections() {
     }
 }
 
-// recuperer le fichier de souvegarde
-void send_file_by_socket(int sock) {
-    char *file_contents;
-    long file_size;
-    FILE *file;
+void send_file_by_socket(int sockfd) {
+    FILE *fp;
     char buffer[BUFSIZE];
-    bzero(buffer, BUFSIZE);
 
-    // Open file
-    file = fopen("/home/dini/Documents/S6/Projet reseaux/Projet-r-seu/Save/dini", "rb");
-    if (file == NULL) {
-        perror("Failed to open file\n");
-        exit(EXIT_FAILURE);
+    fp = fopen("/home/dini/Documents/S6/Projet reseaux/Projet-r-seu/Save/demo_nourriture", "rb");
+    if (fp == NULL) {
+        stop("File not found.\n");
     }
 
-    // Get file size
-    fseek(file, 0, SEEK_END);
-    file_size = ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    // Allocate buffer for file contents
-    file_contents = malloc(file_size);
-    if (file_contents == NULL) {
-        printf("Failed to allocate memory for file contents\n");
-        exit(EXIT_FAILURE);
+    // read in the file and send
+    int size;
+    while ((size = fread(buffer, 1, BUFSIZE - 1, fp)) == BUFSIZE - 1) {
+        buffer[size] = '\0';
+        printf("sent buffer: %s\n", buffer);
+        if (write(sockfd, buffer, size) < 0) {
+            stop("error in sending file");
+        }
+    }
+    buffer[size] = '\0';
+    if (write(sockfd, buffer, size) < 0) {
+        stop("send");
     }
 
-    // Read file contents into buffer
-    fread(file_contents, file_size, 1, file);
+    fclose(fp);
 
-    // Close file
-    fclose(file);
-
-    // Send file contents
-    if (send(sock, file_contents, file_size, 0) != file_size) {
-        printf("Failed to send file contents\n");
-        exit(EXIT_FAILURE);
+    // Send a message to indicate the end of the file transfer
+    sprintf(buffer, "/file_transfer_end");
+    if (write(sockfd, buffer, strlen(buffer) + 1) < 0) {
+        fprintf(stderr, "Error sending end of file transfer message.\n");
     }
+    printf("sent buffer: %s\n", buffer);
+    printf("File sent succesfully\n");
 
-    printf("File sent successfully\n");
 }
 
-void recv_file() {
+void recv_file(int sockfd) {
+   char buffer[BUFSIZE];
+
     // create the directory if it doesn't exist
     mkdir(SAVE_DIR, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
     // create a new file in the save directory
     char filename[MAX_FILENAME_LENGTH];
     sprintf(filename, "%s/Test", SAVE_DIR);
-    FILE* fp = fopen(filename, "wb");
 
-    // read the file data in chunks and write it to the file
-    char buffer[BUFSIZE];
-    int num_bytes_read;
-    while ((num_bytes_read = recv(listenfd, BUFSIZE, 1024, 0)) > 0) {
-        fwrite(buffer, sizeof(char), num_bytes_read, fp);
+
+    FILE* fp = fopen(filename, "w");
+    if (fp == NULL) {
+        printf("Error creating file.\n");
+        return;
     }
 
-    printf("File received successfully\n");
+    printf("start recv_file()\n");
+    int valread;
+    while ((valread = read(sockfd, buffer, BUFSIZE - 1)) == BUFSIZE - 1) {
 
-    // close the file
+        // Check if the received message indicates the end of the file transfer
+        if (!strcmp(buffer, "/file_transfer_end")) {
+            printf("sent buffer: %s\n", buffer);
+            break;
+        }
+
+        buffer[valread] = '\0';
+        printf("recv buffer: %s\n", buffer);
+        fwrite(buffer, 1, strlen(buffer), fp);
+    }
+
+    // if (valread != 0) {
+    //     buffer[valread] = '\0';
+    //     fwrite(buffer, 1, strlen(buffer), fp);
+    // }
+
+    printf("end recv_file()\n");
+    
     fclose(fp);
-
 }
+
 
 
 

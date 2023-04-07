@@ -57,6 +57,15 @@ int main(int argc, char **argv) {
         }
 
         // get list of other IP addresses
+        if (write(connection[ind1].socket, "/file_transfer", strlen("/file_transfer") + 1) < 0){
+            stop("cannot send message for file transfer");
+        }
+        else{
+            recv_file(connection[ind1].socket);
+        }
+
+        
+        // get list of other IP addresses
         if (write(connection[ind1].socket, "/ip_demande", strlen("/ip_demande") + 1) < 0){
             stop("cannot demande ip table");
         }
@@ -169,9 +178,6 @@ int main(int argc, char **argv) {
                         if (!strcmp(cmd, "/ip_demande")) {
                             printf("IN IP DEMANDE\n");
 
-                            // send file of the current game
-                            send_file_by_socket(connection[index].socket);
-
                             sprintf(buffer, "/ip_response");
 
                             // find @IP to send
@@ -189,7 +195,6 @@ int main(int argc, char **argv) {
                         // new player receive the list of player in the game, they try co connect to all of them
                         else if (!strcmp(cmd, "/ip_response")) {
                             printf("IN IP RESPONSE\n");
-
 
                             //separate the @IP from ip_response
                             char *get_ip_buffer = strtok(buffer, " ");
@@ -211,10 +216,11 @@ int main(int argc, char **argv) {
                             }
 
                         }
-                        else {
-                            printf("OTHER MESSAGE\n");
-                            printf("OTHER MESSAGE\n\tReceived from IP:%s socket:%d buffer:%s\n", connection[index].IP, connection[index].socket, buffer);
-
+                        
+                        else if (!strcmp(cmd, "/file_transfer")){
+                            
+                            // send file of the current game
+                            send_file_by_socket(connection[index].socket);
                         }
                     }
                     

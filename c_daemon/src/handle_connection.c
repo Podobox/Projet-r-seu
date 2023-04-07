@@ -50,7 +50,7 @@ void send_file_by_socket(int sockfd) {
     int size;
     while ((size = fread(buffer, 1, BUFSIZE - 1, fp)) == BUFSIZE - 1) {
         buffer[size] = '\0';
-        printf("sent buffer: %s\n", buffer);
+        printf("sent buffer %d: %s\n", size ,buffer);
         if (write(sockfd, buffer, size) < 0) {
             stop("error in sending file");
         }
@@ -100,8 +100,8 @@ void recv_file(int sockfd) {
         // }
 
         buffer[valread] = '\0';
-        printf("recv buffer: %s\n", buffer);
-        fwrite(buffer, 1, strlen(buffer), fp);
+        printf("recv buffer %d: %s\n", valread,  buffer);
+        fwrite(buffer, 1, valread, fp);
     }
 
     if (valread != 0) {
@@ -113,7 +113,7 @@ void recv_file(int sockfd) {
         // else {}
 
         buffer[valread] = '\0';
-        fwrite(buffer, 1, strlen(buffer), fp);
+        fwrite(buffer, 1, valread, fp);
         
     }
 

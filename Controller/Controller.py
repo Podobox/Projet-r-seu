@@ -1,6 +1,5 @@
 import random
-import subprocess
-import os
+
 from Model.Player import Player
 from Model.Grass import Grass
 from Model.Map import MAP_DIM
@@ -40,9 +39,8 @@ from Model.Engineer import Engineer
 from Model.Prefect import Prefect
 from Model.Tax_Collector import Tax_Collector
 from Model.Walkers import Direction
-from Model.Building import STAGES_BEFORE_BURN, STAGES_BEFORE_COLLAPSE
 
-FRAMES_PER_SECONDS = 4
+FRAMES_PER_SECONDS = 10
 TIME_NS_PER_FRAME = 1 / FRAMES_PER_SECONDS * 1e9
 
 
@@ -57,7 +55,6 @@ class Controller:
 
     def __init__(self, name_save, game=None, players=None):
         # pg.init()
-        
         self.player = Player()
         self.players = players
         com.ME = self.player
@@ -70,7 +67,7 @@ class Controller:
         if players is None:
             self.game.take_all_ownership(self.player)
         self.game.set_initial_map()
-        self.visualizer = Visualizer(self.list_button, self.game, self.backup,  com.communication)
+        self.visualizer = Visualizer(self.list_button, self.game, self.backup)
         self.building = False
         self.buttonclicked = None
         self.last_frame = time_ns()
@@ -78,10 +75,7 @@ class Controller:
         # Benchmarking
         self.bench = 0
         self.bench_nb = 0
-        # self.communication = Communication()
-        self.checkDaemon()
         self.run()
-
 
     def run(self):
         # print(self.game)
@@ -89,9 +83,6 @@ class Controller:
         for _ in range(5):
             self.game.increase_speed()
 
-        # for x in range(MAP_DIM):
-        #     for y in range(MAP_DIM):
-        #         print(self.game.map.grid[x][y].owner)
         # for x in range(10, 15):
             # for y in range(2, 20):
                 # self.game.destroy(x, y)
@@ -105,9 +96,6 @@ class Controller:
         # for x in range(0, 20):
             # for y in range(1):
                 # self.game.map.grid[x][y].owner = None
-        for x in range(MAP_DIM):
-            for y in range(MAP_DIM):
-                self.game.map.grid[x][y].owner = None
 
         while True:
             self.game.advance_time()
@@ -143,155 +131,138 @@ class Controller:
 
     def handle_message(self, message):
         print(f"received {message}")
-        try:
-            match MessageType(message[0]):
-                case MessageType.REQUIRE_OWNERSHIP:
-                    self.game.map.grid[message[1]][message[2]].owner = None
-                case MessageType.GIVE_OWNERSHIP:
-                    # not handled here
-                    pass
-                case MessageType.CONNECT:
-                    Backup("online_game").save(self.game)
-                    com.communication.accept_connect()
-                case MessageType.DISCONNECT:
-                    # message sent only to me, i take all the tiles
-                    self.game.map.grid[message[1]][message[2]].owner = com.ME
-                case MessageType.ACCEPT_CONNECTION:
-                    pass
-                case MessageType.CHANGE_OWNERSHIP:
-                    # not necessary
-                    pass
-                case MessageType.BUILD:
-                    self.game.build(message[1], message[2],
-                                    building_type(message[3], to_num=False), force=True)
-                case MessageType.DESTROY:
-                    self.game.destroy(message[1], message[2], force=True)
-                case MessageType.CATCH_FIRE:
-                    self.game.map.grid[message[1]][message[2]].building.catch_fire(
-                        self.game.date)
-                case MessageType.PUT_OUT_FIRE:
-                    self.game.map.grid[message[1]][message[2]].building.put_out_fire(
-                        self.game.date)
-                case MessageType.EVOLVE:
-                    self.game.map.grid[message[1]][message[2]].building.evolve()
-                case MessageType.DEVOLVE:
-                    self.game.map.grid[message[1]][message[2]].building.devolve()
-                case MessageType.MOVE_WALKER:
-                    # TODO never called
-                    b = self.game.map.grid[message[1]][message[2]].building
-                    w = None
-                    t = walker_type(message[3], to_num=False)
-                    if t == Engineer: w = b.engineer
-                    elif t == Farm_Boy: w = b.farm_boy
-                    elif t == Market_Buyer: w = b.buyer
-                    elif t == Market_Trader: w = b.trader
-                    elif t == Migrant: w = b.migrant
-                    elif t == Prefect: w = b.prefect
-                    elif t == Tax_Collector: w = b.tax_collector
-                    w.direction = Direction(message[4])
-                case MessageType.REQUIRE_MONEY_OWNERSHIP:
-                    pass
-                case MessageType.REQUIRE_POPULATION_OWNERSHIP:
-                    pass
-                case MessageType.BURN_STAGE_INCREASE:
-                    # message is (posx, posy, burn_stage)
-                    b = self.game.map.grid[message[1]][message[2]].building
-                    if b is None:
-                        return
-                    b.burn_stage = message[3]
-                    if message[3] > STAGES_BEFORE_BURN:
-                        b.burn_stage = STAGES_BEFORE_BURN
-                case MessageType.COLLAPSE_STAGE_INCREASE:
-                    # message is (posx, posy, collapse_stage)
-                    b = self.game.map.grid[message[1]][message[2]].building
-                    if b is None:
-                        return
-                    b.collapse_stage = message[3]
-                    if message[3] > STAGES_BEFORE_COLLAPSE:
-                        b.collapse_stage = STAGES_BEFORE_COLLAPSE
-                case MessageType.WALKER_SPAWN:
-                    b = self.game.map.grid[message[1]][message[2]].building
-                    if b is None:
-                        return
-                    t = walker_type(message[4], to_num=False)
-                    if t == Engineer:
-                        b.engineer_do(self.game.map)
-                        self.game.walkers.append(b.engineer)
-                    elif t == Farm_Boy:
-                        b.deliver(self.game.map)
-                        self.game.walkers.append(b.farm_boy)
-                    elif t == Market_Buyer:
-                        b.fill(self.game.map)
-                        self.game.walkers.append(b.buyer)
-                    elif t == Market_Trader:
-                        b.trade(self.game.map)
-                        self.game.walkers.append(b.trader)
-                    elif t == Migrant and type(b) == New_House:
-                        b.migrate(self.game.map, force=True)
-                        self.game.walkers.append(b.migrant)
-                    elif t == Prefect:
-                        b.prefect_do(self.game.map)
-                        self.game.walkers.append(b.prefect)
-                    elif t == Tax_Collector:
-                        b.collect(self.game.map)
-                        self.game.walkers.append(b.tax_collector)
-                case MessageType.GRANARY_STOCK:
-                    # farm boy
-                    fb = self.game.map.grid[message[1]][message[2]].building.farm_boy
-                    fb.granary.stock()
-                    fb.destination = (fb.spawn_road.tile.posx, fb.spawn_road.tile.posy)
-                    fb.state = Farm_Boy_State.TO_FARM
-                case MessageType.GRANARY_UNSTOCK:
-                    # market buyer
-                    mb = self.game.map.grid[message[1]][message[2]].building.buyer
-                    mb.granary.unstock()
-                    mb.destination = (mb.spawn_road.tile.posx, mb.spawn_road.tile.posy)
-                    mb.state = Market_Buyer_State.TO_MARKET
-                case MessageType.COLLAPSE_STAGE_RESET:
-                    self.game.map.grid[message[1]][message[2]].building.collapse_stage = 0
-                case MessageType.BURN_STAGE_RESET:
-                    self.game.map.grid[message[1]][message[2]].building.burn_stage = 0
-                case MessageType.MARKET_STOCK:
-                    # market buyer
-                    mb = self.game.map.grid[message[1]][message[2]].building.buyer
-                    mb.market.stock()
-                    if mb.granary.road_connection is None:
-                        mb.destination = (mb.granary.tile.posx, mb.granary.tile.posy)
-                    else:
-                        mb.destination = (mb.granary.road_connection.tile.posx,
-                                        mb.granary.road_connection.tile.posy)
-                    mb.state = Market_Buyer_State.TO_GRANARY
-                case MessageType.MARKET_SELL:
-                    # market trader
-                    mt = self.game.map.grid[message[1]][message[2]].building.trader
-                    mt.market.sell(message[3])
-                case MessageType.WALKER_DESTROY:
-                    b = self.game.map.grid[message[1]][message[2]].building
-                    w = None
-                    t = walker_type(message[4], to_num=False)
-                    if t == Engineer: w = b.engineer
-                    elif t == Farm_Boy: w = b.farm_boy
-                    elif t == Market_Buyer: w = b.buyer
-                    elif t == Market_Trader: w = b.trader
-                    elif t == Migrant:
-                        if type(w) != New_House:
-                            pass
-                        else:
-                            w = b.migrant
-                    elif t == Prefect: w = b.prefect
-                    elif t == Tax_Collector: w = b.tax_collector
-                    if w is not None:
-                        self.game.remove_from_walkers(w)
-                case MessageType.HOUSE_FOOD_STOCK:
-                    self.game.map.grid[message[1]][message[2]].food += message[3]
-                case MessageType.HOUSE_EAT:
-                    self.game.map.grid[message[1]][message[2]].food -= message[3]
-                case MessageType.SPEND_MONEY:
-                    self.game.denarii -= message[3]
-                case MessageType.COLLECT_MONEY:
-                    self.game.denarii += message[3]
-        except RuntimeError as e:
-            print(e)
+        match MessageType(message[0]):
+            case MessageType.REQUIRE_OWNERSHIP:
+                if self.game.map.grid[message[1]][message[2]].owner == com.ME:
+                    self.game.map.grid[message[1]][message[2]] = None
+                    com.communication.give_ownership(message[1], message[2], message[3])
+            case MessageType.GIVE_OWNERSHIP:
+                # not handled here
+                pass
+            case MessageType.CONNECT:
+                Backup("online_game").save(self.game)
+                com.accept_connect()
+            case MessageType.DISCONNECT:
+                # message sent only to me, i take all the tiles
+                self.game.map.grid[message[1]][message[2]].owner = com.ME
+            case MessageType.ACCEPT_CONNECTION:
+                pass
+            case MessageType.CHANGE_OWNERSHIP:
+                # not necessary
+                pass
+            case MessageType.BUILD:
+                self.game.build(message[1], message[2],
+                                building_type(message[3], to_num=False), force=True)
+            case MessageType.DESTROY:
+                self.game.destroy(message[1], message[2], force=True)
+            case MessageType.CATCH_FIRE:
+                self.game.map.grid[message[1]][message[2]].building.catch_fire(
+                    self.game.date)
+            case MessageType.PUT_OUT_FIRE:
+                self.game.map.grid[message[1]][message[2]].building.put_out_fire(
+                    self.game.date)
+            case MessageType.EVOLVE:
+                self.game.map.grid[message[1]][message[2]].building.evolve()
+            case MessageType.DEVOLVE:
+                self.game.map.grid[message[1]][message[2]].building.devolve()
+            case MessageType.MOVE_WALKER:
+                b = self.game.map.grid[message[1]][message[2]].building
+                w = None
+                t = walker_type(message[4], to_num=False)
+                if t == Engineer: w = b.engineer
+                elif t == Farm_Boy: w = b.farm_boy
+                elif t == Market_Buyer: w = b.buyer
+                elif t == Market_Trader: w = b.trader
+                elif t == Migrant: w = b.migrant
+                elif t == Prefect: w = b.prefect
+                elif t == Tax_Collector: w = b.tax_collector
+                w.direction = Direction(message[4])
+            case MessageType.REQUIRE_MONEY_OWNERSHIP:
+                pass
+            case MessageType.REQUIRE_POPULATION_OWNERSHIP:
+                pass
+            case MessageType.BURN_STAGE_INCREASE:
+                # message is (posx, posy, burn_stage)
+                self.game.map.grid[message[1]][message[2]].building.burn_stage = \
+                    message[3]
+            case MessageType.COLLAPSE_STAGE_INCREASE:
+                # message is (posx, posy, collapse_stage)
+                self.game.map.grid[message[1]][message[2]].building.collapse_stage = \
+                    message[3]
+            case MessageType.WALKER_SPAWN:
+                b = self.game.map.grid[message[1]][message[2]].building
+                t = walker_type(message[4], to_num=False)
+                if t == Engineer:
+                    b.engineer_do(self.game.map)
+                    self.game.walkers.append(b.engineer)
+                elif t == Farm_Boy:
+                    b.deliver(self.game.map)
+                    self.game.walkers.append(b.farm_boy)
+                elif t == Market_Buyer:
+                    b.fill(self.game.map)
+                    self.game.walkers.append(b.buyer)
+                elif t == Market_Trader:
+                    b.trade(self.game.map)
+                    self.game.walkers.append(b.trader)
+                elif t == Migrant:
+                    b.migrate(self.game.map, force=True)
+                    self.game.walkers.append(b.migrant)
+                elif t == Prefect:
+                    b.prefect_do(self.game.map)
+                    self.game.walkers.append(b.prefect)
+                elif t == Tax_Collector:
+                    b.collect(self.game.map)
+                    self.game.walkers.append(b.tax_collector)
+            case MessageType.GRANARY_STOCK:
+                # farm boy
+                fb = self.game.map.grid[message[1]][message[2]].building.farm_boy
+                fb.granary.stock()
+                fb.destination = (fb.spawn_road.tile.posx, fb.spawn_road.tile.posy)
+                fb.state = Farm_Boy_State.TO_FARM
+            case MessageType.GRANARY_UNSTOCK:
+                # market buyer
+                mb = self.game.map.grid[message[1]][message[2]].building.buyer
+                mb.granary.unstock()
+                mb.destination = (mb.spawn_road.tile.posx, mb.spawn_road.tile.posy)
+                mb.state = Market_Buyer_State.TO_MARKET
+            case MessageType.COLLAPSE_STAGE_RESET:
+                self.game.map.grid[message[1]][message[2]].building.collapse_stage = 0
+            case MessageType.BURN_STAGE_RESET:
+                self.game.map.grid[message[1]][message[2]].building.burn_stage = 0
+            case MessageType.MARKET_STOCK:
+                # market buyer
+                mb = self.game.map.grid[message[1]][message[2]].building.buyer
+                mb.market.stock()
+                if mb.granary.road_connection is None:
+                    mb.destination = (mb.granary.tile.posx, mb.granary.tile.posy)
+                else:
+                    mb.destination = (mb.granary.road_connection.tile.posx,
+                                      mb.granary.road_connection.tile.posy)
+                mb.state = Market_Buyer_State.TO_GRANARY
+            case MessageType.MARKET_SELL:
+                # market trader
+                mt = self.game.map.grid[message[1]][message[2]].building.trader
+                mt.market.sell(message[3])
+            case MessageType.WALKER_DESTROY:
+                b = self.game.map.grid[message[1]][message[2]].building
+                w = None
+                t = walker_type(message[4], to_num=False)
+                if t == Engineer: w = b.engineer
+                elif t == Farm_Boy: w = b.farm_boy
+                elif t == Market_Buyer: w = b.buyer
+                elif t == Market_Trader: w = b.trader
+                elif t == Migrant: w = b.migrant
+                elif t == Prefect: w = b.prefect
+                elif t == Tax_Collector: w = b.tax_collector
+                self.game.remove_from_walkers(w)
+            case MessageType.HOUSE_FOOD_STOCK:
+                self.game.map.grid[message[1]][message[2]].food += message[3]
+            case MessageType.HOUSE_EAT:
+                self.game.map.grid[message[1]][message[2]].food -= message[3]
+            case MessageType.SPEND_MONEY:
+                self.game.denarii -= message[3]
+            case MessageType.COLLECT_MONEY:
+                self.game.denarii += message[3]
 
     def wait_next_frame(self):
         time_now = time_ns()
@@ -315,19 +286,6 @@ class Controller:
         self.checkEvents(sleep_time)
         self.last_frame = time_ns()
 
-    def checkDaemon(self):
-        # Check if c_daemon is already running
-        process = subprocess.Popen(['pgrep', 'c_daemon'], stdout=subprocess.PIPE)
-        output, _ = process.communicate()
-        if output:
-            # c_daemon is already running
-            print("c_daemon is already running")
-        else:
-            # c_daemon is not running, start it
-            print("Starting c_daemon")
-            # print([os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'c_daemon', 'bin', 'c_daemon'))])
-            subprocess.Popen([os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'c_daemon', 'bin', 'c_daemon'))])
-
     def checkEvents(self, delta_time=0):
         stop_time = time_ns() + delta_time
         for event in pg.event.get():
@@ -346,12 +304,12 @@ class Controller:
                 case pg.MOUSEBUTTONDOWN:
                     print("MouseButtonDown")
                     if event.button == pg.BUTTON_LEFT:
-                        # print("Left button pressed at (x, y) = ", event.pos)
+                        print("Left button pressed at (x, y) = ", event.pos)
 
                         print("self.building est a : ", self.building)
                         # ------------------------------------------------------------------------------------Faire en clique droit
                     elif event.button == pg.BUTTON_RIGHT:
-                        # print("Right button pressed at (x, y) = ", event.pos)
+                        print("Right button pressed at (x, y) = ", event.pos)
                         if event.pos[0] <= self.visualizer.GAME_WIDTH and event.pos[1] <= self.visualizer.GAME_HEIGHT:
                             self.MODE_DECALAGE = True
                             self.ORIGIN_DECALAGE = event.pos
@@ -367,9 +325,9 @@ class Controller:
                             self.building = False
                             self.visualizer.changeBuildingMode()
                             self.final_pos = None
-                        # print("Left button released at (x, y) = ", event.pos)
+                        print("Left button released at (x, y) = ", event.pos)
                     elif event.button == pg.BUTTON_RIGHT:
-                        # print("Right button released at (x, y) = ", event.pos)
+                        print("Right button released at (x, y) = ", event.pos)
                         if self.MODE_DECALAGE:
                             self.MODE_DECALAGE = False
                             mouse_pos = event.pos
@@ -430,10 +388,10 @@ class Controller:
                     if left_button_pressed:
                         actionned = False
                         if not(self.building):
-                            # print("into not(self.building)")
+                            print("into not(self.building)")
                             for button in self.list_button:
                                 if button.listener_rect(mouse_pos):
-                                    # print("button clicked")
+                                    print("button clicked")
                                     self.buttonclicked = button
 
                                     if self.buttonclicked.building != -1:
@@ -456,30 +414,3 @@ class Controller:
                         if self.visualizer.MODE_FILE_MENU and not actionned:
                             self.visualizer.MODE_FILE_MENU = False
                     break
-
-    def chat_update(self):
-        def update(self, now):
-        mouse_pos = pg.mouse.get_pos()
-        mouse_button_pressed = pg.mouse.get_pressed()
-
-        if mouse_button_pressed[0]:
-            if (self.visualizer.chat.chat_posx <= mouse_pos[0] <= self.visualizer.chat.chat_posx + self.visualizer.chat.chat.get_width()) and (
-                self.visualizer.chat.chat_posy <= mouse_pos[1] <= self.visualizer.chat.chat_posy + self.visualizer.chat.chat.get_height()):
-                self.visualizer.chat.is_selected = True
-            else:
-                self.visualizer.chat.is_selected = False
-        if self.visualizer.chat.is_selected:
-            self.visualizer.chat.check_input(now)
-        # can take control of chat with enter key
-        # else:
-        #     for event in pg.event.get():
-        #         if event.type == pg.KEYDOWN and event.key == pg.K_RETURN:
-        #             self.visualizer.chat.is_selected = True
-        # if a message is sent, send it in peer to everyone and add it in memory
-        if self.visualizer.chat.message:
-            # self.communication.send(self.message)   
-            self.visualizer.chat.memory.append((self.message, pg.time.get_ticks()))
-            self.visualizer.chat.message = ""
-
-        if self.visualizer.chat.memory and now - self.visualizer.chat.memory[0][1] > 4000 :
-            self.visualizer.chat.memory = self.visualizer.chat.memory[1:]

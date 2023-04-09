@@ -3,7 +3,7 @@
 #include "global_var.h"
 
 const int BUFSIZE = 1024;
-uint16_t PORT     = 1235;
+uint16_t PORT     = 1234;
 
 int maxfd;
 int res;
@@ -368,16 +368,16 @@ int main(int argc, char **argv) {
                     recv_data->posx, recv_data->posy, recv_data->type, recv_data->x);
             printf("%s\n", change_msg);
             for (int ind = 0; ind < PLAYER_MAX; ind++) {
-                if (connection[ind].used && ind != ind0 && ind != index /**/) {
-                    print_connections("%i\n", ind);
-                    send_message message;
-                    message.mesg_type        = C_TO_PY;
-                    message.mes.message_type = recv_data->message_type;
-                    message.mes.posx         = recv_data->posx;
-                    message.mes.posy         = recv_data->posy;
-                    message.mes.type         = recv_data->type;
-                    message.mes.x            = recv_data->x;
-                    if (write(connection[ind].socket, &message, sizeof(send_message)) < 0) {
+                if (connection[ind].used && ind != ind0) {
+                    print_connections();
+                    // send_message message;
+                    // message.mesg_type        = C_TO_PY;
+                    // message.mes.message_type = recv_data->message_type;
+                    // message.mes.posx         = recv_data->posx;
+                    // message.mes.posy         = recv_data->posy;
+                    // message.mes.type         = recv_data->type;
+                    // message.mes.x            = recv_data->x;
+                    if (write(connection[ind].socket, &change_msg, strlen(change_msg) + 1) < 0) {
                         stop("Cannot forward message");
                     }
                 }

@@ -31,6 +31,7 @@ extern const int BUFSIZE;
 extern uint16_t PORT;
 
 extern int listenfd;
+extern int child_pid;
 // extern int player_socket[PLAYER_MAX];
 
 typedef struct {

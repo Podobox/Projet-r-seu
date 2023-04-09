@@ -114,7 +114,6 @@ class Visualizer:
         self.fileMenu = FileMenu(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, backup, game, communication)
         #self.images = dict()
         self.minimap = Minimap(self.window, WINDOW_WIDTH, WINDOW_HEIGHT)
-        # self.show_new_window(self.window)
 
         self.chat = Chat(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, communication)
         self.loadImages()
@@ -169,9 +168,9 @@ class Visualizer:
 
         self.minimap.display(map, self.deplacementX + self.tmpDeplacementX,
                              self.deplacementY + self.tmpDeplacementY)
-        # self.imgavatar.show_players_connected()
+        self.imgavatar.display()
         
-        self.chat.display(self.chat)
+        # self.chat.display(self.chat)
 
         # Draw game barre
         self.barre.barre_function(self.game.denarii, self.game.population, self.game.date)
@@ -387,22 +386,25 @@ class Visualizer:
         for row in range(MAP_DIM):
             for column in range(MAP_DIM):
                 if MAP.is_type(column, row, Road):
-                    roadType = 0
-                    roadType += 1 if (column >
-                                      0 and MAP.is_type(column - 1, row, Road)) else 0
-                    roadType += 2 if (row > 0 and MAP.is_type(column, row - 1, Road)) else 0
-                    roadType += 4 if (column <
-                                      MAP_DIM and MAP.is_type(column + 1, row, Road)) else 0
-                    roadType += 8 if (row <
-                                      MAP_DIM and MAP.is_type(column, row + 1, Road)) else 0
-                    if roadType == 0:
-                        roadType = 5
-                    imgCode = '000' + (f'0{roadType}' if roadType < 10 else f'{roadType}')
-                    imgName = 'Road'
-                    compenX = cellSize
-                    compenY = 0
-                    self.displayImage(row, column, tileDIM, origin,
-                                      imgName, imgCode, compenX, compenY)
+                    if self.overlayType == 'Tile':
+                            self.showPlayerCase(MAP, row, column,tileDIM, origin) 
+                    else:
+                        roadType = 0
+                        roadType += 1 if (column >
+                                        0 and MAP.is_type(column - 1, row, Road)) else 0
+                        roadType += 2 if (row > 0 and MAP.is_type(column, row - 1, Road)) else 0
+                        roadType += 4 if (column <
+                                        MAP_DIM and MAP.is_type(column + 1, row, Road)) else 0
+                        roadType += 8 if (row <
+                                        MAP_DIM and MAP.is_type(column, row + 1, Road)) else 0
+                        if roadType == 0:
+                            roadType = 5
+                        imgCode = '000' + (f'0{roadType}' if roadType < 10 else f'{roadType}')
+                        imgName = 'Road'
+                        compenX = cellSize
+                        compenY = 0
+                        self.displayImage(row, column, tileDIM, origin,
+                                        imgName, imgCode, compenX, compenY)
                 elif MAP.is_type(column, row, None):
                     if self.overlayType == 'Desirability':
                         desirabilityLevel = MAP.grid[column][row].desirability
@@ -496,6 +498,9 @@ class Visualizer:
                             desirabilityLevel = MAP.grid[column][row].building.tile.desirability
                             self.showDesirabilityLevel(
                                 row, column, tileDIM, origin, desirabilityLevel)
+                        elif self.overlayType == 'Tile':
+                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
+                
                         else:
                             houseNames = {
                                 1: 'SmallTent', 2: 'LargeTent', 3: 'SmallShack', 4: 'LargeShack'}
@@ -1702,18 +1707,31 @@ class Visualizer:
                 imgCode = f'0000{desirabilityLevel + 3}'
             [compenX, compenY] = compenVal[desirabilityLevel]
         self.displayImage(row, column, tileDim, origin,
+    
                           imgName, imgCode, compenX, compenY)
-        
+   
+    showing_players = False
 
     def display_new_wind(self):
 
-        print("newww windoooooow")
-        main_surface = self.window
-        popup_surface = pygame.Surface((400, 300))
-        popup_surface.fill((255, 255, 255))
-        popup_rect = popup_surface.get_rect(center=main_surface.get_rect().center)
-        main_surface.blit(popup_surface, popup_rect)
-        pygame.display.flip()
+        global showing_players
+        
+        if not self.showing_players:
+
+            self.imgavatar.show_players_connected(self.window)
+            showing_players = True
+            self.showing_players= True
+            print("displaying")
+
+            
+        else:
+            showing_players = False
+            self.showing_players= False
+
+            print("not displaying")
+        
+        # pygame.display.update()
+
 
 
 # Things left to render:

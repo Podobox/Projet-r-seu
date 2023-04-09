@@ -56,7 +56,6 @@ class Game:
 
     def __init__(self, denarii):
         self.owner = Player()
-        self.prop  = PropertyPossession(posx=0,posy=0, player=self.owner)
         self.map = Map()
         self.denarii = denarii
         self.population = 0

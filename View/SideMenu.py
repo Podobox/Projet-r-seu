@@ -124,7 +124,7 @@ class Menu:
                    (self.coefficient
                     * 158.117), self.window_height - (self.coefficient * 25), self.changeOverlay,
                    self.coefficient / 9.5, overlay="Tile"),
-            Button(self.window, "/Images/Connected_Player.png", self.window_width - 300, self.window_height-1040, self.showPlayers,
+            Button(self.window, "/Images/Connected_Player.png", self.window_width - 580, self.window_height-1035, self.showPlayers,
                    self.coefficient / 9.5),
 
             Button(self.window, "/Images/desirability_overlay.png", self.window_width -
@@ -212,4 +212,5 @@ class Menu:
     #     self.playersConnect.show_players_connected()
     def showPlayers(self):
         self.visualizer.showPlayers = not self.visualizer.showPlayers
+        return
 

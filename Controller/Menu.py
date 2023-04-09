@@ -128,7 +128,8 @@ def menu():
                 if(button(globe_rect, mouse)):
                     menu_page = 0
                     saved_games_menu = 1
-                    connect()
+                    avatar_select = 1
+                    selector_avatar_connect()
             if event.type == pygame.KEYDOWN:
                 if (event.key == pygame.K_ESCAPE) or (event.key == pygame.K_SPACE):
                     running = False
@@ -178,9 +179,7 @@ def selector_avatar():
                         avatars_selectionnes.append(avatar_names[i])
                         avatar_select = False
                         add_player(1, avatar_names[i])
-                        add_player(Controller.players_ip[i], "Persephone")
                         a = True
-                        print(f"Selected {avatar_names[i]}")
                         avatar_name = avatar_names[i]
 
                         start()
@@ -341,14 +340,15 @@ def selector_avatar_connect():
                     if avatar_rects[i].collidepoint(event.pos) and avatar_names[i] not in avatars_selectionnes:
                         avatars_selectionnes.append(avatar_names[i])
                         avatar_select = False
-                        add_player(1, avatar_names[i])
-                        add_player(Controller.players_ip[i], "Persephone")
+                        # if i >= len(Controller.players_ip):
+                        #     print("Player does not exist!")
+                        #     return
+                        
+                        add_player(Controller.players_ip, avatar_names[i])
                         a = True
                         print(f"Selected {avatar_names[i]}")
                         avatar_name = avatar_names[i]
-
-                        enter_connect_game()
-
+                        connect()
                         break
 
         for i in range(len(avatar_names)):
@@ -399,8 +399,8 @@ def connect():
                         pygame.quit()
                     else:
                         avatar_select = True
-            
-                        selector_avatar_connect()
+    
+                        enter_connect_game ()
                         # for i in Save:
 
 

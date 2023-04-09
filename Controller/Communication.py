@@ -170,6 +170,9 @@ class Communication:
     def give_ownership(self, posx, posy):  # TODO in Model
         message = struct.pack("iQQQQ", MessageType.GIVE_OWNERSHIP.value, posx, posy, 0, 0)
         self.send_message_from_py_to_c(message)
+    def give_ownership(self, posx, posy):  # TODO in Model
+        message = struct.pack("iQQQQ", MessageType.PLAYER_ID.value, posx, posy, 0, 0)
+        self.send_message_from_py_to_c(message)
 
     def check_messages(self):
         # check for messages from other players

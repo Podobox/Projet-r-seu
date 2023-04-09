@@ -76,71 +76,8 @@ int main(int argc, char **argv) {
                     stop("cannot send message for file transfer");
                 }
 
-                // receive file as function recv_file(connection[index].socket);
-                /* start of recv_file */
-                printf("IN MAIN::RECV FILE\n");
+                recv_file(connection[index].socket);
 
-                long file_size;
-                char *cmd;
-                int total_bytes_read = 0;
-
-                // create a new file in the save directory
-                char cwd[BUFSIZE];
-                getcwd(cwd, sizeof(cwd));
-                strcat(cwd, "/Save/on_game");
-                printf("\t$PWD received file: %s\n", cwd);
-
-                FILE* fp = fopen(cwd, "w");
-                if (fp == NULL) {
-                    printf("Error creating file.\n");
-                    return;
-                }
-
-                printf("\tstart recv_file()\n");
-                int valread;
-
-                valread = read(connection[index].socket, buffer, BUFSIZE - 1);
-                cmd = strtok(buffer, " ");
-
-                // get the file size to verify the file is sent correctly
-                file_size = atoi(strtok(NULL, " "));
-                printf("\tcmd in recv_file, file size = %ld\n", file_size);
-                printf("\tin recv_file, total bytes read = %d\n", total_bytes_read);
-
-                // verify if the file is received successfully before do other thing*
-                while (total_bytes_read != file_size) {
-
-                    while ((valread = read(connection[index].socket, buffer, BUFSIZE - 1)) == BUFSIZE - 1) {
-
-                        buffer[valread] = '\0';
-                        printf("\trecv buffer %d: %s\n", valread,  buffer);
-                        fwrite(buffer, 1, valread, fp);
-                        total_bytes_read += valread; 
-
-                    }
-
-                    if (valread != 0) {
-
-                        buffer[valread] = '\0';
-                        fwrite(buffer, 1, valread, fp);
-                        total_bytes_read += valread; 
-        
-                    }
-                }
-
-                printf("\tend recv_file()\n");
-
-                fclose(fp);
-
-                printf("\tin recv_file out while, total bytes read = %d\n", total_bytes_read);
-                if(total_bytes_read == file_size) {
-                    printf("\tReceived file of %ld successfully\n", file_size);
-                }
-                else {
-                    printf("\tReceived file of %ld unsuccessfully\n", file_size);
-                    stop("not received the file to start the game successfully");
-                }
-                /* end of recv_file */
 
                 // get list of other IP addresses
                 if (write(connection[index].socket, "/ip_demande", strlen("/ip_demande") + 1) < 0) {
@@ -289,20 +226,20 @@ int main(int argc, char **argv) {
                             char *get_ip_buffer = strtok(buffer, " ");
                             char *get_ip_player = strtok(NULL, " ");
 
-                            while (*get_ip_player != '\0') {
-                                fprintf(stderr, "\tget_ip_player NOT NULL %s\n", get_ip_player);
+                            // while (*get_ip_player != '\0') {
+                            //     fprintf(stderr, "\tget_ip_player NOT NULL %s\n", get_ip_player);
 
-                                for (int ind = 0; ind < PLAYER_MAX; ind++) {
-                                    if (!connection[ind].used) {
-                                        connection[ind].IP = get_ip_player;
-                                        if ((res = connect_existed_players(ind))) {
-                                            fprintf(stderr, "\tError number %d connecting to player #%d\n", res, ind);
-                                        }
-                                        break;
-                                    }
-                                }
-                                get_ip_player = strtok(NULL, " ");
-                            }
+                            //     for (int ind = 0; ind < PLAYER_MAX; ind++) {
+                            //         if (!connection[ind].used) {
+                            //             connection[ind].IP = get_ip_player;
+                            //             if ((res = connect_existed_players(ind))) {
+                            //                 fprintf(stderr, "\tError number %d connecting to player #%d\n", res, ind);
+                            //             }
+                            //             break;
+                            //         }
+                            //     }
+                            //     get_ip_player = strtok(NULL, " ");
+                            // }
 
                         }
                         
@@ -311,11 +248,6 @@ int main(int argc, char **argv) {
                             // send file of the current game
                             send_file_by_socket(connection[index].socket);
                         }
-
-                        // else if (!strcmp(cmd, "/file_start")){
-                        //     printf("IN FILE START\n");
-                        //     recv_file(connection[index].socket);
-                        // } 
                          
                         
                         else if (!strcmp(cmd, "/init_state_demand")) {

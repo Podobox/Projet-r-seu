@@ -118,7 +118,7 @@ def menu():
                     # start_new_game = 1
                     menu_page = 0
                     avatar_select =1
-                    selector_avatar_connect()
+                    selector_avatar()
                     # Controller()
 
                 if (button(load_game_rect, mouse)):
@@ -133,64 +133,76 @@ def menu():
                 if (event.key == pygame.K_ESCAPE) or (event.key == pygame.K_SPACE):
                     running = False
                     pygame.quit()
-# def selector_avatar():
-#     global menu_page
-#     global running
-#     global saved_games_menu
-#     global sound_play
-#     global start_new_game
-#     global avatar_select
-#     global avatar_name
+def selector_avatar():
+    global menu_page
+    global running
+    global saved_games_menu
+    global sound_play
+    global start_new_game
+    global avatar_select
+    global a
+    global player_list
+    global avatar_name
 
-#     x = screen.get_size()
-#     avatar_images = []
-#     avatar_rects = []
-#     avatar_names = ["Julius", "Octavius", "Brutus", "Minerve","Dozer", "Persephone"]
-#     avatar_x_positions = [x[0] / 6 - 100, x[0] / 2 - 100, 5 * x[0] / 6 - 100, x[0] / 6 - 100, x[0] / 2 - 100, 5 * x[0] / 6 - 100]
-#     avatar_y_positions = [x[1] / 3, x[1] / 3, x[1] / 3, 2 * x[1] / 3, 2 * x[1] / 3, 2 * x[1] / 3]
+    x = screen.get_size()
+    avatar_images = []
+    avatar_rects = []
+    avatar_names = ["Julius", "Octavius", "Brutus", "Minerve","Dozer", "Persephone"]
+    avatar_x_positions = [x[0] / 6 - 100, x[0] / 2 - 100, 5 * x[0] / 6 - 100, x[0] / 6 - 100, x[0] / 2 - 100, 5 * x[0] / 6 - 100]
+    avatar_y_positions = [x[1] / 3, x[1] / 3, x[1] / 3, 2 * x[1] / 3, 2 * x[1] / 3, 2 * x[1] / 3]
+    avatars_selectionnes = []
 
-#     for i in range(len(avatar_names)):
-#         avatar_image = pygame.image.load(f"./Images/play_menu/{avatar_names[i]}.png").convert_alpha()
-#         avatar_image = pygame.transform.scale(avatar_image, (200, 200))
-#         avatar_rect = avatar_image.get_rect()
-#         avatar_rect.x = avatar_x_positions[i]
-#         avatar_rect.y = avatar_y_positions[i]
-#         avatar_images.append(avatar_image)
-#         avatar_rects.append(avatar_rect)
+    # Charger les deux images de fond
+    background_1 = pygame.image.load('./Images/back_avatar.png')
+    background_2 = pygame.image.load('./Images/back_connected.png')
 
-#     while avatar_select: 
-#         back_1 = pygame.image.load('Images/_fired_00001.png')
-#         back_1 = pygame.transform.scale(back_1, x)
-#         screen.blit(back_1, (0, 0))
-#         # Ajout d'une légende
-#         font = pygame.font.Font(None, 50)
-#         caption = font.render("Please choose your avatar", True, (255, 255, 255))
-#         caption_rect = caption.get_rect(center=(x[0] // 2, x[1] // 6))
-#         screen.blit(caption, caption_rect)
-#         for event in pygame.event.get():
-#             if event.type == pygame.QUIT:
-#                 running = False
-#                 pygame.quit()
-#                 quit()
-#             if event.type == pygame.MOUSEBUTTONDOWN:
-#                 for i in range(len(avatar_names)):
-#                     if avatar_rects[i].collidepoint(event.pos):
-#                         avatar_select = False
-#                         start_new_game = True
-#                         avatar_name = avatar_names[i]
-#                         start()
-#                         break
-                    
+    background_1 = pygame.transform.scale(background_1, screen.get_size())
+
+    while avatar_select: 
+        screen.blit(background_1, (0, 0))
+        background_2 = pygame.transform.scale(background_2, (1700, 900)) 
+        screen.blit(background_2, (100, 100)) 
         
+        font = pygame.font.Font(None, 50)
+        caption = font.render("Please choose your avatar", True, (255, 0, 0))
+        caption_rect = caption.get_rect(center=(x[0] // 2, x[1] // 6))
+        screen.blit(caption, caption_rect)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                pygame.quit()
+                quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                for i in range(len(avatar_names)):
+                    if avatar_rects[i].collidepoint(event.pos) and avatar_names[i] not in avatars_selectionnes:
+                        avatars_selectionnes.append(avatar_names[i])
+                        avatar_select = False
+                        add_player(1, avatar_names[i])
+                        add_player(Controller.players_ip[i], "Persephone")
+                        a = True
+                        print(f"Selected {avatar_names[i]}")
+                        avatar_name = avatar_names[i]
 
-#         for i in range(len(avatar_names)):
-#             # pygame.draw.rect(screen, (255, 255, 255), avatar_rects[i], 5)
-#             screen.blit(avatar_images[i], (avatar_rects[i].x + 5, avatar_rects[i].y + 5))
-#             font = pygame.font.SysFont(None, 40)
-#             text = font.render(avatar_names[i], True, (255, 0, 0))
-#             screen.blit(text, (avatar_rects[i].x + 50, avatar_rects[i].y + 215))
+                        start()
+                        break
 
-#         pygame.display.flip()
+        for i in range(len(avatar_names)):
+            if avatar_names[i] not in avatars_selectionnes:
+                avatar_image = pygame.image.load(f"./Images/play_menu/{avatar_names[i]}.png").convert_alpha()
+                avatar_image = pygame.transform.scale(avatar_image, (200, 200))
+                avatar_rect = avatar_image.get_rect()
+                avatar_rect.x = avatar_x_positions[i]
+                avatar_rect.y = avatar_y_positions[i]
+                avatar_images.append(avatar_image)
+                avatar_rects.append(avatar_rect)
+
+                screen.blit(avatar_images[i], (avatar_rects[i].x + 5, avatar_rects[i].y + 5))
+                font = pygame.font.SysFont(None, 40)
+                text = font.render(avatar_names[i], True, (255, 0, 0))
+                screen.blit(text, (avatar_rects[i].x + 50, avatar_rects[i].y + 215))
+
+        pygame.display.flip()
+
 
 def start():
     global start_new_game
@@ -219,11 +231,9 @@ def start():
                                 quit(0)
                             else:
                                 param = 1
-                                print("start")
                                 enter_start_game()
 
 def enter_start_game():
-    print("start game")
     global param
     x = screen.get_size()
     font = pygame.font.Font(None, 24)
@@ -337,7 +347,7 @@ def selector_avatar_connect():
                         print(f"Selected {avatar_names[i]}")
                         avatar_name = avatar_names[i]
 
-                        start()
+                        enter_connect_game()
 
                         break
 
@@ -389,7 +399,7 @@ def connect():
                         pygame.quit()
                     else:
                         avatar_select = True
-                        
+            
                         selector_avatar_connect()
                         # for i in Save:
 

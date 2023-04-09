@@ -44,7 +44,7 @@ class Controller:
     init_pos = None
     final_pos = None
     ORIGIN_DECALAGE = (0, 0)
-    players_ip =[]
+    players_ip =[2,3]
 
     def __init__(self, name_save, game=None, players=None):
         # pg.init()
@@ -127,7 +127,7 @@ class Controller:
         match MessageType(message[0]):
             case MessageType.REQUIRE_OWNERSHIP: pass
             case MessageType.PLAYER_ID : 
-                players_ip= players_ip.append(message[0])
+                players_ip= players_ip.append(message[1])
                 print(players_ip[0])
 
     def wait_next_frame(self):

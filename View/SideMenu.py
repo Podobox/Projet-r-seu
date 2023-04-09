@@ -212,5 +212,4 @@ class Menu:
     #     self.playersConnect.show_players_connected()
     def showPlayers(self):
         self.visualizer.showPlayers = not self.visualizer.showPlayers
-        return
 

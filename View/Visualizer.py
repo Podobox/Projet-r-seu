@@ -177,7 +177,8 @@ class Visualizer:
         self.list_button = (set(self.list_button) | set([self.barre.fileButton]))
 
         if self.showPlayers:
-            self.display_new_wind()
+            self.imgavatar.show_players_connected(self.window)
+            pygame.display.flip()
         
         return self.list_button
 
@@ -1710,27 +1711,8 @@ class Visualizer:
     
                           imgName, imgCode, compenX, compenY)
    
-    showing_players = False
 
-    def display_new_wind(self):
 
-        global showing_players
-        
-        if not self.showing_players:
-
-            self.imgavatar.show_players_connected(self.window)
-            showing_players = True
-            self.showing_players= True
-            print("displaying")
-
-            
-        else:
-            showing_players = False
-            self.showing_players= False
-
-            print("not displaying")
-        
-        # pygame.display.update()
 
 
 

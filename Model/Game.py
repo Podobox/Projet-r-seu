@@ -208,22 +208,10 @@ class Game:
             building_type = type(building)
             if building_type == Rock or building_type == Water or building_type == Other_Rock:
                 return
-            building_type = type(building)
-            if building_type == Rock or building_type == Water or building_type == Other_Rock:
-                return
 
             if not self.pay(2):
                 return
-            if not self.pay(2):
-                return
 
-            if building_type == House:
-                removed_population = building.population
-                self.population -= removed_population
-                self.unemployed -= removed_population
-                m = Migrant(self.map, building, self.map.exit_point, leaving=True)
-                self.walkers.append(m)
-            self.unemployed += building.employees
             if building_type == House:
                 removed_population = building.population
                 self.population -= removed_population
@@ -245,24 +233,9 @@ class Game:
                     self.remove_from_walkers(building.trader)
             elif isinstance(building, Prefecture) and building.prefect is not None:
                 self.remove_from_walkers(building.prefect)
-            if isinstance(building, Engineer_Post) and building.engineer is not None:
-                self.remove_from_walkers(building.engineer)
-            elif isinstance(building, Wheat_Farm) and building.farm_boy is not None:
-                self.remove_from_walkers(building.farm_boy)
-            elif isinstance(building, Forum) and building.tax_collector is not None:
-                self.remove_from_walkers(building.tax_collector)
-            elif isinstance(building, Market):
-                if building.buyer is not None:
-                    self.remove_from_walkers(building.buyer)
-                if building.trader is not None:
-                    self.remove_from_walkers(building.trader)
-            elif isinstance(building, Prefecture) and building.prefect is not None:
-                self.remove_from_walkers(building.prefect)
-
-            self.buildings.remove(building)
+            
             self.buildings.remove(building)
 
-            self.map.destroy(posx, posy)
             self.map.destroy(posx, posy)
 
             if building_type == Road:

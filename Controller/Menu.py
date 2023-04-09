@@ -310,18 +310,13 @@ def selector_avatar_connect():
     background_1 = pygame.image.load('./Images/back_avatar.png')
     background_2 = pygame.image.load('./Images/back_connected.png')
 
-    # Redimensionner l'arrière-plan principal pour qu'il remplisse l'écran
     background_1 = pygame.transform.scale(background_1, screen.get_size())
 
     while avatar_select: 
-        # Afficher l'arrière-plan principal
         screen.blit(background_1, (0, 0))
-
-        # Afficher l'arrière-plan plus petit en haut de l'arrière-plan principal
-        background_2 = pygame.transform.scale(background_2, (1700, 900)) # Redimensionner l'arrière-plan plus petit
-        screen.blit(background_2, (100, 100)) # Afficher l'arrière-plan plus petit en haut à gauche de l'écran
+        background_2 = pygame.transform.scale(background_2, (1700, 900)) 
+        screen.blit(background_2, (100, 100)) 
         
-        # Ajout d'une légende
         font = pygame.font.Font(None, 50)
         caption = font.render("Please choose your avatar", True, (255, 0, 0))
         caption_rect = caption.get_rect(center=(x[0] // 2, x[1] // 6))
@@ -337,11 +332,11 @@ def selector_avatar_connect():
                         avatars_selectionnes.append(avatar_names[i])
                         avatar_select = False
                         add_player(1, avatar_names[i])
+                        add_player(Controller.players_ip[i], "Persephone")
                         a = True
                         print(f"Selected {avatar_names[i]}")
                         avatar_name = avatar_names[i]
 
-                        # Appel à la fonction start()
                         start()
 
                         break
@@ -354,8 +349,6 @@ def selector_avatar_connect():
                 avatar_rect.x = avatar_x_positions[i]
                 avatar_rect.y = avatar_y_positions[i]
                 avatar_images.append(avatar_image)
-               
-
                 avatar_rects.append(avatar_rect)
 
                 screen.blit(avatar_images[i], (avatar_rects[i].x + 5, avatar_rects[i].y + 5))

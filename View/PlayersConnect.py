@@ -24,9 +24,8 @@ class PLayerConnected :
         self.window.blit(text, text_rect)
         
             
-
     def show_players_connected(self, window):
-        pygame.font.init() 
+        pygame.font.init()
         from View.Visualizer import Visualizer
         new_window = pygame.Surface((800, 500))
         background = pygame.image.load("./Images/back_connected.png").convert_alpha()
@@ -39,7 +38,7 @@ class PLayerConnected :
         for i in range(len(Controller.Menu.player_list)):
             player = Controller.Menu.player_list[i]
             name = player['avatar']
-            avatar_names.append(name)  
+            avatar_names.append(name)
             avatar_image = pygame.image.load(f"./Images/play_menu/{name}.png").convert_alpha()
             avatar_image = pygame.transform.scale(avatar_image, (100, 100))
             avatar_images.append(avatar_image)
@@ -55,18 +54,15 @@ class PLayerConnected :
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-            if not Visualizer.showing_players:
+            if not Visualizer.showPlayers:
                 running = False
 
             for i in range(len(avatar_images)):
                 new_window.blit(avatar_images[i], avatar_positions[i])
                 font = pygame.font.Font(None, 30)
-                text = font.render("My Avatar: " + Controller.Menu.avatar_name, True, (255, 0, 0))
-                font = pygame.font.Font(None, 30)  # Charger une police d'écriture
-                text = font.render(avatar_names[i], True, (255, 255, 255))  # Créer un objet texte avec le nom de l'avatar
-                text_rect = text.get_rect(center=(avatar_positions[i][0], avatar_positions[i][1]+75))  # Centrer le texte sous l'image
-                new_window.blit(text, text_rect)  # Afficher le texte sous l'image
-            
-            window.blit(new_window, new_window_rect)
-        pygame.display.flip()
+                text = font.render(avatar_names[i], True, (255, 0, 0))  # Créer un objet texte avec le nom de l'avatar
+                text_rect = text.get_rect(center=(avatar_positions[i][0] + 50, avatar_positions[i][1] +avatar_image.get_height()+10))
+                new_window.blit(text, text_rect)
 
+            window.blit(new_window, new_window_rect)
+            pygame.display.flip()

@@ -242,21 +242,20 @@ class Communication:
 
         # Start the process
         process = subprocess.Popen(cmd) 
-        self.send_message_from_py_to_c(message)
+        # self.send_message_from_py_to_c(message)
 
         # wait for response from c daemon and unpack the game and player information
         # to comment
-        response, _ = self.message_queue.receive(type=C_TO_PY)
-        game, players = struct.unpack("iQ", response)
-
-        return nom, players
+        # response, _ = self.message_queue.receive(type=C_TO_PY)
+        # game, players = struct.unpack("iQ", response)
    
-        # return the game it is connected to and its players 
-        # pass
-        while self.receive_message_from_c_to_py():
-            game = pickle.loads(self.message.get())
-            return (game, None)
+        # while self.receive_message_from_c_to_py():
+        #     game = pickle.loads(self.message.get())
+        #     return (game, None)
+        
         # return the game it is connected to and its players
+        return nom
+
 
     def disconnect(self, posx, posy):
         message = struct.pack("iQQQQ", MessageType.DISCONNECT.value, posx, posy, 0, 0)

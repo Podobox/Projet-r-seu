@@ -286,9 +286,10 @@ def enter_connect_game():
                         pygame.display.flip()
                         continue
                     ip, port = ip_port.split("/")
-                    nom, players = communication.connect(ip, int(port))
+                    nom = communication.connect(ip, int(port))
                     backup = Backup(nom)
                     game = backup.load(nom)
+                    print(nom)
                     if game is None:
                         erreur = "host does not exist"
                         text_erreur = font.render(erreur, True, (255, 0, 0))
@@ -333,6 +334,7 @@ def enter_saved_game():
                     screen.blit(text_2, (x[0] / 2 - 100, (x[1] / 3) + 70))
                     pygame.display.flip()
                 elif event.key == pygame.K_RETURN:
+                    print(nom)
                     backup = Backup(nom)
                     game = backup.load(nom)
                     if game is None:

@@ -254,6 +254,8 @@ class Communication:
         #     return (game, None)
         
         # return the game it is connected to and its players
+
+        # i dont know what should i return here as we would us it in Menu
         return nom
 
 

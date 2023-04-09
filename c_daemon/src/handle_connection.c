@@ -42,6 +42,8 @@ void send_file_by_socket(int sockfd) {
     char buffer[BUFSIZE];
     long file_size;
 
+    // ask python to save the game
+    send_from_c(3, 0, 0, 0, 0);
 
     // get the name of the file
     char cwd[BUFSIZE];
@@ -71,7 +73,7 @@ void send_file_by_socket(int sockfd) {
     int size;
     while ((size = fread(buffer, 1, BUFSIZE - 1, fp)) == BUFSIZE - 1) {
         buffer[size] = '\0';
-        printf("\tsent buffer %d: %s\n", size ,buffer);
+        // printf("\tsent buffer %d: %s\n", size ,buffer);
         if (write(sockfd, buffer, size) < 0) {
             stop("\terror in sending file");
         }

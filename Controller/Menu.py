@@ -287,7 +287,6 @@ def enter_connect_game():
                         continue
                     ip, port = ip_port.split("/")
                     nom = communication.connect(ip, int(port))
-                    nom = "online_game"
                     backup = Backup(nom)
                     game = backup.load(nom)
                     print(nom)

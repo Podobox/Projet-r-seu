@@ -261,6 +261,7 @@ def enter_connect_game():
     x = screen.get_size()
     font = pygame.font.Font(None, 24)
     ip_port = ""
+    nom = ""
     erreur = ""
     # pygame.display.flip()
     while(a):
@@ -286,7 +287,7 @@ def enter_connect_game():
                         pygame.display.flip()
                         continue
                     ip, port = ip_port.split("/")
-                    nom = communication.connect(ip, int(port))
+                    nom, game = communication.connect(ip, int(port))
                     backup = Backup(nom)
                     game = backup.load(nom)
                     print(nom)

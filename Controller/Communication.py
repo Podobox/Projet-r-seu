@@ -74,8 +74,10 @@ class Communication:
         self.message = Queue(-1)
 
     def send_message_from_py_to_c(self, message):
+        print('send : ', message)
         # send the actions from python to c
-        self.message_queue.send(message, type=PY_TO_C) 
+        self.message_queue.send(message, block=False, type=PY_TO_C)
+
 
     def receive_message_from_c_to_py(self):
         # send the actions from c to python
@@ -242,22 +244,17 @@ class Communication:
 
         # Start the process
         process = subprocess.Popen(cmd) 
-        # self.send_message_from_py_to_c(message)
+        self.send_message_from_py_to_c(message)
 
-        # wait for response from c daemon and unpack the game and player information
-        # to comment
-        # response, _ = self.message_queue.receive(type=C_TO_PY)
-        # game, players = struct.unpack("iQ", response)
-   
-        # while self.receive_message_from_c_to_py():
-        #     game = pickle.loads(self.message.get())
-        #     return (game, None)
+        # wait for response from c daemon and unpack the game and player information   
+        while self.receive_message_from_c_to_py():
+            game = pickle.loads(self.message.get())
+            return (nom, game)
         
         # return the game it is connected to and its players
 
-        # i dont know what should i return here as we would us it in Menu
-        return nom
-
+        # If the loop did not run, return a default value
+        return (nom, None)
 
     def disconnect(self, posx, posy):
         message = struct.pack("iQQQQ", MessageType.DISCONNECT.value, posx, posy, 0, 0)
@@ -270,16 +267,16 @@ class Communication:
 
 communication = Communication()
 
-""" TEST
-Sender = Communication()
-Sender.evolve(9, 5) #11
-Sender.devolve(9, 6) #12
-Sender.diconnect() #4
-Sender.connect(3, 8000) #3
-Sender.give_ownership(9, 7) #2
-Sender.move_walker(9, 8, 2, 3) #13
-Sender.put_out_fire(10, 9)
-"""
+# """ TEST
+# Sender = Communication()
+# Sender.evolve(9, 5) #11
+# Sender.devolve(9, 6) #12
+# Sender.diconnect() #4
+# Sender.connect(3, 8000) #3
+# Sender.give_ownership(9, 7) #2
+# Sender.move_walker(9, 8, 2, 3) #13
+# Sender.put_out_fire(10, 9)
+# """
 # if (str(string) == 'end' or str(string) == 'exit' or str(string) == ''):
 #     break
 

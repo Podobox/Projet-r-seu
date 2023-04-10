@@ -163,7 +163,7 @@ class Game:
         if type in (Wheat_Farm,) and self.map.grid[posx][posy].type not in (Tile_Type.Field,):
             return
 
-        if not self.pay(building_data[type].price):
+        if not force and not self.pay(building_data[type].price):
             return
 
         self.map.build(posx, posy, type)
@@ -185,7 +185,7 @@ class Game:
 
         self.buildings.append(building)
 
-        if type not in (Water, Tree, Rock, Other_Rock, Sign):
+        if not force and type not in (Water, Tree, Rock, Other_Rock, Sign):
             com.communication.build(posx, posy, building_type(type))
 
     def destroy(self, posx, posy, force=False):
@@ -200,7 +200,7 @@ class Game:
         if building_type == Rock or building_type == Water or building_type == Other_Rock:
             return
 
-        if not self.pay(2):
+        if not force and not self.pay(2):
             return
 
         if building_type == House:
@@ -232,7 +232,8 @@ class Game:
         if building_type == Road:
             self.road_connect()
 
-        com.communication.destroy(posx, posy)
+        if not force:
+            com.communication.destroy(posx, posy)
 
     def job_hunt(self):
         if self.unemployed < 0:

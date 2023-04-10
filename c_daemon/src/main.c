@@ -71,7 +71,9 @@ int main(int argc, char **argv) {
                 char buffer[BUFSIZE];
                 int charcnt;
                 // get list of other IP addresses
-                if (write(connection[index].socket, "/ip_demande", strlen("/ip_demande") + 1) < 0) {
+                send_message message;
+                message.mesg_type = -1;
+                if (write(connection[index].socket, &message, sizeof(send_message)) < 0) {
                     stop("cannot demande ip table");
                 }
 
@@ -109,28 +111,27 @@ int main(int argc, char **argv) {
                 ////////////////////////////////////
 
                 // demand the initial state of the game
-                if (write(connection[index].socket, "/init_state_demand", strlen("/init_state_demand") + 1)
-                    < 0) {
+                /*send_message message;*/
+                message.mesg_type = -2;
+                if (write(connection[index].socket, &message, sizeof(send_message)) < 0) {
                     stop("cannot demand initial state");
                 }
-                if (write(connection[index].socket, "/incoming_change 1 2 3 4 5",
-                          strlen("/incoming_change 1 2 3 4 5") + 1)
-                    < 0) {
-                    stop("dumb dumb test");
-                }
-                // wait 50ms
-                usleep(50000);
-                if (write(connection[index].socket, "/outcoming_change 5 6 7 8 9",
-                          strlen("/outcoming_change 5 6 7 8 9") + 1)
-                    < 0) {
-                    stop("dumb test 2");
-                }
+                /*if (write(connection[index].socket, "/incoming_change 1 2 3 4 5",*/
+                /*strlen("/incoming_change 1 2 3 4 5") + 1)*/
+                /*< 0) {*/
+                /*stop("dumb dumb test");*/
+                /*}*/
+                /*// wait 50ms*/
+                /*usleep(50000);*/
+                /*if (write(connection[index].socket, "/outcoming_change 5 6 7 8 9",*/
+                /*strlen("/outcoming_change 5 6 7 8 9") + 1)*/
+                /*< 0) {*/
+                /*stop("dumb test 2");*/
+                /*}*/
                 break;
             }
         }
     }
-
-    perror("erm");
 
     print_connections();
 
@@ -149,18 +150,20 @@ int main(int argc, char **argv) {
         stop("Fork failed");
     } else if (pid == 0) {
         // child recv from python
-        child_pid = getpid();
-        python_struct_t *recv_data;
-        recv_data = (python_struct_t *)malloc(sizeof(python_struct_t));
-        char change_msg[BUFSIZE];
-        while (1) {
-            recv_data = recv_from_python();
-            sprintf(change_msg, "/outcoming_change %d %ld %ld %ld %ld", recv_data->message_type,
-                    recv_data->posx, recv_data->posy, recv_data->type, recv_data->x);
-            if (write(connection[ind0].socket, change_msg, strlen(change_msg) + 1) < 0) {
-                perror("Failed to send changes");
-            }
-        }
+        /*child_pid = getpid();*/
+        /*python_struct_t *recv_data;*/
+        /*recv_data = (python_struct_t *)malloc(sizeof(python_struct_t));*/
+        /*char change_msg[BUFSIZE];*/
+        /*while (1) {*/
+        /*recv_data = recv_from_python();*/
+        /*sprintf(change_msg, "/outcoming_change %d %ld %ld %ld %ld",
+         * recv_data->message_type,*/
+        /*recv_data->posx, recv_data->posy, recv_data->type, recv_data->x);*/
+        /*if (write(connection[ind0].socket, change_msg, strlen(change_msg) + 1) < 0) {*/
+        /*perror("Failed to send changes");*/
+        /*}*/
+        /*}*/
+        ;
     } else {
         free(recv_data);
         // parent do TCP
@@ -183,10 +186,10 @@ int main(int argc, char **argv) {
 
             // ajoute le timeout !!!
             // select
-            // timeval of 10ms
+            // timeval of 1ms
             struct timeval tv;
             tv.tv_sec  = 0;
-            tv.tv_usec = 10000;
+            tv.tv_usec = 1000;
             if ((res = select(maxfd + 1, &readfds, NULL, NULL, &tv)) < 0 && errno != EINTR) {
                 stop("select");
             }
@@ -220,12 +223,14 @@ int main(int argc, char **argv) {
                 char buffer[BUFSIZE];
                 bzero(buffer, BUFSIZE);
                 int charcnt;
-                if ((charcnt = read(STDIN_FILENO, buffer, BUFSIZE - 1)) < 0) {
+                send_message message;
+                if ((charcnt = read(STDIN_FILENO, &message, sizeof(message))) < 0) {
                     stop("Standard input error");
                 }
                 buffer[charcnt - 1] = '\0';
                 // host deconnected
-                if (!strcmp(buffer, "quit")) {
+                /*if (!strcmp(buffer, "quit")) {*/
+                if (message.mesg_type == -3) {
                     // kill all socket of connection
                     for (int index = 0; index < PLAYER_MAX; index++) {
                         if (connection[index].used) {
@@ -247,36 +252,41 @@ int main(int argc, char **argv) {
                         char buffer[BUFSIZE];
                         int charcnt;
                         bzero(buffer, BUFSIZE);
+                        send_message message;
 
                         // this player has disconnected
-                        if ((charcnt = read(connection[index].socket, buffer, BUFSIZE)) == 0) {
+                        if ((charcnt = recv(connection[index].socket, &message,
+                                            sizeof(send_message), MSG_DONTWAIT))
+                            == 0) {
                             close_connection(index);
                             print_connections();
                         } else if (charcnt < 0) {
-                            stop("Error reading message");
+                            break;
                         }
 
                         // receive data from other
                         else {
                             // print received message
-                            printf("Received from IP:%s socket:%d buffer:%s\n",
-                                   connection[index].IP, connection[index].socket, buffer);
+                            printf("Received from IP:%s socket:%d buffer:%i %lu %lu %lu %lu\n",
+                                   connection[index].IP, connection[index].socket, message.mes.message_type, message.mes.posx, message.mes.posy, message.mes.type, message.mes.x);
 
-                            char cmd[BUFSIZE];
-                            for (unsigned long int i = 0; i <= strlen(buffer); i++) {
-                                if (i == strlen(buffer)) {
-                                    cmd[i] = '\0';
-                                    break;
-                                }
-                                if (buffer[i] == ' ' || buffer[i] == '\n' || buffer[i] == '\0') {
-                                    cmd[i] = '\0';
-                                    break;
-                                }
-                                cmd[i] = buffer[i];
-                            }
+                            /*char cmd[BUFSIZE];*/
+                            /*for (unsigned long int i = 0; i <= strlen(buffer); i++)
+                             * {*/
+                            /*if (i == strlen(buffer)) {*/
+                            /*cmd[i] = '\0';*/
+                            /*break;*/
+                            /*}*/
+                            /*if (buffer[i] == ' ' || buffer[i] == '\n' || buffer[i]
+                             * == '\0') {*/
+                            /*cmd[i] = '\0';*/
+                            /*break;*/
+                            /*}*/
+                            /*cmd[i] = buffer[i];*/
+                            /*}*/
 
                             // new player ask the list of player in the game
-                            if (!strcmp(cmd, "/ip_demande")) {
+                            if (message.mesg_type == -1) {
                                 printf("IN IP DEMANDE\n");
 
                                 sprintf(buffer, "/ip_response");
@@ -290,15 +300,17 @@ int main(int argc, char **argv) {
                                     }
                                 }
                                 printf("answering %s\n", buffer);
-                                if (write(connection[index].socket, buffer, strlen(buffer) + 1) < 0) {
+                                send_message message;
+                                message.mesg_type = -4;
+                                if (write(connection[index].socket, &message, sizeof(send_message)) < 0) {
                                     fprintf(stderr, "Cannot send /ip_response message to player #%d\n",
                                             index);
                                 }
                             }
 
-                            // new player receive the list of player in the game, they try
-                            // co connect to all of them
-                            else if (!strcmp(cmd, "/ip_response")) {
+                            // new player receive the list of player in the game, they
+                            // try co connect to all of them
+                            else if (message.mesg_type == -4) {
                                 printf("IN IP RESPONSE\n");
 
                                 // separate the @IP from ip_response
@@ -320,39 +332,42 @@ int main(int argc, char **argv) {
                                     }
                                     get_ip_player = strtok(NULL, " ");
                                 }
-                            } else if (!strcmp(cmd, "/incoming_change")) {
+                            } else if (message.mesg_type == -5) {
                                 // they send us a change in game, send this to python
+                                send_from_c(message.mes.message_type, message.mes.posx,
+                                            message.mes.posy, message.mes.type,
+                                            message.mes.x);
                                 // perror("Freaking bruh");
-                                char *data;
-                                data = (buffer + strlen(cmd) + 1);
-                                int32_t msg_type;
-                                uint64_t posx, posy, type, x;
-                                if (sscanf(data, "%d %ld %ld %ld %ld", &msg_type, &posx,
-                                           &posy, &type, &x)) {
-                                    printf("some freaking change here: %d %ld %ld %ld "
-                                           "%ld\n",
-                                           msg_type, posx, posy, type, x);
-                                    send_from_c(msg_type, posx, posy, type, x);
-                                } else {
-                                    perror("Invalid input or something wrong");
-                                }
-                            } else if (/*index == ind0 && /**/ !strcmp(cmd, "/outcoming_"
-                                                                            "change")) {
-                                // we are sending a change
-                                char msg[BUFSIZE];
-                                sprintf(msg, "/incoming_change ");
-                                char *data;
-                                data = (buffer + strlen(cmd) + 1);
-                                strcat(msg, data);
-                                // send msg to all others
-                                for (int ind = 0; ind < PLAYER_MAX; ind++) {
-                                    if (ind != ind0 && connection[ind].used) {
-                                        if (write(connection[ind].socket, msg, strlen(msg) + 1) < 0) {
-                                            stop("Cannot send changes to other players");
-                                        }
-                                    }
-                                }
-                            } else {
+                                /*char *data;*/
+                                /*data = (buffer + strlen(cmd) + 1);*/
+                                /*int32_t msg_type;*/
+                                /*uint64_t posx, posy, type, x;*/
+                                /*if (sscanf(data, "%d %ld %ld %ld %ld", &msg_type,*/
+                                /*&posx, &posy, &type, &x)) {*/
+                                /*printf("Receiving: %d %ld %ld %ld %ld\n",*/
+                                /*msg_type, posx, posy, type, x);*/
+                                /*send_from_c(msg_type, posx, posy, type, x);*/
+                                /*} else {*/
+                                /*perror("Invalid input or something wrong");*/
+                                /*}*/
+                            } /* else if (!strcmp(cmd, "/outcoming_change")) {
+                                 // we are sending a change
+                                 char msg[BUFSIZE];
+                                 sprintf(msg, "/incoming_change ");
+                                 char *data;
+                                 data = (buffer + strlen(cmd) + 1);
+                                 strcat(msg, data);
+                                 // send msg to all others
+                                 for (int ind = 0; ind < PLAYER_MAX; ind++) {
+                                     if (ind != ind0 && connection[ind].used) {
+                                         if (write(connection[ind].socket, msg,
+                             strlen(msg) + 1) < 0) { stop("Cannot send changes to other "
+                                                  "players");
+                                         }
+                                     }
+                                 }
+                             }*/
+                            else {
                                 printf("OTHER MESSAGE\n");
                             }
                         }
@@ -367,9 +382,16 @@ int main(int argc, char **argv) {
             sprintf(change_msg, "/outcoming_change %d %ld %ld %ld %ld", recv_data->message_type,
                     recv_data->posx, recv_data->posy, recv_data->type, recv_data->x);
             printf("%s\n", change_msg);
+            send_message message;
+            message.mesg_type = -5;
+            message.mes.message_type = recv_data->message_type;
+            message.mes.posx = recv_data->posx;
+            message.mes.posy = recv_data->posy;
+            message.mes.x = recv_data->x;
+            message.mes.type = recv_data->type;
             for (int ind = 0; ind < PLAYER_MAX; ind++) {
                 if (connection[ind].used && ind != ind0) {
-                    print_connections();
+                    printf("sending to %i\n", connection[ind].socket);
                     // send_message message;
                     // message.mesg_type        = C_TO_PY;
                     // message.mes.message_type = recv_data->message_type;
@@ -377,7 +399,7 @@ int main(int argc, char **argv) {
                     // message.mes.posy         = recv_data->posy;
                     // message.mes.type         = recv_data->type;
                     // message.mes.x            = recv_data->x;
-                    if (write(connection[ind].socket, &change_msg, strlen(change_msg) + 1) < 0) {
+                    if (write(connection[ind].socket, &message, sizeof(send_message)) < 0) {
                         stop("Cannot forward message");
                     }
                 }

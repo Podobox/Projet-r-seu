@@ -219,9 +219,12 @@ class Communication:
         # check for messages from other players
         # making this function a generator might be a good idea
         # handle the message in the controller
-
+        i = 0
         while self.receive_message_from_c_to_py():
+            i += 1
             yield self.message.get()
+        if i > 0:
+            print(f"got {i} messages")
         return
 
     def accept_connect(self):
@@ -254,7 +257,7 @@ class Communication:
         pass
 
 
-# communication = Communication()
+communication = Communication()
 
 """ TEST
 Sender = Communication()
@@ -269,8 +272,9 @@ Sender.put_out_fire(10, 9)
 # if (str(string) == 'end' or str(string) == 'exit' or str(string) == ''):
 #     break
 
-Sender = Communication()
-Sender.burn_stage_increase(1, 1, 2)
+# Sender = Communication()
+# for i in range(10):
+    # Sender.burn_stage_increase(1, 1, 2)
 # while (True):
     # for i in Sender.check_messages():
         # print(i)

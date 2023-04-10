@@ -23,16 +23,17 @@ class PLayerConnected :
         self.window.blit(avatar_image, avatar_rect)
         self.window.blit(text, text_rect)
         
-            
     def show_players_connected(self, window):
         pygame.font.init()
-        from View.Visualizer import Visualizer
         new_window = pygame.Surface((800, 500))
         background = pygame.image.load("./Images/back_connected.png").convert_alpha()
         background = pygame.transform.scale(background, new_window.get_size())
         new_window.blit(background, (0, 0))
         new_window_rect = new_window.get_rect(center=window.get_rect().center)
-
+        font = pygame.font.Font(None, 50)
+        caption = font.render("Connected Players", True, (255, 0, 0))
+        caption_rect = caption.get_rect(center=(new_window.get_width() // 2, new_window.get_height() // 6))
+        new_window.blit(caption, caption_rect)
         avatar_images = []
         avatar_names = []  # Liste pour stocker les noms des avatars
         for i in range(len(Controller.Menu.player_list)):
@@ -54,14 +55,15 @@ class PLayerConnected :
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-            if not Visualizer.showPlayers:
-                running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                        running = False
 
+          
             for i in range(len(avatar_images)):
                 new_window.blit(avatar_images[i], avatar_positions[i])
                 font = pygame.font.Font(None, 30)
                 text = font.render(avatar_names[i], True, (255, 0, 0))  # Créer un objet texte avec le nom de l'avatar
-                text_rect = text.get_rect(center=(avatar_positions[i][0] + 50, avatar_positions[i][1] +avatar_image.get_height()+10))
+                text_rect = text.get_rect(center=(avatar_positions[i][0] + 50, avatar_positions[i][1] + avatar_image.get_height() + 10))
                 new_window.blit(text, text_rect)
 
             window.blit(new_window, new_window_rect)

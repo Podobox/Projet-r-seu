@@ -53,6 +53,7 @@ class Controller:
     final_pos = None
     ORIGIN_DECALAGE = (0, 0)
     players_ip = 0
+    playser_List =[]
 
     def __init__(self, name_save, game=None, players=None):
         # pg.init()
@@ -61,7 +62,8 @@ class Controller:
         self.players = players
         com.ME = self.player
         self.list_button = []
-        self.players_ip = []
+        self.players_ip = 0
+        self.playser_List = []
         self.MODE_DECALAGE = False
         self.ORIGIN_DECALAGE = (0, 0)
         # game is actually always set so changing the money here won't do anything
@@ -102,9 +104,7 @@ class Controller:
         # for x in range(MAP_DIM):
         #     for y in range(MAP_DIM):
         #         self.game.map.grid[x][y].owner = None
-        # # for x in range(MAP_DIM):
-        #     for y in range(MAP_DIM):
-        #         print(self.game.map.grid[x][y].owner)
+
 
         self.game.map.grid[9][9].owner = None
         self.game.map.grid[8][9].owner = None
@@ -284,7 +284,9 @@ class Controller:
 
             case MessageType.PLAYER_ID : 
                 players_ip= message[1]
-                print(players_ip[0])
+                self.playser_List.append(players_ip)
+
+                print(players_ip)
 
     def wait_next_frame(self):
         time_now = time_ns()

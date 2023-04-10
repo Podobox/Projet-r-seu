@@ -178,7 +178,8 @@ class Visualizer:
 
         if self.showPlayers:
             self.imgavatar.show_players_connected(self.window)
-            pygame.display.flip()
+            self.showPlayers= False
+            pygame.display.update()
         
         return self.list_button
 
@@ -1671,9 +1672,9 @@ class Visualizer:
             self.displayImage(row, column, tileDIM, origin, imgName,imgCode, compenX, compenY)
         else:
             imgName = 'other_player_case'
+            imgCode =''
             compenX = tileDIM
             compenY = 0
-            imgCode =''
             self.displayImage(row, column, tileDIM, origin, imgName,imgCode, compenX, compenY)
 
     

@@ -101,6 +101,7 @@ class Communication:
             # Message queue is full, handle the error here
             return False
         except OSError as e:
+            print("error in send_message_from_py_to_c")
             if e.errno == 22:
                 # Invalid argument, handle the error here
                 return False
@@ -117,6 +118,7 @@ class Communication:
         except sysv_ipc.BusyError:
             return False
         except sysv_ipc.ExistentialError:
+            print("error in receive_message_from_c_to_py")
             # Message queue no longer exists, handle the error here
             return False
 

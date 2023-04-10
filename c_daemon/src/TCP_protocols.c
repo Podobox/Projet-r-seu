@@ -1,5 +1,4 @@
 #include "TCP_protocols.h"
-
 #include "global_var.h"
 
 // return 0 if no problem
@@ -81,7 +80,7 @@ char *gethostIP() {
     }
 
     // To retrieve host information
-    if ((host_entry = gethostbyname(hostbuffer)) == -1) {
+    if ((host_entry = gethostbyname(hostbuffer)) == (void*)-1) {
         stop("gethostbyname");
     }
 
@@ -100,11 +99,12 @@ void stop(char *msg) {
     exit(EXIT_FAILURE);
 }
 
+
 char *get_my_IP() {
     struct ifaddrs *addrs, *tmp;
     addrs = (struct ifaddrs *)malloc(sizeof(struct ifaddrs));
     tmp = (struct ifaddrs *)malloc(sizeof(struct ifaddrs));
-    getifaddrs(addrs);
+    getifaddrs(&addrs);
     tmp = addrs;
 
     while(tmp){

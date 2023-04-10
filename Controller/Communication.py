@@ -1,7 +1,7 @@
 import os
 from time import time_ns
 from enum import Enum
-from Model.Player import Player
+# from Model.Player import Player
 import sys
 import sysv_ipc
 import re
@@ -254,7 +254,7 @@ class Communication:
         pass
 
 
-communication = Communication()
+# communication = Communication()
 
 """ TEST
 Sender = Communication()
@@ -269,7 +269,8 @@ Sender.put_out_fire(10, 9)
 # if (str(string) == 'end' or str(string) == 'exit' or str(string) == ''):
 #     break
 
-# Sender = Communication()
+Sender = Communication()
+Sender.burn_stage_increase(1, 1, 2)
 # while (True):
     # for i in Sender.check_messages():
         # print(i)

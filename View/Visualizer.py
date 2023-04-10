@@ -89,7 +89,7 @@ class Visualizer:
 
     buildingMode = False
 
-    def __init__(self, list_button, game, backup):
+    def __init__(self, list_button, game, backup, communication):
         # Create pygame window
         self.game = game
         global WINDOW_HEIGHT, WINDOW_WIDTH

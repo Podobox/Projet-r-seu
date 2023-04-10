@@ -45,7 +45,7 @@ class Chat:
                     self.is_selected = True
         # if a message is sent, send it in peer to everyone and add it in memory
         if self.message:
-            # self.communication.send(self.message)
+            self.communication.send_chat_message(self.message)
             self.memory.append((self.message, pg.time.get_ticks()))
             self.message = ""
 

@@ -129,8 +129,8 @@ class Visualizer:
                     size = cellSizeDict[zoom]
                     self.images[zoom][filename] = pg.transform.scale(
                         i, (i.get_width() * zoom / DEFAULT_ZOOM, i.get_height() * zoom / DEFAULT_ZOOM))
-    def is_owner(self,MAP, row, column):
-        return MAP.grid[row][column].owner == com.ME
+    def is_owner(self,MAP, x, y):
+        return MAP.grid[x][y].owner == com.ME
         
     def update(self, map, walkers):
         self.list_button = []

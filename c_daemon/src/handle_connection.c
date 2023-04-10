@@ -124,6 +124,11 @@ void recv_file(int sockfd) {
     // verify if the file is received successfully before do other thing
     while (total_bytes_read != file_size) {
 
+        if(total_bytes_read < file_size ) {
+            printf("\tReceived file of %ld unsuccessfully\n", file_size);
+            stop("not received the file to start the game successfully");
+        }
+
         while ((valread = read(sockfd, buffer, BUFSIZE - 1)) == BUFSIZE - 1) {
 
             buffer[valread] = '\0';

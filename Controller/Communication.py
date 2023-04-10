@@ -70,22 +70,32 @@ class Communication:
     def __init__(self):
         sysv_ipc.MessageQueue.remove(sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT))
         # create fifo to communicate with c daemon
-        try:
-            # Try to create a new message queue with the same key
-            self.message_queue = sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT, mode=0o777)
-            exists = False
-        except sysv_ipc.ExistentialError:
-            # If the creation failed, return True
-            exists = True
+        self.message_queue = sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT, mode=0o777)
+        self.message_queue = sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT, mode=0o777)
+
+        # try:
+        #     # Try to create a new message queue with the same key
+        #     self.message_queue = sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT, mode=0o777)
+        #     exists = False
+        # except sysv_ipc.ExistentialError:
+        #     # If the creation failed, return True
+        #     exists = True
             
-        print(exists)
+        # print(exists)
 
         self.message = Queue(-1)
 
     def send_message_from_py_to_c(self, message):
         # print('send : ', message, ' len=', len(message))
         # send the actions from python to c
-        self.message_queue.send(message, type=PY_TO_C)
+        try:
+            self.message_queue.send(message)
+            return True
+        except sysv_ipc.BusyError:
+            return False
+        except sysv_ipc.ExistentialError:
+            # Message queue no longer exists, handle the error here
+            return False
 
 
     def receive_message_from_c_to_py(self):
@@ -96,6 +106,16 @@ class Communication:
             return True
         except sysv_ipc.BusyError:
             return False
+        except sysv_ipc.ExistentialError:
+            # Message queue no longer exists, handle the error here
+            return False
+
+        # if sysv_ipc.MessageQueue.exists(KEY):
+        #     # message queue exists, receive messages from it
+        #     message, type = self.message_queue.receive(type=C_TO_PY, block=False)
+        # else:
+        #     # message queue doesn't exist, handle the error
+        #     print("Error: message queue does not exist")
 
     def receive_unique_message_from_c_to_py(self, id):
         # send the actions from c to python
@@ -291,6 +311,7 @@ communication = Communication()
 #     break
 
 # Sender = Communication()
+# Sender.burn_stage_increase(1, 1, 2)
 # while (True):
     # for i in Sender.check_messages():
         # print(i)

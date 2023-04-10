@@ -33,7 +33,9 @@ python_struct_t* recv_from_python() {
     message = (recv_message*)malloc(sizeof(recv_message));
     message->mesg_type = PY_TO_C;
     int length;
-    if ((length = msgrcv(msqid, &message, sizeof(message), message->mesg_type, 0)) < 0) {
+    if ((length = msgrcv(msqid, message, sizeof(recv_message) - sizeof(long), message->mesg_type, IPC_NOWAIT)) < 0) {
+        if(errno == ENOMSG)
+            return NULL;
         perror("MSGRCV");
         exit(1);
     }

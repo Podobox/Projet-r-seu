@@ -76,6 +76,7 @@ class Controller:
         # Benchmarking
         self.bench = 0
         self.bench_nb = 0
+        # self.communication = Communication()
         self.checkDaemon()
         self.run()
 

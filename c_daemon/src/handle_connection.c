@@ -101,7 +101,7 @@ void recv_file(int sockfd) {
     // create a new file in the save directory
     char cwd[BUFSIZE];
     getcwd(cwd, sizeof(cwd));
-    strcat(cwd, "/Save/on_game");
+    strcat(cwd, "/Save/online_game");
     printf("\t$PWD received file: %s\n", cwd);
 
     FILE* fp = fopen(cwd, "w");

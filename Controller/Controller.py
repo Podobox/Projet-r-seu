@@ -52,6 +52,7 @@ class Controller:
     init_pos = None
     final_pos = None
     ORIGIN_DECALAGE = (0, 0)
+    players_ip = 0
 
     def __init__(self, name_save, game=None, players=None):
         # pg.init()
@@ -59,6 +60,7 @@ class Controller:
         self.players = players
         com.ME = self.player
         self.list_button = []
+        self.players_ip = []
         self.MODE_DECALAGE = False
         self.ORIGIN_DECALAGE = (0, 0)
         # game is actually always set so changing the money here won't do anything
@@ -99,6 +101,16 @@ class Controller:
         for x in range(MAP_DIM):
             for y in range(MAP_DIM):
                 self.game.map.grid[x][y].owner = None
+        # for x in range(MAP_DIM):
+        #     for y in range(MAP_DIM):
+        #         print(self.game.map.grid[x][y].owner)
+
+        self.game.map.grid[9][9].owner = None
+        self.game.map.grid[8][9].owner = None
+        self.game.map.grid[9][8].owner = None
+        self.game.map.grid[7][9].owner = None
+        self.game.map.grid[9][7].owner = None
+
 
         while True:
             self.game.advance_time()
@@ -122,8 +134,8 @@ class Controller:
 
             pg.display.update()
 
-            for message in com.communication.check_messages():
-                self.handle_message(message)
+            # for message in self.communication.check_messages():
+            #     self.handle_message()
 
             self.wait_next_frame()
 
@@ -134,6 +146,7 @@ class Controller:
 
     def handle_message(self, message):
         print(f"received {message}")
+
         match MessageType(message[0]):
             case MessageType.REQUIRE_OWNERSHIP:
                 if self.game.map.grid[message[1]][message[2]].owner == com.ME:
@@ -268,6 +281,10 @@ class Controller:
             case MessageType.COLLECT_MONEY:
                 self.game.denarii += message[3]
 
+            case MessageType.PLAYER_ID : 
+                players_ip= message[1]
+                print(players_ip[0])
+
     def wait_next_frame(self):
         time_now = time_ns()
         delta = time_now - self.last_frame
@@ -276,9 +293,11 @@ class Controller:
         # self.bench = (sleep_time * 1e-9 + self.bench * self.bench_nb) \
             # / (self.bench_nb + 1)
         # instant_bench = ((TIME_NS_PER_FRAME - sleep_time) / TIME_NS_PER_FRAME * 100)
+
         # self.bench = (((TIME_NS_PER_FRAME - sleep_time) / TIME_NS_PER_FRAME * 100)
                       # + self.bench * self.bench_nb) / (self.bench_nb + 1)
         # self.bench_nb += 1
+
         # print(self.bench)
         # print(instant_bench)
         # print(sleep_time * 1e-9)
@@ -308,12 +327,12 @@ class Controller:
                 case pg.MOUSEBUTTONDOWN:
                     print("MouseButtonDown")
                     if event.button == pg.BUTTON_LEFT:
-                        print("Left button pressed at (x, y) = ", event.pos)
+                        # print("Left button pressed at (x, y) = ", event.pos)
 
                         print("self.building est a : ", self.building)
                         # ------------------------------------------------------------------------------------Faire en clique droit
                     elif event.button == pg.BUTTON_RIGHT:
-                        print("Right button pressed at (x, y) = ", event.pos)
+                        # print("Right button pressed at (x, y) = ", event.pos)
                         if event.pos[0] <= self.visualizer.GAME_WIDTH and event.pos[1] <= self.visualizer.GAME_HEIGHT:
                             self.MODE_DECALAGE = True
                             self.ORIGIN_DECALAGE = event.pos
@@ -329,9 +348,9 @@ class Controller:
                             self.building = False
                             self.visualizer.changeBuildingMode()
                             self.final_pos = None
-                        print("Left button released at (x, y) = ", event.pos)
+                        # print("Left button released at (x, y) = ", event.pos)
                     elif event.button == pg.BUTTON_RIGHT:
-                        print("Right button released at (x, y) = ", event.pos)
+                        # print("Right button released at (x, y) = ", event.pos)
                         if self.MODE_DECALAGE:
                             self.MODE_DECALAGE = False
                             mouse_pos = event.pos
@@ -392,10 +411,10 @@ class Controller:
                     if left_button_pressed:
                         actionned = False
                         if not(self.building):
-                            print("into not(self.building)")
+                            # print("into not(self.building)")
                             for button in self.list_button:
                                 if button.listener_rect(mouse_pos):
-                                    print("button clicked")
+                                    # print("button clicked")
                                     self.buttonclicked = button
 
                                     if self.buttonclicked.building != -1:
@@ -406,6 +425,9 @@ class Controller:
                                     elif self.buttonclicked.game != -1:
                                         self.buttonclicked.action(self.buttonclicked.game)
 
+                                    # elif self.buttonclicked.player_avatars != -1:
+                                    #     self.buttonclicked.action(self.buttonclicked.player_avatars)
+                                    
                                     else:
                                         self.buttonclicked.action()
                                         actionned = True

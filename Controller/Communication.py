@@ -54,6 +54,8 @@ class MessageType(Enum):
     COLLECT_MONEY = 29
     # TODO below
     # change state of walkers ?
+    PLAYER_ID = 40
+
 
 
 class Message(Enum):
@@ -213,6 +215,9 @@ class Communication:
     def give_ownership(self, posx, posy, unique_id):
         message = struct.pack("iQQQQ", MessageType.GIVE_OWNERSHIP.value, posx, posy, 0,
                               unique_id)
+        self.send_message_from_py_to_c(message)
+    def give_ownership(self, posx, posy):  # TODO in Model
+        message = struct.pack("iQQQQ", MessageType.PLAYER_ID.value, posx, posy, 0, 0)
         self.send_message_from_py_to_c(message)
 
     def check_messages(self):

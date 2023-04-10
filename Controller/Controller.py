@@ -150,7 +150,7 @@ class Controller:
                 pass
             case MessageType.CONNECT:
                 Backup("online_game").save(self.game)
-                com.accept_connect()
+                com.communication.accept_connect()
             case MessageType.DISCONNECT:
                 # message sent only to me, i take all the tiles
                 self.game.map.grid[message[1]][message[2]].owner = com.ME

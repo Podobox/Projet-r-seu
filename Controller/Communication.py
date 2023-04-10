@@ -3,7 +3,7 @@ import socket
 import subprocess
 from time import time_ns
 from enum import Enum
-from Model.Player import Player
+# from Model.Player import Player
 import sys
 import sysv_ipc
 import re
@@ -70,13 +70,22 @@ class Communication:
     def __init__(self):
         sysv_ipc.MessageQueue.remove(sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT))
         # create fifo to communicate with c daemon
-        self.message_queue = sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT)
+        try:
+            # Try to create a new message queue with the same key
+            self.message_queue = sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT, mode=0o777)
+            exists = False
+        except sysv_ipc.ExistentialError:
+            # If the creation failed, return True
+            exists = True
+            
+        print(exists)
+
         self.message = Queue(-1)
 
     def send_message_from_py_to_c(self, message):
-        print('send : ', message)
+        # print('send : ', message, ' len=', len(message))
         # send the actions from python to c
-        self.message_queue.send(message, block=False, type=PY_TO_C)
+        self.message_queue.send(message, type=PY_TO_C)
 
 
     def receive_message_from_c_to_py(self):
@@ -99,6 +108,7 @@ class Communication:
 
     def spend_money(self, amount):
         message = struct.pack("iQQQQ", MessageType.SPEND_MONEY.value, 0, 0, amount, 0)
+        # print('spend money :', message)
         self.send_message_from_py_to_c(message)
 
     def collect_money(self, amount):

@@ -254,7 +254,7 @@ def enter_start_game():
                     pygame.display.flip()
                 elif event.key == pygame.K_RETURN:
                     game = Game(1000)
-                    (Backup(nom)).save(game)
+                    # (Backup(nom)).save(game)
                     Controller(nom, game=game)
                     
                 else:

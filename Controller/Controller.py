@@ -56,6 +56,7 @@ class Controller:
 
     def __init__(self, name_save, game=None, players=None):
         # pg.init()
+        self.communication = com
         self.player = Player()
         self.players = players
         com.ME = self.player
@@ -69,7 +70,7 @@ class Controller:
         if players is None:
             self.game.take_all_ownership(self.player)
         self.game.set_initial_map()
-        self.visualizer = Visualizer(self.list_button, self.game, self.backup)
+        self.visualizer = Visualizer(self.list_button, self.game, self.backup, self.communication)
         self.building = False
         self.buttonclicked = None
         self.last_frame = time_ns()

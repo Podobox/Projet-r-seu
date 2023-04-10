@@ -65,6 +65,7 @@ def walker_type(w, to_num=True):
 class Game:
 
     def __init__(self, denarii):
+        self.communication = com
         self.owner = Player()
         self.map = Map()
         self.denarii = denarii
@@ -146,8 +147,6 @@ class Game:
         building.set_type(Sign_Type.Exit)
         self.map.exit_point = building
 
-    def build(self, posx, posy, type):
-            # only happen when adding buildings
     def build(self, posx, posy, type, force=False):
         # only happen when adding buildings
         assert type in building_data, "type to build not in 'model_data'"

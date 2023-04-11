@@ -57,6 +57,7 @@ class Controller:
 
     def __init__(self, name_save, game=None, players=None):
         # pg.init()
+        
         self.player = Player()
         self.players = players
         com.ME = self.player
@@ -69,7 +70,7 @@ class Controller:
         if players is None:
             self.game.take_all_ownership(self.player)
         self.game.set_initial_map()
-        self.visualizer = Visualizer(self.list_button, self.game, self.backup)
+        self.visualizer = Visualizer(self.list_button, self.game, self.backup,  com.communication)
         self.building = False
         self.buttonclicked = None
         self.last_frame = time_ns()
@@ -145,9 +146,7 @@ class Controller:
         try:
             match MessageType(message[0]):
                 case MessageType.REQUIRE_OWNERSHIP:
-                    if self.game.map.grid[message[1]][message[2]].owner == com.ME:
-                        self.game.map.grid[message[1]][message[2]] = None
-                        com.communication.give_ownership(message[1], message[2], message[3])
+                    self.game.map.grid[message[1]][message[2]].owner = None
                 case MessageType.GIVE_OWNERSHIP:
                     # not handled here
                     pass

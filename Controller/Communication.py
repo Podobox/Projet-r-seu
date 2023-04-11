@@ -54,6 +54,7 @@ class MessageType(Enum):
     HOUSE_EAT = 27
     SPEND_MONEY = 28
     COLLECT_MONEY = 29
+    PLAYER = 30
     # TODO below
     # change state of walkers ?
 
@@ -240,20 +241,19 @@ class Communication:
                               walker_type, direction)
         self.send_message_from_py_to_c(message)
 
-    def ask_for_ownership(self, posx, posy, player, me):  # TODO in Model
-        unique_id = time_ns()
+    def ask_for_ownership(self, posx, posy):  # TODO in Model
         message = struct.pack("iQQQQ", MessageType.REQUIRE_OWNERSHIP.value, posx, posy,
-                              player, unique_id)
+                              0, 0)
         self.send_message_from_py_to_c(message)
 
         # TODO timeout ?
-        while not self.receive_message_from_c_to_py(unique_id):
-            message = struct.unpack("iQQQQ", self.message.get())
-            if message[0] == MessageType.GIVE_OWNERSHIP.value and message[1] == posx \
-                    and message[2] == posy and message[4] == unique_id:
-                return
-            else:
-                assert False, f"clé unique identique: {message}"
+        # while not self.receive_unique_message_from_c_to_py(unique_id):
+            # message = struct.unpack("iQQQQ", self.message.get())
+            # if message[0] == MessageType.GIVE_OWNERSHIP.value and message[1] == posx \
+                    # and message[2] == posy and message[4] == unique_id:
+                # return
+            # else:
+                # assert False, f"clé unique identique: {message}"
 
     def give_ownership(self, posx, posy, unique_id):
         message = struct.pack("iQQQQ", MessageType.GIVE_OWNERSHIP.value, posx, posy, 0,

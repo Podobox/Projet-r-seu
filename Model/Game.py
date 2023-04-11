@@ -430,6 +430,9 @@ class Game:
 
     def walk(self):
         for w in self.walkers:
+            if w is None:
+                self.walkers.remove(None)
+                continue
             if w.building.tile.owner != com.ME:
                 if isinstance(w, Random_Walkers) and w.state == Random_Walker_State.RANDOM:
                     continue

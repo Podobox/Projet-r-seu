@@ -42,7 +42,7 @@ from Model.Tax_Collector import Tax_Collector
 from Model.Walkers import Direction
 from Model.Building import STAGES_BEFORE_BURN, STAGES_BEFORE_COLLAPSE
 
-FRAMES_PER_SECONDS = 10
+FRAMES_PER_SECONDS = 4
 TIME_NS_PER_FRAME = 1 / FRAMES_PER_SECONDS * 1e9
 
 

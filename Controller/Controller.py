@@ -53,13 +53,18 @@ class Controller:
     init_pos = None
     final_pos = None
     ORIGIN_DECALAGE = (0, 0)
+    players_ip = 0
+    playser_List =[]
 
     def __init__(self, name_save, game=None, players=None):
         # pg.init()
+        self.communication = com
         self.player = Player()
         self.players = players
         com.ME = self.player
         self.list_button = []
+        self.players_ip = 0
+        self.playser_List = []
         self.MODE_DECALAGE = False
         self.ORIGIN_DECALAGE = (0, 0)
         # game is actually always set so changing the money here won't do anything
@@ -68,7 +73,7 @@ class Controller:
         if players is None:
             self.game.take_all_ownership(self.player)
         self.game.set_initial_map()
-        self.visualizer = Visualizer(self.list_button, self.game, self.backup)
+        self.visualizer = Visualizer(self.list_button, self.game, self.backup, self.communication)
         self.building = False
         self.buttonclicked = None
         self.last_frame = time_ns()
@@ -101,11 +106,19 @@ class Controller:
             # for y in range(2, 8):
                 # self.game.map.grid[x][y].owner = None
         # for x in range(0, 20):
-            # for y in range(1):
-                # self.game.map.grid[x][y].owner = None
-        for x in range(MAP_DIM):
-            for y in range(MAP_DIM):
-                self.game.map.grid[x][y].owner = None
+        #     # for y in range(1):
+        #         # self.game.map.grid[x][y].owner = None
+        # for x in range(MAP_DIM):
+        #     for y in range(MAP_DIM):
+        #         self.game.map.grid[x][y].owner = None
+
+
+        self.game.map.grid[9][9].owner = None
+        self.game.map.grid[8][9].owner = None
+        self.game.map.grid[9][8].owner = None
+        self.game.map.grid[7][9].owner = None
+        self.game.map.grid[9][7].owner = None
+
 
         while True:
             self.game.advance_time()
@@ -129,8 +142,8 @@ class Controller:
 
             pg.display.update()
 
-            for message in com.communication.check_messages():
-                self.handle_message(message)
+            # for message in self.communication.check_messages():
+            #     self.handle_message()
 
             self.wait_next_frame()
 
@@ -141,6 +154,7 @@ class Controller:
 
     def handle_message(self, message):
         print(f"received {message}")
+
         match MessageType(message[0]):
             case MessageType.REQUIRE_OWNERSHIP:
                 if self.game.map.grid[message[1]][message[2]].owner == com.ME:
@@ -274,6 +288,12 @@ class Controller:
                 self.game.denarii -= message[3]
             case MessageType.COLLECT_MONEY:
                 self.game.denarii += message[3]
+
+            case MessageType.PLAYER_ID : 
+                players_ip= message[1]
+                self.playser_List.append(players_ip)
+
+                print(players_ip)
 
     def wait_next_frame(self):
         time_now = time_ns()
@@ -426,6 +446,9 @@ class Controller:
                                     elif self.buttonclicked.game != -1:
                                         self.buttonclicked.action(self.buttonclicked.game)
 
+                                    # elif self.buttonclicked.player_avatars != -1:
+                                    #     self.buttonclicked.action(self.buttonclicked.player_avatars)
+                                    
                                     else:
                                         self.buttonclicked.action()
                                         actionned = True

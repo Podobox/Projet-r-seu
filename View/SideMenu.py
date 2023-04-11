@@ -17,8 +17,9 @@ from Model.Well import Well
 from Model.House import House
 from Model.New_House import New_House
 from Model.Map import Map, MAP_DIM
+from View import PlayersConnect
 
-#from Controller.List_Button import list_button
+# from Controller.List_Button import list_button
 
 
 class Menu:
@@ -46,7 +47,7 @@ class Menu:
         variable = self.game.speed
         font = pg.font.Font(None, 30)
         self.speed_print = font.render(str(variable), 1, (255, 255, 255))
-        
+
         self.AddButtons()
 
         return
@@ -55,7 +56,7 @@ class Menu:
         self.list_button = [
             Button(self.window, "/Images/play_menu/paneling_00123.png", self.window_width - (self.coefficient
                    * 149.117), self.window_height - (self.coefficient * 420), self.action, self.coefficient, New_House),
-             Button(self.window, "/Images/Prefecture_00001.png", self.window_width - (self.coefficient *99.26 ),
+            Button(self.window, "/Images/Prefecture_00001.png", self.window_width - (self.coefficient * 99.26),
                    self.window_height - (self.coefficient * 420), self.action, self.coefficient / 1.50, Prefecture),
             Button(self.window, "/Images/EngineerPost_00001.png", self.window_width - (self.coefficient * 49.41),
                    self.window_height - (self.coefficient * 420), self.action, self.coefficient / 1.75, Engineer_Post),
@@ -78,12 +79,12 @@ class Menu:
                    self.action, self.coefficient / 4, Granary),
             Button(self.window, "/Images/Well_00001.png", self.window_width -
                    (self.coefficient
-                   * 65), self.window_height - (self.coefficient * 345), self.action,
+                    * 65), self.window_height - (self.coefficient * 345), self.action,
                    self.coefficient / 2, Well),
 
             Button(self.window, "/Images/Market_00001.png", self.window_width -
                    (self.coefficient
-                   * 99.26), self.window_height - (self.coefficient * 305), self.action,
+                    * 99.26), self.window_height - (self.coefficient * 305), self.action,
                    self.coefficient / 2.5, Market),
             Button(self.window, "/Images/Farm_00001.png", self.window_width - (self.coefficient
                    * 149.117), self.window_height - (self.coefficient * 305),
@@ -101,39 +102,49 @@ class Menu:
 
             Button(self.window, "/Images/show_map.png", self.window_width -
                    (self.coefficient
-                   * 149.117), self.window_height - (self.coefficient * 270), self.changeOverlay,
+                    * 149.117), self.window_height - (self.coefficient * 270), self.changeOverlay,
                    self.coefficient / 5, overlay=None),
             Button(self.window, "/Images/show_grid.png", self.window_width -
                    (self.coefficient
-                   * 80), self.window_height - (self.coefficient * 270), self.showGrid,
+                    * 80), self.window_height - (self.coefficient * 270), self.showGrid,
                    self.coefficient / 5),
             Button(self.window, "/Images/collapse_overlay.png", self.window_width -
                    (self.coefficient
-                   * 149.117), self.window_height - (self.coefficient * 240), self.changeOverlay,
+                    * 149.117), self.window_height - (self.coefficient * 240), self.changeOverlay,
                    self.coefficient / 10.5, overlay="Damage"),
             Button(self.window, "/Images/fire_overlay.png", self.window_width -
                    (self.coefficient
-                   * 80), self.window_height - (self.coefficient * 240), self.changeOverlay,
+                    * 80), self.window_height - (self.coefficient * 240), self.changeOverlay,
                    self.coefficient / 10.5, overlay="Fire"),
             Button(self.window, "/Images/water_overlay.png", self.window_width -
                    (self.coefficient
-                   * 149.117), self.window_height - (self.coefficient * 220), self.changeOverlay,
+                    * 149.117), self.window_height - (self.coefficient * 220), self.changeOverlay,
                    self.coefficient / 10.5, overlay="Water"),
+            Button(self.window, "/Images/Show_Tile.png", self.window_width -
+                   (self.coefficient
+                    * 158.117), self.window_height - (self.coefficient * 25), self.changeOverlay,
+                   self.coefficient / 9.5, overlay="Tile"),
+            Button(self.window, "/Images/Connected_Player.png", self.window_width - 580, self.window_height-1035, self.showPlayers,
+                   self.coefficient / 9.5),
+
             Button(self.window, "/Images/desirability_overlay.png", self.window_width -
                    (self.coefficient
-                   * 80), self.window_height - (self.coefficient * 220), self.changeOverlay,
+                    * 80), self.window_height - (self.coefficient * 220), self.changeOverlay,
                    self.coefficient / 10.5, overlay="Desirability")
-            
+
 
         ]
 
     def display(self):
         font = pg.font.Font(None, 30)
-        self.speed_print = font.render("speed : "+str(int(self.game.speed*100))+"%", 1, (0, 0, 0))
-        
-        self.window.blit(self.pannelMenu, (self.window_width-(self.imgWidth*self.coefficient),0))
+        self.speed_print = font.render(
+            "speed : "+str(int(self.game.speed*100))+"%", 1, (0, 0, 0))
 
-        self.window.blit(self.speed_print, (self.window_width-200,self.window_height-50))
+        self.window.blit(self.pannelMenu, (self.window_width -
+                         (self.imgWidth*self.coefficient), 0))
+
+        self.window.blit(self.speed_print,
+                         (self.window_width-200, self.window_height-50))
 
         for button in self.list_button:
             button.display()
@@ -142,28 +153,26 @@ class Menu:
     def action(self, building, init_pos, final_pos):
         init_pos = self.isoToCart(init_pos)
         final_pos = self.isoToCart(final_pos)
-        #print("positions sur la carte : ", final_pos, init_pos)
+        # print("positions sur la carte : ", final_pos, init_pos)
         if final_pos[0] >= MAP_DIM or final_pos[1] >= MAP_DIM or init_pos[0] >= MAP_DIM or init_pos[1] >= MAP_DIM:
             return
 
         if final_pos[0] < 0 or final_pos[1] < 0 or init_pos[0] < 0 or init_pos[1] < 0:
             return
 
-        if building == Senate :
+        if building == Senate:
             self.game.build(init_pos[1], init_pos[0], building)
             return
-        
-        if building == Wheat_Farm :
+
+        if building == Wheat_Farm:
             self.game.build(init_pos[1], init_pos[0], building)
             return
-        
-        if(final_pos == init_pos):
+
+        if (final_pos == init_pos):
             if building == "destroy":
                 self.game.destroy(final_pos[1], final_pos[0])
             else:
                 self.game.build(final_pos[1], final_pos[0], building)
-        
-
 
         if init_pos[0] <= final_pos[0]:
             mini_x = init_pos[0]
@@ -188,15 +197,23 @@ class Menu:
                     self.game.build(mini_y, mini_x, building)
                 mini_x += 1
             mini_x = old_mini_x
-            mini_y+=1
+            mini_y += 1
         return
-
 
     def changeOverlay(self, option):
-        self.visualizer.overlayType=option
+        self.visualizer.overlayType = option
         return
-    
 
     def showGrid(self):
-        self.visualizer.showGrid= not self.visualizer.showGrid 
+        self.visualizer.showGrid = not self.visualizer.showGrid
         return
+    
+    # def showPlayers(self):
+    #     self.playersConnect.show_players_connected()
+    def showPlayers(self):
+        if self.visualizer.showPlayers :
+            self.visualizer.showPlayers = False
+        else:
+            
+            self.visualizer.showPlayers = True
+

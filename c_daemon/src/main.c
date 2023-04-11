@@ -95,29 +95,29 @@ int main(int argc, char **argv) {
                 /// I believe that what it did was sending the 3 messages in a row so
                 /// fast that the other client only saw 1 of them and not the other 2
                 /// I'm not sure about the explanation but at least it works
-                if ((charcnt = read(connection[index].socket, buffer, BUFSIZE)) < 0) {
-                    stop("Error reading message");
-                } else {
-                    printf("IN IP RESPONSE\n");
+                // if ((charcnt = read(connection[index].socket, buffer, BUFSIZE)) < 0) {
+                //     stop("Error reading message");
+                // } else {
+                //     printf("IN IP RESPONSE\n");
 
-                    char *get_ip_player = malloc(16);
+                //     char *get_ip_player = malloc(16);
 
-                    sprintf(get_ip_player, "%d.%lu.%lu.%lu", message.mes.message_type,
-                            message.mes.posx, message.mes.posy, message.mes.type);
+                //     sprintf(get_ip_player, "%d.%lu.%lu.%lu", message.mes.message_type,
+                //             message.mes.posx, message.mes.posy, message.mes.type);
 
-                    /*while (get_ip_player != NULL) {*/
-                    fprintf(stderr, "get_ip_player NOT NULL %s\n", get_ip_player);
+                //     /*while (get_ip_player != NULL) {*/
+                //     fprintf(stderr, "get_ip_player NOT NULL %s\n", get_ip_player);
 
-                    for (int ind = 0; ind < PLAYER_MAX; ind++) {
-                        if (!connection[ind].used) {
-                            connection[ind].IP = get_ip_player;
-                            if ((res = connect_existed_players(ind))) {
-                                fprintf(stderr, "Error number %d connecting to player #%d\n", res, ind);
-                            }
-                            break;
-                        }
-                    }
-                }
+                //     for (int ind = 0; ind < PLAYER_MAX; ind++) {
+                //         if (!connection[ind].used) {
+                //             connection[ind].IP = get_ip_player;
+                //             if ((res = connect_existed_players(ind))) {
+                //                 fprintf(stderr, "Error number %d connecting to player #%d\n", res, ind);
+                //             }
+                //             break;
+                //         }
+                //     }
+                // }
                 // separate the                }
                 ////////////////////////////////////
 

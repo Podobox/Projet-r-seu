@@ -5,6 +5,7 @@ from Model.Player import Player
 import sys
 import sysv_ipc
 import re
+from View.Chat import convert_msg
 import pickle
 import struct
 from queue import Queue
@@ -218,7 +219,7 @@ class Communication:
 
     # functions use to send chat's messages
     def send_chat_message(self, chat_message):
-        message = struct.pack("iQQQQ", MessageType.CHAT_MESSAGE.value, chat_message, 0, 0, 0)
+        message = struct.pack("iQQQQ", MessageType.CHAT_MESSAGE.value, len(chat_message), convert_msg(chat_message), 0, 0)
         self.send_message_from_py_to_c(message)
 
     def check_messages(self):

@@ -145,9 +145,9 @@ class Controller:
         print(f"received {message}")
         match MessageType(message[0]):
             case MessageType.REQUIRE_OWNERSHIP:
-                if self.game.map.grid[message[1]][message[2]].owner == com.ME:
-                    self.game.map.grid[message[1]][message[2]] = None
-                    com.communication.give_ownership(message[1], message[2], message[3])
+                # if self.game.map.grid[message[1]][message[2]].owner == com.ME:
+                self.game.map.grid[message[1]][message[2]] = None
+                    # com.communication.give_ownership(message[1], message[2], message[3])
             case MessageType.GIVE_OWNERSHIP:
                 # not handled here
                 pass

@@ -241,19 +241,18 @@ class Communication:
         self.send_message_from_py_to_c(message)
 
     def ask_for_ownership(self, posx, posy):  # TODO in Model
-        unique_id = time_ns() 
         message = struct.pack("iQQQQ", MessageType.REQUIRE_OWNERSHIP.value, posx, posy,
-                              0, unique_id)
+                              0, 0)
         self.send_message_from_py_to_c(message)
 
         # TODO timeout ?
-        while not self.receive_unique_message_from_c_to_py(unique_id):
-            message = struct.unpack("iQQQQ", self.message.get())
-            if message[0] == MessageType.GIVE_OWNERSHIP.value and message[1] == posx \
-                    and message[2] == posy and message[4] == unique_id:
-                return
-            else:
-                assert False, f"clé unique identique: {message}"
+        # while not self.receive_unique_message_from_c_to_py(unique_id):
+            # message = struct.unpack("iQQQQ", self.message.get())
+            # if message[0] == MessageType.GIVE_OWNERSHIP.value and message[1] == posx \
+                    # and message[2] == posy and message[4] == unique_id:
+                # return
+            # else:
+                # assert False, f"clé unique identique: {message}"
 
     def give_ownership(self, posx, posy, unique_id):
         message = struct.pack("iQQQQ", MessageType.GIVE_OWNERSHIP.value, posx, posy, 0,

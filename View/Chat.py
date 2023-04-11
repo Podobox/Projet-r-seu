@@ -158,8 +158,15 @@ def convert_msg(message):
     return int(new_msg[:-1])
 
 
-def convert_receive_msg(number):
+def convert_receive_msg(number, length):
     msg = ""
+    decal = 0
+    for i in range(length):
+        if str(number)[1+2*i+decal] == '0':
+            msg += convert_number(int(str(number)[2*i + decal]))
+        else:
+            msg += convert_msg(int(str(number)[2*i+decal:2*i+2+decal]))
+            decal += 1
     return msg
 
 
@@ -205,7 +212,9 @@ class Chat:
 
         # receive messages from others
         if self.receive_msg and not self.message:
-            self.message = convert_receive_msg(self.receive_msg)
+            self.message = convert_receive_msg(self.receive_msg, self.len_receive_message)
+            self.receive_msg = ""
+            self.len_receive_message = 0
 
         # if a message is sent, send it in peer to everyone and add it in memory
         if self.message:

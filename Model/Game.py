@@ -65,7 +65,7 @@ def walker_type(w, to_num=True):
 class Game:
 
     def __init__(self, denarii):
-        self.communication = com
+        self.communication = com.communication
         self.owner = Player()
         self.map = Map()
         self.denarii = denarii

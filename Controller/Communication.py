@@ -240,14 +240,14 @@ class Communication:
                               walker_type, direction)
         self.send_message_from_py_to_c(message)
 
-    def ask_for_ownership(self, posx, posy, player, me):  # TODO in Model
-        unique_id = time_ns()
+    def ask_for_ownership(self, posx, posy):  # TODO in Model
+        unique_id = time_ns() % 100
         message = struct.pack("iQQQQ", MessageType.REQUIRE_OWNERSHIP.value, posx, posy,
-                              player, unique_id)
+                              0, unique_id)
         self.send_message_from_py_to_c(message)
 
         # TODO timeout ?
-        while not self.receive_message_from_c_to_py(unique_id):
+        while not self.receive_unique_message_from_c_to_py(unique_id):
             message = struct.unpack("iQQQQ", self.message.get())
             if message[0] == MessageType.GIVE_OWNERSHIP.value and message[1] == posx \
                     and message[2] == posy and message[4] == unique_id:

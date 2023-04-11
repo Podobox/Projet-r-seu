@@ -150,9 +150,9 @@ int main(int argc, char **argv) {
 
     pid_t pid;
 
-    signal(SIGTERM, handle_sigterm);
+    /*signal(SIGTERM, handle_sigterm);*/
 
-    atexit(handle_parent_exit);
+    /*atexit(handle_parent_exit);*/
 
     /*pid = fork();*/
     pid = 1;

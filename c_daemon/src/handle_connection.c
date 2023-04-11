@@ -1,4 +1,5 @@
 #include "TCP_protocols.h"
+#include "IPC.h"
 #include "global_var.h"
 
 // functions to work with the structure
@@ -44,6 +45,7 @@ void send_file_by_socket(int sockfd) {
 
     // ask python to save the game
     send_from_c(3, 0, 0, 0, 0);
+    sleep(2);
 
     // get the name of the file
     char cwd[BUFSIZE];
@@ -130,12 +132,6 @@ void recv_file(int sockfd) {
     // verify if the file is received successfully before do other thing
     while (total_bytes_read != file_size) {
 
-        if(total_bytes_read < file_size ) {
-            printf("\tReceived file of %ld unsuccessfully\n", file_size);
-            stop("not received the file to start the game successfully");
-            exit(EXIT_FAILURE);
-        }
-
         while ((valread = read(sockfd, buffer, BUFSIZE - 1)) == BUFSIZE - 1) {
 
             buffer[valread] = '\0';
@@ -152,6 +148,12 @@ void recv_file(int sockfd) {
             total_bytes_read += valread; 
 
         }
+
+        if(total_bytes_read < file_size ) {
+            printf("\tReceived file of %ld unsuccessfully (%d)\n", file_size, total_bytes_read);
+            stop("not received the file to start the game successfully");
+            exit(EXIT_FAILURE);
+        }
     }
 
     // printf("\tend recv_file()\n");
@@ -159,7 +161,7 @@ void recv_file(int sockfd) {
 
     printf("\tin recv_file out while, total bytes read = %d\n", total_bytes_read);
     if(total_bytes_read == file_size) {
-        printf("\tReceived file of %ld successfully\n", file_size);
+        printf("\tReceived file of %ld successfully (%d)\n", file_size, total_bytes_read);
     }
     else {
         printf("\tReceived file of %ld unsuccessfully\n", file_size);

@@ -54,6 +54,7 @@ class MessageType(Enum):
     HOUSE_EAT = 27
     SPEND_MONEY = 28
     COLLECT_MONEY = 29
+    PLAYER = 30
     # TODO below
     # change state of walkers ?
 

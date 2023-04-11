@@ -388,7 +388,7 @@ class Visualizer:
             for column in range(MAP_DIM):
                 if MAP.is_type(column, row, Road):
                     if self.overlayType == 'Tile':
-                            self.showPlayerCase(MAP, row, column,tileDIM, origin) 
+                            self.showPlayerCase(MAP, column,row,tileDIM, origin) 
                     else:
                         roadType = 0
                         roadType += 1 if (column >
@@ -500,7 +500,7 @@ class Visualizer:
                             self.showDesirabilityLevel(
                                 row, column, tileDIM, origin, desirabilityLevel)
                         elif self.overlayType == 'Tile':
-                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
+                                self.showPlayerCase(MAP, column,row,tileDIM, origin) 
                 
                         else:
                             houseNames = {
@@ -565,7 +565,7 @@ class Visualizer:
                             self.showDesirabilityLevel(
                                 row, column, tileDIM, origin, desirabilityLevel)
                         elif self.overlayType == 'Tile':
-                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
+                                self.showPlayerCase(MAP, column,row,tileDIM, origin) 
                 
                         else:
                             imgName = 'NewHouse'
@@ -576,7 +576,7 @@ class Visualizer:
                                               imgName, imgCode, compenX, compenY)
                     case Water():
                         if self.overlayType == 'Tile':
-                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
+                                self.showPlayerCase(MAP, column,row,tileDIM, origin) 
                         else:
                             isSea = True
                             for dx in range(-1, 2, 1):
@@ -641,7 +641,7 @@ class Visualizer:
                                     row, column, tileDIM, origin, imgName, imgCode, compenX, compenY)
                     case Tree():
                         if self.overlayType == 'Tile':
-                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
+                                self.showPlayerCase(MAP, column,row,tileDIM, origin) 
                         else:
                             imgName = 'Land1a'
                             compenX = cellSize * \
@@ -671,7 +671,7 @@ class Visualizer:
                                             imgName, imgCode, compenX, compenY)
                     case Other_Rock():
                         if self.overlayType == 'Tile':
-                            self.showPlayerCase(MAP, row, column,tileDIM, origin) 
+                                self.showPlayerCase(MAP, column,row,tileDIM, origin) 
                         else:
                             imgName = 'plateau'
                             compenX = cellSize * \
@@ -724,7 +724,7 @@ class Visualizer:
                             self.showDesirabilityLevel(
                                 row, column, tileDIM, origin, desirabilityLevel)
                         elif self.overlayType == 'Tile':
-                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
+                                self.showPlayerCase(MAP, column,row,tileDIM, origin) 
                         
                         else:
                             imgName = 'Prefecture'
@@ -1133,7 +1133,7 @@ class Visualizer:
                                                         imgName, imgCode, compenX, compenY)
                             case Tile_Type.Grass:
                                 if self.overlayType == 'Tile':
-                                    self.showPlayerCase(MAP,row, column,tileDIM, origin) 
+                                    self.showPlayerCase(MAP, column,row,tileDIM, origin) 
                                 else:
                                     imgName = 'Grass'
                                     imgCode = '00010'

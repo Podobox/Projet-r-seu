@@ -5,14 +5,12 @@ from Model.Player import Player
 class PropertyPossession:
     def __init__(self, comm, map):
         self.map = map
-        self.comm = comm
 
     def modify_property(self, posx, posy):
-        # com.communication.ask_for_ownership(posx, posy)
+        com.communication.ask_for_ownership(posx, posy)
 
         self.map.grid[posx][posy].owner = com.ME
         print(self.map.grid[posx][posy].owner)
-        print(f"Vous êtes maintenant propriétaire de la case ({posx}, {posy}).")
         # else:
         #     print("Accès refusé.")
     

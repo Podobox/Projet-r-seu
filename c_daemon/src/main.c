@@ -335,7 +335,7 @@ int main(int argc, char **argv) {
                                 /*char *get_ip_buffer = strtok(buffer, " ");*/
                                 /*char *get_ip_player = strtok(NULL, " ");*/
                                 
-                                char get_ip_player[16];
+                                char *get_ip_player = malloc(16);
 
                                 sprintf(get_ip_player, "%d.%lu.%lu.%lu", message.mes.message_type, message.mes.posx, message.mes.posy, message.mes.type);
 

@@ -105,7 +105,7 @@ class Visualizer:
         self.images = {zoom: dict() for zoom in cellSizeDict}
         self.barre = Barre(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, False, self)
         # self.barre.barre_function()
-        self.fileMenu = FileMenu(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, backup, game, communication)
+        self.fileMenu = FileMenu(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, backup, game)
         # self.images = dict()
         self.minimap = Minimap(self.window, WINDOW_WIDTH, WINDOW_HEIGHT)
         self.chat = Chat(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, communication)

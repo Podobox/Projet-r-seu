@@ -1,8 +1,9 @@
 import pygame as pg
-from Controller.Communication import Communication
+from Controller.Communication import *
 import enum
 
 # text to print
+pg.init()
 FONT = pg.font.Font(None, 32)
 FONT2 = pg.font.Font(None, 28)
 
@@ -152,7 +153,7 @@ def convert_number(number):
 
 
 def convert_msg(message):
-    new_msg = 0
+    new_msg = ""
     for w in message:
         new_msg += f'{convert_letter(w)}0'
     return int(new_msg[:-1])

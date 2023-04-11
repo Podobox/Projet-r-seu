@@ -142,143 +142,146 @@ class Controller:
 
     def handle_message(self, message):
         print(f"received {message}")
-        match MessageType(message[0]):
-            case MessageType.REQUIRE_OWNERSHIP:
-                if self.game.map.grid[message[1]][message[2]].owner == com.ME:
-                    self.game.map.grid[message[1]][message[2]] = None
-                    com.communication.give_ownership(message[1], message[2], message[3])
-            case MessageType.GIVE_OWNERSHIP:
-                # not handled here
-                pass
-            case MessageType.CONNECT:
-                Backup("online_game").save(self.game)
-                com.communication.accept_connect()
-            case MessageType.DISCONNECT:
-                # message sent only to me, i take all the tiles
-                self.game.map.grid[message[1]][message[2]].owner = com.ME
-            case MessageType.ACCEPT_CONNECTION:
-                pass
-            case MessageType.CHANGE_OWNERSHIP:
-                # not necessary
-                pass
-            case MessageType.BUILD:
-                self.game.build(message[1], message[2],
-                                building_type(message[3], to_num=False), force=True)
-            case MessageType.DESTROY:
-                self.game.destroy(message[1], message[2], force=True)
-            case MessageType.CATCH_FIRE:
-                self.game.map.grid[message[1]][message[2]].building.catch_fire(
-                    self.game.date)
-            case MessageType.PUT_OUT_FIRE:
-                self.game.map.grid[message[1]][message[2]].building.put_out_fire(
-                    self.game.date)
-            case MessageType.EVOLVE:
-                self.game.map.grid[message[1]][message[2]].building.evolve()
-            case MessageType.DEVOLVE:
-                self.game.map.grid[message[1]][message[2]].building.devolve()
-            case MessageType.MOVE_WALKER:
-                # TODO never called
-                b = self.game.map.grid[message[1]][message[2]].building
-                w = None
-                t = walker_type(message[3], to_num=False)
-                if t == Engineer: w = b.engineer
-                elif t == Farm_Boy: w = b.farm_boy
-                elif t == Market_Buyer: w = b.buyer
-                elif t == Market_Trader: w = b.trader
-                elif t == Migrant: w = b.migrant
-                elif t == Prefect: w = b.prefect
-                elif t == Tax_Collector: w = b.tax_collector
-                w.direction = Direction(message[4])
-            case MessageType.REQUIRE_MONEY_OWNERSHIP:
-                pass
-            case MessageType.REQUIRE_POPULATION_OWNERSHIP:
-                pass
-            case MessageType.BURN_STAGE_INCREASE:
-                # message is (posx, posy, burn_stage)
-                b = self.game.map.grid[message[1]][message[2]].building
-                b.burn_stage = message[3]
-                if message[3] > STAGES_BEFORE_BURN:
-                    b.burn_stage = STAGES_BEFORE_BURN
-            case MessageType.COLLAPSE_STAGE_INCREASE:
-                # message is (posx, posy, collapse_stage)
-                b = self.game.map.grid[message[1]][message[2]].building
-                b.collapse_stage = message[3]
-                if message[3] > STAGES_BEFORE_COLLAPSE:
-                    b.collapse_stage = STAGES_BEFORE_COLLAPSE
-            case MessageType.WALKER_SPAWN:
-                b = self.game.map.grid[message[1]][message[2]].building
-                t = walker_type(message[4], to_num=False)
-                if t == Engineer:
-                    b.engineer_do(self.game.map)
-                    self.game.walkers.append(b.engineer)
-                elif t == Farm_Boy:
-                    b.deliver(self.game.map)
-                    self.game.walkers.append(b.farm_boy)
-                elif t == Market_Buyer:
-                    b.fill(self.game.map)
-                    self.game.walkers.append(b.buyer)
-                elif t == Market_Trader:
-                    b.trade(self.game.map)
-                    self.game.walkers.append(b.trader)
-                elif t == Migrant:
-                    b.migrate(self.game.map, force=True)
-                    self.game.walkers.append(b.migrant)
-                elif t == Prefect:
-                    b.prefect_do(self.game.map)
-                    self.game.walkers.append(b.prefect)
-                elif t == Tax_Collector:
-                    b.collect(self.game.map)
-                    self.game.walkers.append(b.tax_collector)
-            case MessageType.GRANARY_STOCK:
-                # farm boy
-                fb = self.game.map.grid[message[1]][message[2]].building.farm_boy
-                fb.granary.stock()
-                fb.destination = (fb.spawn_road.tile.posx, fb.spawn_road.tile.posy)
-                fb.state = Farm_Boy_State.TO_FARM
-            case MessageType.GRANARY_UNSTOCK:
-                # market buyer
-                mb = self.game.map.grid[message[1]][message[2]].building.buyer
-                mb.granary.unstock()
-                mb.destination = (mb.spawn_road.tile.posx, mb.spawn_road.tile.posy)
-                mb.state = Market_Buyer_State.TO_MARKET
-            case MessageType.COLLAPSE_STAGE_RESET:
-                self.game.map.grid[message[1]][message[2]].building.collapse_stage = 0
-            case MessageType.BURN_STAGE_RESET:
-                self.game.map.grid[message[1]][message[2]].building.burn_stage = 0
-            case MessageType.MARKET_STOCK:
-                # market buyer
-                mb = self.game.map.grid[message[1]][message[2]].building.buyer
-                mb.market.stock()
-                if mb.granary.road_connection is None:
-                    mb.destination = (mb.granary.tile.posx, mb.granary.tile.posy)
-                else:
-                    mb.destination = (mb.granary.road_connection.tile.posx,
-                                      mb.granary.road_connection.tile.posy)
-                mb.state = Market_Buyer_State.TO_GRANARY
-            case MessageType.MARKET_SELL:
-                # market trader
-                mt = self.game.map.grid[message[1]][message[2]].building.trader
-                mt.market.sell(message[3])
-            case MessageType.WALKER_DESTROY:
-                b = self.game.map.grid[message[1]][message[2]].building
-                w = None
-                t = walker_type(message[4], to_num=False)
-                if t == Engineer: w = b.engineer
-                elif t == Farm_Boy: w = b.farm_boy
-                elif t == Market_Buyer: w = b.buyer
-                elif t == Market_Trader: w = b.trader
-                elif t == Migrant: w = b.migrant
-                elif t == Prefect: w = b.prefect
-                elif t == Tax_Collector: w = b.tax_collector
-                self.game.remove_from_walkers(w)
-            case MessageType.HOUSE_FOOD_STOCK:
-                self.game.map.grid[message[1]][message[2]].food += message[3]
-            case MessageType.HOUSE_EAT:
-                self.game.map.grid[message[1]][message[2]].food -= message[3]
-            case MessageType.SPEND_MONEY:
-                self.game.denarii -= message[3]
-            case MessageType.COLLECT_MONEY:
-                self.game.denarii += message[3]
+        try:
+            match MessageType(message[0]):
+                case MessageType.REQUIRE_OWNERSHIP:
+                    if self.game.map.grid[message[1]][message[2]].owner == com.ME:
+                        self.game.map.grid[message[1]][message[2]] = None
+                        com.communication.give_ownership(message[1], message[2], message[3])
+                case MessageType.GIVE_OWNERSHIP:
+                    # not handled here
+                    pass
+                case MessageType.CONNECT:
+                    Backup("online_game").save(self.game)
+                    com.communication.accept_connect()
+                case MessageType.DISCONNECT:
+                    # message sent only to me, i take all the tiles
+                    self.game.map.grid[message[1]][message[2]].owner = com.ME
+                case MessageType.ACCEPT_CONNECTION:
+                    pass
+                case MessageType.CHANGE_OWNERSHIP:
+                    # not necessary
+                    pass
+                case MessageType.BUILD:
+                    self.game.build(message[1], message[2],
+                                    building_type(message[3], to_num=False), force=True)
+                case MessageType.DESTROY:
+                    self.game.destroy(message[1], message[2], force=True)
+                case MessageType.CATCH_FIRE:
+                    self.game.map.grid[message[1]][message[2]].building.catch_fire(
+                        self.game.date)
+                case MessageType.PUT_OUT_FIRE:
+                    self.game.map.grid[message[1]][message[2]].building.put_out_fire(
+                        self.game.date)
+                case MessageType.EVOLVE:
+                    self.game.map.grid[message[1]][message[2]].building.evolve()
+                case MessageType.DEVOLVE:
+                    self.game.map.grid[message[1]][message[2]].building.devolve()
+                case MessageType.MOVE_WALKER:
+                    # TODO never called
+                    b = self.game.map.grid[message[1]][message[2]].building
+                    w = None
+                    t = walker_type(message[3], to_num=False)
+                    if t == Engineer: w = b.engineer
+                    elif t == Farm_Boy: w = b.farm_boy
+                    elif t == Market_Buyer: w = b.buyer
+                    elif t == Market_Trader: w = b.trader
+                    elif t == Migrant: w = b.migrant
+                    elif t == Prefect: w = b.prefect
+                    elif t == Tax_Collector: w = b.tax_collector
+                    w.direction = Direction(message[4])
+                case MessageType.REQUIRE_MONEY_OWNERSHIP:
+                    pass
+                case MessageType.REQUIRE_POPULATION_OWNERSHIP:
+                    pass
+                case MessageType.BURN_STAGE_INCREASE:
+                    # message is (posx, posy, burn_stage)
+                    b = self.game.map.grid[message[1]][message[2]].building
+                    b.burn_stage = message[3]
+                    if message[3] > STAGES_BEFORE_BURN:
+                        b.burn_stage = STAGES_BEFORE_BURN
+                case MessageType.COLLAPSE_STAGE_INCREASE:
+                    # message is (posx, posy, collapse_stage)
+                    b = self.game.map.grid[message[1]][message[2]].building
+                    b.collapse_stage = message[3]
+                    if message[3] > STAGES_BEFORE_COLLAPSE:
+                        b.collapse_stage = STAGES_BEFORE_COLLAPSE
+                case MessageType.WALKER_SPAWN:
+                    b = self.game.map.grid[message[1]][message[2]].building
+                    t = walker_type(message[4], to_num=False)
+                    if t == Engineer:
+                        b.engineer_do(self.game.map)
+                        self.game.walkers.append(b.engineer)
+                    elif t == Farm_Boy:
+                        b.deliver(self.game.map)
+                        self.game.walkers.append(b.farm_boy)
+                    elif t == Market_Buyer:
+                        b.fill(self.game.map)
+                        self.game.walkers.append(b.buyer)
+                    elif t == Market_Trader:
+                        b.trade(self.game.map)
+                        self.game.walkers.append(b.trader)
+                    elif t == Migrant:
+                        b.migrate(self.game.map, force=True)
+                        self.game.walkers.append(b.migrant)
+                    elif t == Prefect:
+                        b.prefect_do(self.game.map)
+                        self.game.walkers.append(b.prefect)
+                    elif t == Tax_Collector:
+                        b.collect(self.game.map)
+                        self.game.walkers.append(b.tax_collector)
+                case MessageType.GRANARY_STOCK:
+                    # farm boy
+                    fb = self.game.map.grid[message[1]][message[2]].building.farm_boy
+                    fb.granary.stock()
+                    fb.destination = (fb.spawn_road.tile.posx, fb.spawn_road.tile.posy)
+                    fb.state = Farm_Boy_State.TO_FARM
+                case MessageType.GRANARY_UNSTOCK:
+                    # market buyer
+                    mb = self.game.map.grid[message[1]][message[2]].building.buyer
+                    mb.granary.unstock()
+                    mb.destination = (mb.spawn_road.tile.posx, mb.spawn_road.tile.posy)
+                    mb.state = Market_Buyer_State.TO_MARKET
+                case MessageType.COLLAPSE_STAGE_RESET:
+                    self.game.map.grid[message[1]][message[2]].building.collapse_stage = 0
+                case MessageType.BURN_STAGE_RESET:
+                    self.game.map.grid[message[1]][message[2]].building.burn_stage = 0
+                case MessageType.MARKET_STOCK:
+                    # market buyer
+                    mb = self.game.map.grid[message[1]][message[2]].building.buyer
+                    mb.market.stock()
+                    if mb.granary.road_connection is None:
+                        mb.destination = (mb.granary.tile.posx, mb.granary.tile.posy)
+                    else:
+                        mb.destination = (mb.granary.road_connection.tile.posx,
+                                        mb.granary.road_connection.tile.posy)
+                    mb.state = Market_Buyer_State.TO_GRANARY
+                case MessageType.MARKET_SELL:
+                    # market trader
+                    mt = self.game.map.grid[message[1]][message[2]].building.trader
+                    mt.market.sell(message[3])
+                case MessageType.WALKER_DESTROY:
+                    b = self.game.map.grid[message[1]][message[2]].building
+                    w = None
+                    t = walker_type(message[4], to_num=False)
+                    if t == Engineer: w = b.engineer
+                    elif t == Farm_Boy: w = b.farm_boy
+                    elif t == Market_Buyer: w = b.buyer
+                    elif t == Market_Trader: w = b.trader
+                    elif t == Migrant: w = b.migrant
+                    elif t == Prefect: w = b.prefect
+                    elif t == Tax_Collector: w = b.tax_collector
+                    self.game.remove_from_walkers(w)
+                case MessageType.HOUSE_FOOD_STOCK:
+                    self.game.map.grid[message[1]][message[2]].food += message[3]
+                case MessageType.HOUSE_EAT:
+                    self.game.map.grid[message[1]][message[2]].food -= message[3]
+                case MessageType.SPEND_MONEY:
+                    self.game.denarii -= message[3]
+                case MessageType.COLLECT_MONEY:
+                    self.game.denarii += message[3]
+        except RuntimeError as e:
+            print(e)
 
     def wait_next_frame(self):
         time_now = time_ns()

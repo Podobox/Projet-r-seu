@@ -241,7 +241,7 @@ class Communication:
         self.send_message_from_py_to_c(message)
 
     def ask_for_ownership(self, posx, posy):  # TODO in Model
-        unique_id = time_ns() % 100
+        unique_id = time_ns() 
         message = struct.pack("iQQQQ", MessageType.REQUIRE_OWNERSHIP.value, posx, posy,
                               0, unique_id)
         self.send_message_from_py_to_c(message)

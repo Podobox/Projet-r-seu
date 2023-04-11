@@ -8,7 +8,7 @@ class PropertyPossession:
         self.comm = comm
 
     def modify_property(self, posx, posy):
-        com.communication.ask_for_ownership(posx, posy)
+        # com.communication.ask_for_ownership(posx, posy)
 
         self.map.grid[posx][posy].owner = com.ME
         print(self.map.grid[posx][posy].owner)

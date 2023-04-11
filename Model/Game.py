@@ -86,7 +86,7 @@ class Game:
         return string
 
     def set_initial_map(self):
-        # self.prop  = PropertyPossession(com.communication , self.map)
+        self.prop  = PropertyPossession(com.communication , self.map)
         for y in range(0, MAP_DIM - MAP_DIM // 5):
             for x in range(y // 2):
                 self.build(x, y, Water)

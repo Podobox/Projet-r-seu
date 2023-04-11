@@ -267,7 +267,10 @@ class Communication:
         i = 0
         while self.receive_message_from_c_to_py():
             i += 1
-            yield self.message.get()
+            v = self.message.get()
+            print("check_messages", v)
+            if v[0] != 0:
+                yield v
         if i > 0:
             print(f"got {i} messages")
         return
@@ -331,6 +334,8 @@ communication = Communication()
 #     break
 
 # Sender = Communication()
+# while Sender.receive_message_from_c_to_py():
+    # pass
 # for i in range(10):
     # Sender.burn_stage_increase(1, 1, 2)
 # while (True):

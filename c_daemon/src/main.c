@@ -314,11 +314,16 @@ int main(int argc, char **argv) {
                                     if (connection[ind].used && ind != ind0 && ind != index /**/) {
                                         send_message message;
                                         message.mesg_type = -4;
-                                        message.mes.posx
-                                          = sscanf(connection[ind].IP, "%d.%ld.%ld.%ld",
+                                        sscanf(connection[ind].IP, "%d.%ld.%ld.%ld",
                                                    &message.mes.message_type, &message.mes.posx,
                                                    &message.mes.posy, &message.mes.type);
-                                        printf("sending connection %s\n", connection[ind].IP);
+                                        printf("sending connection %s to %s\n", connection[ind].IP, connection[index].IP);
+                                        printf("Sending:%i %lu "
+                                               "%lu "
+                                               "%lu %lu\n",
+                                               message.mes.message_type,
+                                               message.mes.posx, message.mes.posy, message.mes.type,
+                                               message.mes.x);
                                         if (write(connection[index].socket, &message, sizeof(send_message))
                                             < 0) {
                                             fprintf(stderr,

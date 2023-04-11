@@ -499,6 +499,7 @@ class Game:
 
     def add_to_walkers(self, w):
         self.walkers.append(w)
+        self.walkers.remove(None)
         self.walkers.sort(key=lambda w: w.posy + w.posx)
         com.communication.walker_spawn(w.building.tile.posx, w.building.tile.posy,
                                        walker_type(type(w)))

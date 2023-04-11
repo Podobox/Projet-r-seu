@@ -221,7 +221,7 @@ class Controller:
                     elif t == Market_Trader:
                         b.trade(self.game.map)
                         self.game.walkers.append(b.trader)
-                    elif t == Migrant:
+                    elif t == Migrant and type(b) == New_House:
                         b.migrate(self.game.map, force=True)
                         self.game.walkers.append(b.migrant)
                     elif t == Prefect:

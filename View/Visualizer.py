@@ -114,11 +114,6 @@ class Visualizer:
         self.fileMenu = FileMenu(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, backup, game)
         #self.images = dict()
         self.minimap = Minimap(self.window, WINDOW_WIDTH, WINDOW_HEIGHT)
-<<<<<<< HEAD
-
-        # self.chat = Chat(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, communication)
-=======
->>>>>>> 549e73e16c017faace1fd55370fe84cd3b5ddabe
         self.loadImages()
         return
 
@@ -173,10 +168,6 @@ class Visualizer:
                              self.deplacementY + self.tmpDeplacementY)
         self.imgavatar.display()
         
-<<<<<<< HEAD
-        # self.chat.display(self.chat)
-=======
->>>>>>> 549e73e16c017faace1fd55370fe84cd3b5ddabe
 
         # Draw game barre
         self.barre.barre_function(self.game.denarii, self.game.population, self.game.date)

@@ -56,8 +56,6 @@ class MessageType(Enum):
     COLLECT_MONEY = 29
     # TODO below
     # change state of walkers ?
-    PLAYER_ID = 40
-
 
 
 class Message(Enum):
@@ -72,45 +70,23 @@ class Communication:
     def __init__(self):
         sysv_ipc.MessageQueue.remove(sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT))
         # create fifo to communicate with c daemon
-        # self.message_queue = sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT, mode=0o777)
-        self.message_queue = sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT)
-
-        # try:
-        #     # Try to create a new message queue with the same key
-        #     self.message_queue = sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT, mode=0o777)
-        #     exists = False
-        # except sysv_ipc.ExistentialError:
-        #     # If the creation failed, return True
-        #     exists = True
+        try:
+            # Try to create a new message queue with the same key
+            self.message_queue = sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT, mode=0o777)
+            exists = False
+        except sysv_ipc.ExistentialError:
+            # If the creation failed, return True
+            exists = True
             
-        # print(exists)
+        print(exists)
 
         self.message = Queue(-1)
 
     def send_message_from_py_to_c(self, message):
-        # Convert message to bytes if necessary
-        if not isinstance(message, bytes):
-            message = message.encode()
+        # print('send : ', message, ' len=', len(message))
+        # send the actions from python to c
+        self.message_queue.send(message, type=PY_TO_C)
 
-        # Check message size
-        if len(message) > 8192:
-            return False
-
-        # Send the message with the appropriate type
-        try:
-            self.message_queue.send(message, type=PY_TO_C)
-            return True
-        except sysv_ipc.BusyError:
-            # Message queue is full, handle the error here
-            return False
-        # except OSError as e:
-            # # print("error in send_message_from_py_to_c")
-            # if e.errno == 22:
-                # # Invalid argument, handle the error here
-                # return False
-            # else:
-                # # Other OSError, re-raise the exception
-                # raise e
 
     def receive_message_from_c_to_py(self):
         # send the actions from c to python
@@ -120,10 +96,6 @@ class Communication:
             return True
         except sysv_ipc.BusyError:
             return False
-        # except sysv_ipc.ExistentialError:
-            # print("error in receive_message_from_c_to_py")
-            # Message queue no longer exists, handle the error here
-            # return False
 
     def receive_unique_message_from_c_to_py(self, id):
         # send the actions from c to python
@@ -256,25 +228,19 @@ class Communication:
         message = struct.pack("iQQQQ", MessageType.GIVE_OWNERSHIP.value, posx, posy, 0,
                               unique_id)
         self.send_message_from_py_to_c(message)
-    def give_ownership(self, posx, posy):  # TODO in Model
-        message = struct.pack("iQQQQ", MessageType.PLAYER_ID.value, posx, posy, 0, 0)
-        self.send_message_from_py_to_c(message)
 
     def check_messages(self):
         # check for messages from other players
         # making this function a generator might be a good idea
         # handle the message in the controller
-        i = 0
+
         while self.receive_message_from_c_to_py():
-            i += 1
             yield self.message.get()
-        if i > 0:
-            print(f"got {i} messages")
         return
 
     def accept_connect(self):
         message = struct.pack("iQQQQ", MessageType.CONNECT.value, 0, 0, 0, 0)
-        # self.send_message_from_py_to_c(message)
+        self.send_message_from_py_to_c(message)
 
     def connect(self, ip, port):
         nom = "online_game"
@@ -290,17 +256,14 @@ class Communication:
         process = subprocess.Popen(cmd) 
         self.send_message_from_py_to_c(message)
 
-        sleep(2)
-
         # wait for response from c daemon and unpack the game and player information   
-        # while self.receive_message_from_c_to_py():
-            # game = pickle.loads(self.message.get())
-            # return (nom, game)
+        while self.receive_message_from_c_to_py():
+            game = pickle.loads(self.message.get())
+            return (nom, game)
         
         # return the game it is connected to and its players
 
         # If the loop did not run, return a default value
-
         return (nom, None)
 
     def disconnect(self, posx, posy):
@@ -328,8 +291,6 @@ communication = Communication()
 #     break
 
 # Sender = Communication()
-# for i in range(10):
-    # Sender.burn_stage_increase(1, 1, 2)
 # while (True):
     # for i in Sender.check_messages():
         # print(i)

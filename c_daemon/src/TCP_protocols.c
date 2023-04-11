@@ -20,7 +20,7 @@ int connect_existed_players(int index) {
     struct sockaddr_in current_player;
     bzero(&current_player, sizeof(current_player));
     current_player.sin_family = AF_INET;
-    current_player.sin_port = htons(PORT);
+    current_player.sin_port = htons(PORT + index);
     current_player.sin_addr.s_addr = inet_addr(connection[index].IP);
 
     // connect to the player
@@ -31,6 +31,7 @@ int connect_existed_players(int index) {
     // save player socket
     connection[index].socket = sock;
     connection[index].used = 1;
+    print_connections();
     return 0;
 }
 

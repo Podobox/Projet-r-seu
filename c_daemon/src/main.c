@@ -318,12 +318,12 @@ int main(int argc, char **argv) {
                                                    &message.mes.message_type, &message.mes.posx,
                                                    &message.mes.posy, &message.mes.type);
                                         printf("sending connection %s to %s\n", connection[ind].IP, connection[index].IP);
-                                        printf("Sending:%i %lu "
-                                               "%lu "
-                                               "%lu %lu\n",
-                                               message.mes.message_type,
-                                               message.mes.posx, message.mes.posy, message.mes.type,
-                                               message.mes.x);
+                                        /*printf("Sending:%i %lu "*/
+                                               /*"%lu "*/
+                                               /*"%lu %lu\n",*/
+                                               /*message.mes.message_type,*/
+                                               /*message.mes.posx, message.mes.posy, message.mes.type,*/
+                                               /*message.mes.x);*/
                                         if (write(connection[index].socket, &message, sizeof(send_message))
                                             < 0) {
                                             fprintf(stderr,
@@ -366,6 +366,7 @@ int main(int argc, char **argv) {
                                         break;
                                     }
                                 }
+                                print_connections();
                                 /*get_ip_player = strtok(NULL, " ");*/
                                 /*}*/
                             } else if (message.mesg_type == -5) {

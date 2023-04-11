@@ -1,0 +1,1826 @@
+diff --git a/Controller/Communication.py b/Controller/Communication.py
+index 45b45c0..79651bc 100644
+--- a/Controller/Communication.py
++++ b/Controller/Communication.py
+@@ -54,8 +54,6 @@ class MessageType(Enum):
+     COLLECT_MONEY = 29
+     # TODO below
+     # change state of walkers ?
+-    PLAYER_ID = 40
+-
+ 
+ 
+ class Message(Enum):
+@@ -216,9 +214,6 @@ class Communication:
+         message = struct.pack("iQQQQ", MessageType.GIVE_OWNERSHIP.value, posx, posy, 0,
+                               unique_id)
+         self.send_message_from_py_to_c(message)
+-    def give_ownership(self, posx, posy):  # TODO in Model
+-        message = struct.pack("iQQQQ", MessageType.PLAYER_ID.value, posx, posy, 0, 0)
+-        self.send_message_from_py_to_c(message)
+ 
+     def check_messages(self):
+         # check for messages from other players
+diff --git a/Controller/Controller.py b/Controller/Controller.py
+index f9ec81b..a634a73 100644
+--- a/Controller/Controller.py
++++ b/Controller/Controller.py
+@@ -52,18 +52,13 @@ class Controller:
+     init_pos = None
+     final_pos = None
+     ORIGIN_DECALAGE = (0, 0)
+-    players_ip = 0
+-    playser_List =[]
+ 
+     def __init__(self, name_save, game=None, players=None):
+         # pg.init()
+-        self.communication = com
+         self.player = Player()
+         self.players = players
+         com.ME = self.player
+         self.list_button = []
+-        self.players_ip = 0
+-        self.playser_List = []
+         self.MODE_DECALAGE = False
+         self.ORIGIN_DECALAGE = (0, 0)
+         # game is actually always set so changing the money here won't do anything
+@@ -72,7 +67,7 @@ class Controller:
+         if players is None:
+             self.game.take_all_ownership(self.player)
+         self.game.set_initial_map()
+-        self.visualizer = Visualizer(self.list_button, self.game, self.backup, self.communication)
++        self.visualizer = Visualizer(self.list_button, self.game, self.backup)
+         self.building = False
+         self.buttonclicked = None
+         self.last_frame = time_ns()
+@@ -99,19 +94,11 @@ class Controller:
+             # for y in range(2, 8):
+                 # self.game.map.grid[x][y].owner = None
+         # for x in range(0, 20):
+-        #     # for y in range(1):
+-        #         # self.game.map.grid[x][y].owner = None
+-        # for x in range(MAP_DIM):
+-        #     for y in range(MAP_DIM):
+-        #         self.game.map.grid[x][y].owner = None
+-
+-
+-        self.game.map.grid[9][9].owner = None
+-        self.game.map.grid[8][9].owner = None
+-        self.game.map.grid[9][8].owner = None
+-        self.game.map.grid[7][9].owner = None
+-        self.game.map.grid[9][7].owner = None
+-
++            # for y in range(1):
++                # self.game.map.grid[x][y].owner = None
++        for x in range(MAP_DIM):
++            for y in range(MAP_DIM):
++                self.game.map.grid[x][y].owner = None
+ 
+         while True:
+             self.game.advance_time()
+@@ -135,8 +122,8 @@ class Controller:
+ 
+             pg.display.update()
+ 
+-            # for message in self.communication.check_messages():
+-            #     self.handle_message()
++            for message in com.communication.check_messages():
++                self.handle_message(message)
+ 
+             self.wait_next_frame()
+ 
+@@ -147,7 +134,6 @@ class Controller:
+ 
+     def handle_message(self, message):
+         print(f"received {message}")
+-
+         match MessageType(message[0]):
+             case MessageType.REQUIRE_OWNERSHIP:
+                 if self.game.map.grid[message[1]][message[2]].owner == com.ME:
+@@ -282,12 +268,6 @@ class Controller:
+             case MessageType.COLLECT_MONEY:
+                 self.game.denarii += message[3]
+ 
+-            case MessageType.PLAYER_ID : 
+-                players_ip= message[1]
+-                self.playser_List.append(players_ip)
+-
+-                print(players_ip)
+-
+     def wait_next_frame(self):
+         time_now = time_ns()
+         delta = time_now - self.last_frame
+@@ -296,11 +276,9 @@ class Controller:
+         # self.bench = (sleep_time * 1e-9 + self.bench * self.bench_nb) \
+             # / (self.bench_nb + 1)
+         # instant_bench = ((TIME_NS_PER_FRAME - sleep_time) / TIME_NS_PER_FRAME * 100)
+-
+         # self.bench = (((TIME_NS_PER_FRAME - sleep_time) / TIME_NS_PER_FRAME * 100)
+                       # + self.bench * self.bench_nb) / (self.bench_nb + 1)
+         # self.bench_nb += 1
+-
+         # print(self.bench)
+         # print(instant_bench)
+         # print(sleep_time * 1e-9)
+@@ -330,12 +308,12 @@ class Controller:
+                 case pg.MOUSEBUTTONDOWN:
+                     print("MouseButtonDown")
+                     if event.button == pg.BUTTON_LEFT:
+-                        # print("Left button pressed at (x, y) = ", event.pos)
++                        print("Left button pressed at (x, y) = ", event.pos)
+ 
+                         print("self.building est a : ", self.building)
+                         # ------------------------------------------------------------------------------------Faire en clique droit
+                     elif event.button == pg.BUTTON_RIGHT:
+-                        # print("Right button pressed at (x, y) = ", event.pos)
++                        print("Right button pressed at (x, y) = ", event.pos)
+                         if event.pos[0] <= self.visualizer.GAME_WIDTH and event.pos[1] <= self.visualizer.GAME_HEIGHT:
+                             self.MODE_DECALAGE = True
+                             self.ORIGIN_DECALAGE = event.pos
+@@ -351,9 +329,9 @@ class Controller:
+                             self.building = False
+                             self.visualizer.changeBuildingMode()
+                             self.final_pos = None
+-                        # print("Left button released at (x, y) = ", event.pos)
++                        print("Left button released at (x, y) = ", event.pos)
+                     elif event.button == pg.BUTTON_RIGHT:
+-                        # print("Right button released at (x, y) = ", event.pos)
++                        print("Right button released at (x, y) = ", event.pos)
+                         if self.MODE_DECALAGE:
+                             self.MODE_DECALAGE = False
+                             mouse_pos = event.pos
+@@ -414,10 +392,10 @@ class Controller:
+                     if left_button_pressed:
+                         actionned = False
+                         if not(self.building):
+-                            # print("into not(self.building)")
++                            print("into not(self.building)")
+                             for button in self.list_button:
+                                 if button.listener_rect(mouse_pos):
+-                                    # print("button clicked")
++                                    print("button clicked")
+                                     self.buttonclicked = button
+ 
+                                     if self.buttonclicked.building != -1:
+@@ -428,9 +406,6 @@ class Controller:
+                                     elif self.buttonclicked.game != -1:
+                                         self.buttonclicked.action(self.buttonclicked.game)
+ 
+-                                    # elif self.buttonclicked.player_avatars != -1:
+-                                    #     self.buttonclicked.action(self.buttonclicked.player_avatars)
+-                                    
+                                     else:
+                                         self.buttonclicked.action()
+                                         actionned = True
+diff --git a/Controller/Menu.py b/Controller/Menu.py
+index 7357fb1..f158ad4 100644
+--- a/Controller/Menu.py
++++ b/Controller/Menu.py
+@@ -58,9 +58,7 @@ saved_games_menu = False
+ a = False
+ param = False
+ start_new_game = False
+-avatar_select = False
+-avatar_name = ""
+-player_list =[]
++
+ 
+ def button(panel, mouse):
+     # soit 275 la largeur et 30 la hauteur de chaque panel
+@@ -81,7 +79,6 @@ def menu():
+     global sound_play
+ 
+     global start_new_game
+-    global avatar_select
+ 
+     # sound()
+     # pygame.mixer.music.load('Sound/Rome4.mp3')
+@@ -115,10 +112,8 @@ def menu():
+                     # pygame.mixer.music.stop()
+                     # pygame.mixer.music.load('Sound/Rome1.mp3')
+                     # pygame.mixer.music.play()
+-                    # start_new_game = 1
+-                    menu_page = 0
+-                    avatar_select =1
+-                    selector_avatar()
++                    start_new_game = 1
++                    start()
+                     # Controller()
+ 
+                 if (button(load_game_rect, mouse)):
+@@ -128,79 +123,11 @@ def menu():
+                 if(button(globe_rect, mouse)):
+                     menu_page = 0
+                     saved_games_menu = 1
+-                    avatar_select = 1
+-                    selector_avatar_connect()
++                    connect()
+             if event.type == pygame.KEYDOWN:
+                 if (event.key == pygame.K_ESCAPE) or (event.key == pygame.K_SPACE):
+                     running = False
+                     pygame.quit()
+-def selector_avatar():
+-    global menu_page
+-    global running
+-    global saved_games_menu
+-    global sound_play
+-    global start_new_game
+-    global avatar_select
+-    global a
+-    global player_list
+-    global avatar_name
+-
+-    x = screen.get_size()
+-    avatar_images = []
+-    avatar_rects = []
+-    avatar_names = ["Julius", "Octavius", "Brutus", "Minerve","Dozer", "Persephone"]
+-    avatar_x_positions = [x[0] / 6 - 100, x[0] / 2 - 100, 5 * x[0] / 6 - 100, x[0] / 6 - 100, x[0] / 2 - 100, 5 * x[0] / 6 - 100]
+-    avatar_y_positions = [x[1] / 3, x[1] / 3, x[1] / 3, 2 * x[1] / 3, 2 * x[1] / 3, 2 * x[1] / 3]
+-    avatars_selectionnes = []
+-
+-    # Charger les deux images de fond
+-    background_1 = pygame.image.load('./Images/back_avatar.png')
+-    background_2 = pygame.image.load('./Images/back_connected.png')
+-
+-    background_1 = pygame.transform.scale(background_1, screen.get_size())
+-
+-    while avatar_select: 
+-        screen.blit(background_1, (0, 0))
+-        background_2 = pygame.transform.scale(background_2, (1700, 900)) 
+-        screen.blit(background_2, (100, 100)) 
+-        
+-        font = pygame.font.Font(None, 50)
+-        caption = font.render("Please choose your avatar", True, (255, 0, 0))
+-        caption_rect = caption.get_rect(center=(x[0] // 2, x[1] // 6))
+-        screen.blit(caption, caption_rect)
+-        for event in pygame.event.get():
+-            if event.type == pygame.QUIT:
+-                running = False
+-                pygame.quit()
+-                quit()
+-            if event.type == pygame.MOUSEBUTTONDOWN:
+-                for i in range(len(avatar_names)):
+-                    if avatar_rects[i].collidepoint(event.pos) and avatar_names[i] not in avatars_selectionnes:
+-                        avatars_selectionnes.append(avatar_names[i])
+-                        avatar_select = False
+-                        add_player(1, avatar_names[i])
+-                        a = True
+-                        avatar_name = avatar_names[i]
+-
+-                        start()
+-                        break
+-
+-        for i in range(len(avatar_names)):
+-            if avatar_names[i] not in avatars_selectionnes:
+-                avatar_image = pygame.image.load(f"./Images/play_menu/{avatar_names[i]}.png").convert_alpha()
+-                avatar_image = pygame.transform.scale(avatar_image, (200, 200))
+-                avatar_rect = avatar_image.get_rect()
+-                avatar_rect.x = avatar_x_positions[i]
+-                avatar_rect.y = avatar_y_positions[i]
+-                avatar_images.append(avatar_image)
+-                avatar_rects.append(avatar_rect)
+-
+-                screen.blit(avatar_images[i], (avatar_rects[i].x + 5, avatar_rects[i].y + 5))
+-                font = pygame.font.SysFont(None, 40)
+-                text = font.render(avatar_names[i], True, (255, 0, 0))
+-                screen.blit(text, (avatar_rects[i].x + 50, avatar_rects[i].y + 215))
+-
+-        pygame.display.flip()
+ 
+ 
+ def start():
+@@ -232,6 +159,7 @@ def start():
+                                 param = 1
+                                 enter_start_game()
+ 
++
+ def enter_start_game():
+     global param
+     x = screen.get_size()
+@@ -254,9 +182,8 @@ def enter_start_game():
+                     pygame.display.flip()
+                 elif event.key == pygame.K_RETURN:
+                     game = Game(1000)
+-                    # (Backup(nom)).save(game)
++                    (Backup(nom)).save(game)
+                     Controller(nom, game=game)
+-                    
+                 else:
+                     if event.type == pygame.KEYDOWN:
+                         if event.key == pygame.K_ESCAPE:
+@@ -296,89 +223,14 @@ def saved():
+                     else:
+                         a = True
+                         enter_saved_game()
+-def selector_avatar_connect():
+-    global menu_page
+-    global running
+-    global saved_games_menu
+-    global sound_play
+-    global start_new_game
+-    global avatar_select
+-    global a
+-    global player_list
+-    global avatar_name
+-
+-    x = screen.get_size()
+-    avatar_images = []
+-    avatar_rects = []
+-    avatar_names = ["Julius", "Octavius", "Brutus", "Minerve","Dozer", "Persephone"]
+-    avatar_x_positions = [x[0] / 6 - 100, x[0] / 2 - 100, 5 * x[0] / 6 - 100, x[0] / 6 - 100, x[0] / 2 - 100, 5 * x[0] / 6 - 100]
+-    avatar_y_positions = [x[1] / 3, x[1] / 3, x[1] / 3, 2 * x[1] / 3, 2 * x[1] / 3, 2 * x[1] / 3]
+-    avatars_selectionnes = []
+-
+-    # Charger les deux images de fond
+-    background_1 = pygame.image.load('./Images/back_avatar.png')
+-    background_2 = pygame.image.load('./Images/back_connected.png')
+-
+-    background_1 = pygame.transform.scale(background_1, screen.get_size())
+-
+-    while avatar_select: 
+-        screen.blit(background_1, (0, 0))
+-        background_2 = pygame.transform.scale(background_2, (1700, 900)) 
+-        screen.blit(background_2, (100, 100)) 
+-        
+-        font = pygame.font.Font(None, 50)
+-        caption = font.render("Please choose your avatar", True, (255, 0, 0))
+-        caption_rect = caption.get_rect(center=(x[0] // 2, x[1] // 6))
+-        screen.blit(caption, caption_rect)
+-        for event in pygame.event.get():
+-            if event.type == pygame.QUIT:
+-                running = False
+-                pygame.quit()
+-                quit()
+-            if event.type == pygame.MOUSEBUTTONDOWN:
+-                for i in range(len(avatar_names)):
+-                    if avatar_rects[i].collidepoint(event.pos) and avatar_names[i] not in avatars_selectionnes:
+-                        avatars_selectionnes.append(avatar_names[i])
+-                        avatar_select = False
+-                        # if i >= len(Controller.players_ip):
+-                        #     print("Player does not exist!")
+-                        #     return
+-                        
+-                        add_player(Controller.players_ip, avatar_names[i])
+-                        a = True
+-                        print(f"Selected {avatar_names[i]}")
+-                        avatar_name = avatar_names[i]
+-                        connect()
+-                        break
+-
+-        for i in range(len(avatar_names)):
+-            if avatar_names[i] not in avatars_selectionnes:
+-                avatar_image = pygame.image.load(f"./Images/play_menu/{avatar_names[i]}.png").convert_alpha()
+-                avatar_image = pygame.transform.scale(avatar_image, (200, 200))
+-                avatar_rect = avatar_image.get_rect()
+-                avatar_rect.x = avatar_x_positions[i]
+-                avatar_rect.y = avatar_y_positions[i]
+-                avatar_images.append(avatar_image)
+-                avatar_rects.append(avatar_rect)
+-
+-                screen.blit(avatar_images[i], (avatar_rects[i].x + 5, avatar_rects[i].y + 5))
+-                font = pygame.font.SysFont(None, 40)
+-                text = font.render(avatar_names[i], True, (255, 0, 0))
+-                screen.blit(text, (avatar_rects[i].x + 50, avatar_rects[i].y + 215))
+-
+-        pygame.display.flip()
++                        # for i in Save:
+ 
+-player_list = []
+-def add_player(id, avatar):
+-    player = {'id': id, 'avatar': avatar}
+-    player_list.append(player)
+ 
+ def connect():
+     global saved_games_menu
+     global menu_page
+     global running
+     global a
+-    global avatar_select
+     while saved_games_menu:
+         back_1 = pygame.image.load('Images/_fired_00001.png')
+         back_1 = pygame.transform.scale(back_1, x)
+@@ -398,9 +250,8 @@ def connect():
+                         running = False
+                         pygame.quit()
+                     else:
+-                        avatar_select = True
+-    
+-                        enter_connect_game ()
++                        a = True
++                        enter_connect_game()
+                         # for i in Save:
+ 
+ 
+@@ -459,7 +310,6 @@ def enter_connect_game():
+ def enter_saved_game():
+     global a
+     global sound_play
+-    global avatar_select
+     x = screen.get_size()
+     font = pygame.font.Font(None, 24)
+     nom = ""
+@@ -489,8 +339,6 @@ def enter_saved_game():
+                         screen.blit(text_erreur, ((x[0] / 2) - 50, (x[1] / 3) + 100))
+                         pygame.display.flip()
+                     else:
+-                        a = 0
+-                        avatar_select = 1
+                         Controller(nom, game=game)
+                 else:
+                     if event.type == pygame.KEYDOWN:
+@@ -529,4 +377,3 @@ def run():
+                 background = pygame.transform.scale(background, x)
+                 menu_page = True
+         pygame.display.flip()
+-
+diff --git a/Controller/property_possession.py b/Controller/property_possession.py
+deleted file mode 100644
+index 9375d8c..0000000
+--- a/Controller/property_possession.py
++++ /dev/null
+@@ -1,33 +0,0 @@
+-import Controller.Communication as com
+-from Model.Map import Map, MAP_DIM
+-class PropertyPossession:
+-    def __init__(self, comm, map):
+-        self.map = map
+-        self.comm = comm
+-
+-    def modify_property(self, posx, posy):
+-        # if self.comm.ask_for_ownership(posx, posy):
+-
+-        self.map.grid[posx][posy].owner = com.ME
+-        print(self.map.grid[posx][posy].owner)
+-        print(f"Vous êtes maintenant propriétaire de la case ({posx}, {posy}).")
+-        # else:
+-        #     print("Accès refusé.")
+-    
+-
+-    # def receive_property_request(self, tile, player):
+-    #     if self.is_owner(tile.posx, tile.posy, player):
+-    #         del self.owned_tiles[(tile.posx, tile.posy)]
+-    #         self.comm.deny_ownership(tile.posx, tile.posy, player)
+-    #         print(f"La case ({tile.posx}, {tile.posy}) a été libérée.")
+-    #     else:
+-    #         print("Vous n'êtes pas propriétaire de cette case.")
+-    
+-    # def count_properties(self, player):
+-    #     count = 0
+-    #     for tile in self.owned_tiles.values():
+-    #         if tile.player == player:
+-    #             count += 1
+-    #     return count
+-    
+-    
+diff --git a/Controller/send b/Controller/send
+new file mode 100755
+index 0000000..60f043a
+Binary files /dev/null and b/Controller/send differ
+diff --git a/Controller/send_msg_from_c.c b/Controller/send_msg_from_c.c
+index 5e7848b..69a8fd9 100644
+--- a/Controller/send_msg_from_c.c
++++ b/Controller/send_msg_from_c.c
+@@ -34,10 +34,11 @@ struct {
+ void send_from_c()
+ {
+ 	// buffer->message_type = 5;
+-	message.mes.message_type = 40;
+-    message.mes.posx = 192168174131;
+-    message.mes.posy = 0;
+-    message.mes.type = 0;
++	message.mes.message_type = 13;
++    message.mes.posx = 16;
++    message.mes.posy = 11;
++    message.mes.type = 5;
++    message.mes.x = 3;
+ 	int msqid;
+ 	// msgget creates a message queue and returns identifier
+ 	msqid = msgget(MESG_KEY, 0666 | IPC_CREAT);
+diff --git a/Images/Connected_Player.png b/Images/Connected_Player.png
+deleted file mode 100644
+index 515f41e..0000000
+Binary files a/Images/Connected_Player.png and /dev/null differ
+diff --git a/Images/Show_Tile.png b/Images/Show_Tile.png
+deleted file mode 100644
+index 2ca5b51..0000000
+Binary files a/Images/Show_Tile.png and /dev/null differ
+diff --git a/Images/back_avatar.png b/Images/back_avatar.png
+deleted file mode 100644
+index fd0830a..0000000
+Binary files a/Images/back_avatar.png and /dev/null differ
+diff --git a/Images/back_connected.png b/Images/back_connected.png
+deleted file mode 100644
+index fe8e563..0000000
+Binary files a/Images/back_connected.png and /dev/null differ
+diff --git a/Images/other_player_case_.png b/Images/other_player_case_.png
+deleted file mode 100644
+index 19288fb..0000000
+Binary files a/Images/other_player_case_.png and /dev/null differ
+diff --git a/Images/play_menu/Brutus.png b/Images/play_menu/Brutus.png
+deleted file mode 100644
+index 8adca31..0000000
+Binary files a/Images/play_menu/Brutus.png and /dev/null differ
+diff --git a/Images/play_menu/Dozer.png b/Images/play_menu/Dozer.png
+deleted file mode 100644
+index a31d575..0000000
+Binary files a/Images/play_menu/Dozer.png and /dev/null differ
+diff --git a/Images/play_menu/Julius.png b/Images/play_menu/Julius.png
+deleted file mode 100644
+index fa0a641..0000000
+Binary files a/Images/play_menu/Julius.png and /dev/null differ
+diff --git a/Images/play_menu/Minerve.png b/Images/play_menu/Minerve.png
+deleted file mode 100644
+index 36a94aa..0000000
+Binary files a/Images/play_menu/Minerve.png and /dev/null differ
+diff --git a/Images/play_menu/Octavius.png b/Images/play_menu/Octavius.png
+deleted file mode 100644
+index 609aa8e..0000000
+Binary files a/Images/play_menu/Octavius.png and /dev/null differ
+diff --git a/Images/play_menu/Persephone.png b/Images/play_menu/Persephone.png
+deleted file mode 100644
+index 4459fcf..0000000
+Binary files a/Images/play_menu/Persephone.png and /dev/null differ
+diff --git a/Images/player_case_.png b/Images/player_case_.png
+deleted file mode 100644
+index d246f21..0000000
+Binary files a/Images/player_case_.png and /dev/null differ
+diff --git a/Model/Game.py b/Model/Game.py
+index 7746d4c..176a8a8 100644
+--- a/Model/Game.py
++++ b/Model/Game.py
+@@ -4,10 +4,7 @@ from Model.Forum import Forum
+ from Model.Fountain import Fountain
+ from Model.Garden import Garden
+ from Model.Granary import Granary
+-import tkinter as tk
+-import pygame
+-import tkinter as tk
+-import pygame
++
+ from Model.House import House, house_property
+ from Model.Market import Market
+ from Model.New_House import New_House
+@@ -38,9 +35,9 @@ from Model.Tile import Tile_Type
+ from random import seed, randint
+ from datetime import datetime, timedelta
+ import Controller.Communication as com
+-from Controller.property_possession import PropertyPossession
+-from Model.Player import Player
+ 
++
++# min par frame
+ TIME_PER_FRAME = 10
+ 
+ 
+@@ -64,8 +61,6 @@ def walker_type(w, to_num=True):
+ class Game:
+ 
+     def __init__(self, denarii):
+-        self.communication = com
+-        self.owner = Player()
+         self.map = Map()
+         self.denarii = denarii
+         self.population = 0
+@@ -90,7 +85,6 @@ class Game:
+         return string
+ 
+     def set_initial_map(self):
+-        self.prop = PropertyPossession(self.communication, self.map)
+         for y in range(0, MAP_DIM - MAP_DIM // 5):
+             for x in range(y // 2):
+                 self.build(x, y, Water)
+@@ -118,6 +112,7 @@ class Game:
+     def take_all_ownership(self, player):
+         self.map.take_all_ownership(player)
+ 
++    # return True if it was payed, else False
+     def pay(self, price):
+         if self.denarii >= price:
+             if price == 0:
+@@ -159,100 +154,80 @@ class Game:
+             for y in range(starty, endy):
+                 if not self.map.is_type(x, y, None):
+                     return
+-        if self.map.grid[posx][posy].owner is not com.ME:
+-            print("you're not owner")
+-            self.prop.modify_property(posx, posy)
+-
+-        if self.map.grid[posx][posy].owner is com.ME:
+-
+-            if type in (Engineer_Post, Forum, Fountain, Garden, Granary, Market, New_House,
+-                        Prefecture, Road, Senate, Well, Sign)\
+-                    and self.map.grid[posx][posy].type not in (Tile_Type.Field, Tile_Type.Grass):
+-                return
+ 
+-            if type in (Wheat_Farm,) and self.map.grid[posx][posy].type not in (Tile_Type.Field,):
+-                return
++        if type in (Engineer_Post, Forum, Fountain, Garden, Granary, Market, New_House,
++                    Prefecture, Road, Senate, Well, Sign)\
++                and self.map.grid[posx][posy].type not in (Tile_Type.Field, Tile_Type.Grass):
++            return
+ 
+-            if not force and not self.pay(building_data[type].price):
+-                return
+-            # if not self.prop.modify_property(tile=self.map.grid[posx][posy],player=None):
+-            #     pass
++        if type in (Wheat_Farm,) and self.map.grid[posx][posy].type not in (Tile_Type.Field,):
++            return
+ 
+-            self.map.build(posx, posy, type)
+-            # print(self.map)
++        if not force and not self.pay(building_data[type].price):
++            return
+ 
+-            building = self.map.grid[posx][posy].building
+-            building.communication = self.communication
++        self.map.build(posx, posy, type)
++        # print(self.map)
+ 
+-            if type == House:
+-                additional_population = building.population
+-                self.population += additional_population
+-                self.unemployed += additional_population
++        building = self.map.grid[posx][posy].building
+ 
+-            if type == Road:
+-                # check every building for road connection
+-                self.road_connect()
++        if type == House:
++            additional_population = building.population
++            self.population += additional_population
++            self.unemployed += additional_population
+ 
+-            else:
+-                # only check for the new building because it doesn't impact the others
+-                self.road_connect([building])
++        if type == Road:
++            # check every building for road connection
++            self.road_connect()
++        else:
++            # only check for the new building because it doesn't impact the others
++            self.road_connect([building])
+ 
+-            if not force and type not in (Water, Tree, Rock, Other_Rock, Sign):
+-                com.communication.build(posx, posy, building_type(type))
++        self.buildings.append(building)
+ 
+-            self.buildings.append(building)
++        if not force and type not in (Water, Tree, Rock, Other_Rock, Sign):
++            com.communication.build(posx, posy, building_type(type))
+ 
+     def destroy(self, posx, posy, force=False):
++        building = self.map.grid[posx][posy].building
++        if building is None:
++            return
+ 
+-        if self.map.grid[posx][posy].owner is not com.ME:
+-            print("you're not owner")
+-            self.prop.modify_property(posx, posy)
++        if isinstance(building, Sign):
++            return
+ 
++        building_type = type(building)
++        if building_type == Rock or building_type == Water or building_type == Other_Rock:
++            return
+ 
+-<< << << < HEAD
+         if not force and not self.pay(2):
+             return
+-== == == =
+-        if self.map.grid[posx][posy].owner is com.ME:
+-            building = self.map.grid[posx][posy].building
+-            if building is None:
+-                return
+-            if isinstance(building, Sign):
+-                return
+->>>>>> > ibtissam_main
+-
+-            building_type = type(building)
+-            if building_type == Rock or building_type == Water or building_type == Other_Rock:
+-                return
+-
+-            if not self.pay(2):
+-                return
+-
+-            if building_type == House:
+-                removed_population = building.population
+-                self.population -= removed_population
+-                self.unemployed -= removed_population
+-                m = Migrant(self.map, building, self.map.exit_point, leaving=True)
+-                self.walkers.append(m)
+-            self.unemployed += building.employees
+-
+-            if isinstance(building, Engineer_Post) and building.engineer is not None:
+-                self.remove_from_walkers(building.engineer)
+-            elif isinstance(building, Wheat_Farm) and building.farm_boy is not None:
+-                self.remove_from_walkers(building.farm_boy)
+-            elif isinstance(building, Forum) and building.tax_collector is not None:
+-                self.remove_from_walkers(building.tax_collector)
+-            elif isinstance(building, Market):
+-                if building.buyer is not None:
+-                    self.remove_from_walkers(building.buyer)
+-                if building.trader is not None:
+-                    self.remove_from_walkers(building.trader)
+-            elif isinstance(building, Prefecture) and building.prefect is not None:
+-                self.remove_from_walkers(building.prefect)
+-
+-            self.buildings.remove(building)
+-
+-            self.map.destroy(posx, posy)
++
++        if building_type == House:
++            removed_population = building.population
++            self.population -= removed_population
++            self.unemployed -= removed_population
++            m = Migrant(self.map, building, self.map.exit_point, leaving=True)
++            self.walkers.append(m)
++        self.unemployed += building.employees
++
++        if isinstance(building, Engineer_Post) and building.engineer is not None:
++            self.remove_from_walkers(building.engineer)
++        elif isinstance(building, Wheat_Farm) and building.farm_boy is not None:
++            self.remove_from_walkers(building.farm_boy)
++        elif isinstance(building, Forum) and building.tax_collector is not None:
++            self.remove_from_walkers(building.tax_collector)
++        elif isinstance(building, Market):
++            if building.buyer is not None:
++                self.remove_from_walkers(building.buyer)
++            if building.trader is not None:
++                self.remove_from_walkers(building.trader)
++        elif isinstance(building, Prefecture) and building.prefect is not None:
++            self.remove_from_walkers(building.prefect)
++
++        self.buildings.remove(building)
++
++        self.map.destroy(posx, posy)
+ 
+         if building_type == Road:
+             self.road_connect()
+@@ -261,7 +236,6 @@ class Game:
+             com.communication.destroy(posx, posy)
+ 
+     def job_hunt(self):
+-        
+         if self.unemployed < 0:
+             # a house got destroyed and its inhabitant were working, we need to
+             # remove them inhabitants from where they were working
+diff --git a/Model/Player.py b/Model/Player.py
+index 5e8ab0b..af34560 100644
+--- a/Model/Player.py
++++ b/Model/Player.py
+@@ -1,5 +1,4 @@
+ 
+ class Player():
+     def __init__(self):
+-        self.name = ""
+-        self.tilesNumber: int = 0
++        self.id = None
+diff --git a/Model/Tile.py b/Model/Tile.py
+index a84da3d..784b5c5 100644
+--- a/Model/Tile.py
++++ b/Model/Tile.py
+@@ -19,8 +19,6 @@ class Tile():
+         self.posx = posx
+         self.posy = posy
+         self.owner = None
+-    # def set_player(self,player):
+-    #     self.player = player
+ 
+     def __str__(self):
+         ret = "("
+diff --git a/Model/chat.py b/Model/chat.py
+deleted file mode 100644
+index d998d24..0000000
+--- a/Model/chat.py
++++ /dev/null
+@@ -1,22 +0,0 @@
+-import pygame
+-class Chat:
+-    def __init__(self, window, width, height, font, font_size):
+-        self.x = window
+-        self.width = width
+-        self.height = height
+-        self.font = font
+-        self.font_size = font_size
+-        self.messages = []
+-    
+-    def add_message(self, message):
+-        self.messages.append(message)
+-        if len(self.messages) > 10:
+-            self.messages.pop(0)
+-    
+-    def draw(self, surface):
+-        pygame.draw.rect(surface, (255, 255, 255), (self.x, self.y, self.width, self.height), 2)
+-        font = pygame.font.SysFont(self.font, self.font_size)
+-        for i, message in enumerate(self.messages):
+-            text = font.render(message, True, (255, 255, 255))
+-            surface.blit(text, (self.x + 5, self.y + 5 + i * (self.font_size + 5)))
+-
+diff --git a/Save/a b/Save/a
+new file mode 100644
+index 0000000..b1e3fb4
+Binary files /dev/null and b/Save/a differ
+diff --git a/Save/aa b/Save/aa
+new file mode 100644
+index 0000000..b1e3fb4
+Binary files /dev/null and b/Save/aa differ
+diff --git a/Save/b b/Save/b
+new file mode 100644
+index 0000000..b7efc3f
+Binary files /dev/null and b/Save/b differ
+diff --git a/Save/eza b/Save/eza
+new file mode 100644
+index 0000000..b1e3fb4
+Binary files /dev/null and b/Save/eza differ
+diff --git a/Save/sd b/Save/sd
+new file mode 100644
+index 0000000..b1e3fb4
+Binary files /dev/null and b/Save/sd differ
+diff --git a/View/Chat.py b/View/Chat.py
+deleted file mode 100644
+index 0975a16..0000000
+--- a/View/Chat.py
++++ /dev/null
+@@ -1,136 +0,0 @@
+-import pygame as pg
+-from Controller.Communication import Communication
+-
+-# text to print
+-FONT = pg.font.Font(None, 32)
+-FONT2 = pg.font.Font(None, 28)
+-
+-
+-
+-class Chat:
+-
+-    def __init__(self, window, window_width, window_height, communication):
+-        self.window = window
+-        self.window_width = window_width
+-        self.window_height = window_height
+-        self.width = 300
+-        self.height = 40
+-        self.chat_posx = 40
+-        self.chat_posy = window_height - 100
+-        self.message = ""
+-        self.input = ""
+-        self.memory = []
+-        # boolean to know when refresh screen
+-        self.new_input = True
+-        self.is_selected = False
+-        self.communication = communication
+-        self.chat = self.creation()
+-        self.chat_selected = self.creation_selected()
+-
+-    def update(self, now):
+-        mouse_pos = pg.mouse.get_pos()
+-        mouse_button_pressed = pg.mouse.get_pressed()
+-
+-        if mouse_button_pressed[0]:
+-            if (self.chat_posx <= mouse_pos[0] <= self.chat_posx + self.chat.get_width()) and (
+-                self.chat_posy <= mouse_pos[1] <= self.chat_posy + self.chat.get_height()):
+-                self.is_selected = True
+-            else:
+-                self.is_selected = False
+-        if self.is_selected:
+-            self.check_input(now)
+-        # can take control of chat with enter key
+-        else:
+-            for event in pg.event.get():
+-                if event.type == pg.KEYDOWN and event.key == pg.K_RETURN:
+-                    self.is_selected = True
+-        # if a message is sent, send it in peer to everyone and add it in memory
+-        if self.message:
+-            # self.communication.send(self.message)   
+-            self.memory.append((self.message, pg.time.get_ticks()))
+-            self.message = ""
+-
+-        if self.memory and now - self.memory[0][1] > 4000 :
+-            self.memory = self.memory[1:]
+-            
+-    def display(self, chat):
+-        now = pg.time.get_ticks()
+-        chat.update(now)
+-        self.display_message(now)
+-        self.display_input()
+-        if self.is_selected:
+-            self.window.blit(self.chat_selected, (self.chat_posx - 4, self.chat_posy -2))
+-        self.window.blit(self.chat, (self.chat_posx, self.chat_posy))
+-
+-
+-    def creation(self):
+-        c = pg.Surface((self.width, self.height))
+-        c.fill((150, 200, 200))
+-        # add text inside
+-        font = pg.font.Font(None, 36)
+-        text_surface = font.render("Chat:", True, (40, 40, 40))
+-        coordinate = text_surface.get_rect(center=c.get_rect().center)
+-        coordinate.x -= 115
+-        c.blit(text_surface, coordinate)
+-        return c
+-    
+-    def creation_selected(self):
+-        c = pg.Surface((self.width+8, self.height+4))
+-        c.fill((180, 200, 200))
+-        return c
+-    
+-    def check_input(self, now):
+-        for event in pg.event.get():
+-            if event.type == pg.KEYDOWN:
+-                if event.key == pg.K_BACKSPACE:
+-                    self.input = self.input[:-1]
+-                    self.chat = self.creation()
+-
+-                elif event.key == pg.K_ESCAPE:
+-                    self.is_selected = False
+-
+-                elif event.key == pg.K_RETURN and self.input:
+-                    self.message = self.input
+-                    self.input = ""
+-                    self.chat = self.creation()
+-                    
+-                else:
+-                    carac = event.dict['unicode']
+-                    # don't input the key enter in carac
+-                    if carac != '\r':
+-                        self.input = self.input + carac
+-                
+-                # self.new_input = True
+-
+-    def display_message(self, now):
+-        if self.memory: 
+-            # if there's just one word in memory
+-            if len(self.memory) == 1:
+-                text_surface = FONT2.render(self.memory[0][0] , True, (155, 175, 120))
+-                if now - self.memory[0][1] > 2000:
+-                    t = int(255*(2-(now - self.memory[0][1]) / 2000))
+-                    text_surface.set_alpha(t)
+-                elif now - self.memory[0][1] > 4000:
+-                    t = 0
+-                self.window.blit(text_surface, (self.chat_posx, self.chat_posy-40))
+-            else:
+-                for i in range(len(self.memory)):
+-                    text_surface = FONT2.render(self.memory[len(self.memory)-1-i][0] , True, (155, 175, 120))
+-                    # add the transparency on the text
+-                    if now - self.memory[len(self.memory)-1-i][1] > 2000:
+-                        t = int(255*(2-(now - self.memory[len(self.memory)-1-i][1]) / 2000))
+-                        text_surface.set_alpha(t)
+-                    elif now - self.memory[len(self.memory)-1-i][1] >= 4000:
+-                        t = 0
+-                        text_surface.set_alpha(t)
+-                    self.window.blit(text_surface, (self.chat_posx, self.chat_posy-40*(i+1)))
+-
+-    def display_input(self):
+-        if self.input and self.new_input:
+-            text_surface = FONT.render(self.input, True, (60, 50, 50))
+-            coordinate = text_surface.get_rect(centery=self.chat.get_rect().centery)
+-            coordinate.left = 75
+-            self.chat.blit(text_surface, coordinate)
+-            # self.window.blit(self.chat, (self.chat_posx, self.chat_posy))
+-            # self.new_input = False
+-    
+\ No newline at end of file
+diff --git a/View/PlayersConnect.py b/View/PlayersConnect.py
+deleted file mode 100644
+index 68f2884..0000000
+--- a/View/PlayersConnect.py
++++ /dev/null
+@@ -1,70 +0,0 @@
+-import pygame
+-import Controller.Menu
+-import sys
+-class PLayerConnected :
+-    def __init__(self, window, window_width, window_height):
+-        self.window = window
+-        self.window_width = window_width
+-        self.window_height  = window_height
+-        self.img_posx = window_width -420
+-        self.img_posy = +97
+-        
+-    def display(self):
+-        # from Controller.Menu import avatar_name
+-        avatar_image = pygame.image.load(f"./Images/play_menu/{Controller.Menu.avatar_name}.png").convert_alpha()
+-        avatar_image = pygame.transform.scale(avatar_image, (160, 160))
+-        avatar_rect = avatar_image.get_rect()
+-        avatar_rect.topright = (self.img_posx , self.img_posy)
+-
+-        font = pygame.font.Font(None, 30)
+-        text = font.render("My Avatar: " + Controller.Menu.avatar_name, True, (255, 0, 0))
+-        text_rect = text.get_rect()
+-        text_rect.center = (self.img_posx - avatar_image.get_width()/2, self.img_posy - 5)
+-        self.window.blit(avatar_image, avatar_rect)
+-        self.window.blit(text, text_rect)
+-        
+-    def show_players_connected(self, window):
+-        pygame.font.init()
+-        new_window = pygame.Surface((800, 500))
+-        background = pygame.image.load("./Images/back_connected.png").convert_alpha()
+-        background = pygame.transform.scale(background, new_window.get_size())
+-        new_window.blit(background, (0, 0))
+-        new_window_rect = new_window.get_rect(center=window.get_rect().center)
+-        font = pygame.font.Font(None, 50)
+-        caption = font.render("Connected Players", True, (255, 0, 0))
+-        caption_rect = caption.get_rect(center=(new_window.get_width() // 2, new_window.get_height() // 6))
+-        new_window.blit(caption, caption_rect)
+-        avatar_images = []
+-        avatar_names = []  # Liste pour stocker les noms des avatars
+-        for i in range(len(Controller.Menu.player_list)):
+-            player = Controller.Menu.player_list[i]
+-            name = player['avatar']
+-            avatar_names.append(name)
+-            avatar_image = pygame.image.load(f"./Images/play_menu/{name}.png").convert_alpha()
+-            avatar_image = pygame.transform.scale(avatar_image, (100, 100))
+-            avatar_images.append(avatar_image)
+-
+-        avatar_positions = []
+-        for i in range(len(Controller.Menu.player_list)):
+-            x = new_window.get_width() // (len(Controller.Menu.player_list) + 1) * (i + 1) - 50
+-            y = new_window.get_height() // 2 - 50
+-            avatar_positions.append((x, y))
+-
+-        running = True
+-        while running:
+-            for event in pygame.event.get():
+-                if event.type == pygame.QUIT:
+-                    running = False
+-                elif event.type == pygame.MOUSEBUTTONDOWN:
+-                        running = False
+-
+-          
+-            for i in range(len(avatar_images)):
+-                new_window.blit(avatar_images[i], avatar_positions[i])
+-                font = pygame.font.Font(None, 30)
+-                text = font.render(avatar_names[i], True, (255, 0, 0))  # Créer un objet texte avec le nom de l'avatar
+-                text_rect = text.get_rect(center=(avatar_positions[i][0] + 50, avatar_positions[i][1] + avatar_image.get_height() + 10))
+-                new_window.blit(text, text_rect)
+-
+-            window.blit(new_window, new_window_rect)
+-            pygame.display.flip()
+diff --git a/View/SideMenu.py b/View/SideMenu.py
+index 7dfbde6..8122e83 100644
+--- a/View/SideMenu.py
++++ b/View/SideMenu.py
+@@ -17,9 +17,8 @@ from Model.Well import Well
+ from Model.House import House
+ from Model.New_House import New_House
+ from Model.Map import Map, MAP_DIM
+-from View import PlayersConnect
+ 
+-# from Controller.List_Button import list_button
++#from Controller.List_Button import list_button
+ 
+ 
+ class Menu:
+@@ -47,7 +46,7 @@ class Menu:
+         variable = self.game.speed
+         font = pg.font.Font(None, 30)
+         self.speed_print = font.render(str(variable), 1, (255, 255, 255))
+-
++        
+         self.AddButtons()
+ 
+         return
+@@ -56,7 +55,7 @@ class Menu:
+         self.list_button = [
+             Button(self.window, "/Images/play_menu/paneling_00123.png", self.window_width - (self.coefficient
+                    * 149.117), self.window_height - (self.coefficient * 420), self.action, self.coefficient, New_House),
+-            Button(self.window, "/Images/Prefecture_00001.png", self.window_width - (self.coefficient * 99.26),
++             Button(self.window, "/Images/Prefecture_00001.png", self.window_width - (self.coefficient *99.26 ),
+                    self.window_height - (self.coefficient * 420), self.action, self.coefficient / 1.50, Prefecture),
+             Button(self.window, "/Images/EngineerPost_00001.png", self.window_width - (self.coefficient * 49.41),
+                    self.window_height - (self.coefficient * 420), self.action, self.coefficient / 1.75, Engineer_Post),
+@@ -79,12 +78,12 @@ class Menu:
+                    self.action, self.coefficient / 4, Granary),
+             Button(self.window, "/Images/Well_00001.png", self.window_width -
+                    (self.coefficient
+-                    * 65), self.window_height - (self.coefficient * 345), self.action,
++                   * 65), self.window_height - (self.coefficient * 345), self.action,
+                    self.coefficient / 2, Well),
+ 
+             Button(self.window, "/Images/Market_00001.png", self.window_width -
+                    (self.coefficient
+-                    * 99.26), self.window_height - (self.coefficient * 305), self.action,
++                   * 99.26), self.window_height - (self.coefficient * 305), self.action,
+                    self.coefficient / 2.5, Market),
+             Button(self.window, "/Images/Farm_00001.png", self.window_width - (self.coefficient
+                    * 149.117), self.window_height - (self.coefficient * 305),
+@@ -102,49 +101,39 @@ class Menu:
+ 
+             Button(self.window, "/Images/show_map.png", self.window_width -
+                    (self.coefficient
+-                    * 149.117), self.window_height - (self.coefficient * 270), self.changeOverlay,
++                   * 149.117), self.window_height - (self.coefficient * 270), self.changeOverlay,
+                    self.coefficient / 5, overlay=None),
+             Button(self.window, "/Images/show_grid.png", self.window_width -
+                    (self.coefficient
+-                    * 80), self.window_height - (self.coefficient * 270), self.showGrid,
++                   * 80), self.window_height - (self.coefficient * 270), self.showGrid,
+                    self.coefficient / 5),
+             Button(self.window, "/Images/collapse_overlay.png", self.window_width -
+                    (self.coefficient
+-                    * 149.117), self.window_height - (self.coefficient * 240), self.changeOverlay,
++                   * 149.117), self.window_height - (self.coefficient * 240), self.changeOverlay,
+                    self.coefficient / 10.5, overlay="Damage"),
+             Button(self.window, "/Images/fire_overlay.png", self.window_width -
+                    (self.coefficient
+-                    * 80), self.window_height - (self.coefficient * 240), self.changeOverlay,
++                   * 80), self.window_height - (self.coefficient * 240), self.changeOverlay,
+                    self.coefficient / 10.5, overlay="Fire"),
+             Button(self.window, "/Images/water_overlay.png", self.window_width -
+                    (self.coefficient
+-                    * 149.117), self.window_height - (self.coefficient * 220), self.changeOverlay,
++                   * 149.117), self.window_height - (self.coefficient * 220), self.changeOverlay,
+                    self.coefficient / 10.5, overlay="Water"),
+-            Button(self.window, "/Images/Show_Tile.png", self.window_width -
+-                   (self.coefficient
+-                    * 158.117), self.window_height - (self.coefficient * 25), self.changeOverlay,
+-                   self.coefficient / 9.5, overlay="Tile"),
+-            Button(self.window, "/Images/Connected_Player.png", self.window_width - 580, self.window_height-1035, self.showPlayers,
+-                   self.coefficient / 9.5),
+-
+             Button(self.window, "/Images/desirability_overlay.png", self.window_width -
+                    (self.coefficient
+-                    * 80), self.window_height - (self.coefficient * 220), self.changeOverlay,
++                   * 80), self.window_height - (self.coefficient * 220), self.changeOverlay,
+                    self.coefficient / 10.5, overlay="Desirability")
+-
++            
+ 
+         ]
+ 
+     def display(self):
+         font = pg.font.Font(None, 30)
+-        self.speed_print = font.render(
+-            "speed : "+str(int(self.game.speed*100))+"%", 1, (0, 0, 0))
+-
+-        self.window.blit(self.pannelMenu, (self.window_width -
+-                         (self.imgWidth*self.coefficient), 0))
++        self.speed_print = font.render("speed : "+str(int(self.game.speed*100))+"%", 1, (0, 0, 0))
++        
++        self.window.blit(self.pannelMenu, (self.window_width-(self.imgWidth*self.coefficient),0))
+ 
+-        self.window.blit(self.speed_print,
+-                         (self.window_width-200, self.window_height-50))
++        self.window.blit(self.speed_print, (self.window_width-200,self.window_height-50))
+ 
+         for button in self.list_button:
+             button.display()
+@@ -153,26 +142,28 @@ class Menu:
+     def action(self, building, init_pos, final_pos):
+         init_pos = self.isoToCart(init_pos)
+         final_pos = self.isoToCart(final_pos)
+-        # print("positions sur la carte : ", final_pos, init_pos)
++        #print("positions sur la carte : ", final_pos, init_pos)
+         if final_pos[0] >= MAP_DIM or final_pos[1] >= MAP_DIM or init_pos[0] >= MAP_DIM or init_pos[1] >= MAP_DIM:
+             return
+ 
+         if final_pos[0] < 0 or final_pos[1] < 0 or init_pos[0] < 0 or init_pos[1] < 0:
+             return
+ 
+-        if building == Senate:
++        if building == Senate :
+             self.game.build(init_pos[1], init_pos[0], building)
+             return
+-
+-        if building == Wheat_Farm:
++        
++        if building == Wheat_Farm :
+             self.game.build(init_pos[1], init_pos[0], building)
+             return
+-
+-        if (final_pos == init_pos):
++        
++        if(final_pos == init_pos):
+             if building == "destroy":
+                 self.game.destroy(final_pos[1], final_pos[0])
+             else:
+                 self.game.build(final_pos[1], final_pos[0], building)
++        
++
+ 
+         if init_pos[0] <= final_pos[0]:
+             mini_x = init_pos[0]
+@@ -197,23 +188,15 @@ class Menu:
+                     self.game.build(mini_y, mini_x, building)
+                 mini_x += 1
+             mini_x = old_mini_x
+-            mini_y += 1
++            mini_y+=1
+         return
+ 
++
+     def changeOverlay(self, option):
+-        self.visualizer.overlayType = option
++        self.visualizer.overlayType=option
+         return
++    
+ 
+     def showGrid(self):
+-        self.visualizer.showGrid = not self.visualizer.showGrid
++        self.visualizer.showGrid= not self.visualizer.showGrid 
+         return
+-    
+-    # def showPlayers(self):
+-    #     self.playersConnect.show_players_connected()
+-    def showPlayers(self):
+-        if self.visualizer.showPlayers :
+-            self.visualizer.showPlayers = False
+-        else:
+-            
+-            self.visualizer.showPlayers = True
+-
+diff --git a/View/Visualizer.py b/View/Visualizer.py
+index 66cb8f9..952efb7 100644
+--- a/View/Visualizer.py
++++ b/View/Visualizer.py
+@@ -2,7 +2,6 @@ from operator import imod
+ from turtle import window_width
+ import pygame as pg
+ import tkinter as tk
+-import pygame
+ 
+ from Controller.barre_jeu import Barre
+ from Model.Engineer_Post import Engineer_Post
+@@ -41,11 +40,10 @@ from Controller.Button import Button
+ from View.FileMenu import FileMenu
+ from View.SideMenu import Menu
+ from View.Minimap import Minimap
+-from View.Chat import Chat
+-import Controller.Communication as com
++
+ from Model.Tree import Tree
+ from Model.Water import Water
+-from View.PlayersConnect import PLayerConnected
++
+ 
+ # Get full screen size
+ root = tk.Tk()
+@@ -90,11 +88,11 @@ class Visualizer:
+     GAME_HEIGHT = WINDOW_HEIGHT
+     zoom = DEFAULT_ZOOM
+     MODE_FILE_MENU = False
+-    showPlayers = False
++
+     buildingMode = False
+ 
+-    def __init__(self, list_button, game, backup, communication):
+-        # Create pg window
++    def __init__(self, list_button, game, backup):
++        # Create pygame window
+         self.game = game
+         global WINDOW_HEIGHT, WINDOW_WIDTH
+         self.window = pg.display.set_mode(
+@@ -102,8 +100,6 @@ class Visualizer:
+         WINDOW_WIDTH, WINDOW_HEIGHT = self.window.get_size()
+         self.GAME_WIDTH = WINDOW_WIDTH
+         self.GAME_HEIGHT = WINDOW_HEIGHT
+-        self.imgavatar = PLayerConnected(self.window, WINDOW_WIDTH, WINDOW_HEIGHT)
+-
+         self.menu = Menu(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, self.game, self.isoToCart, self)
+         self.menu_displayed = False
+         self.list_button = list_button
+@@ -114,8 +110,6 @@ class Visualizer:
+         self.fileMenu = FileMenu(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, backup, game)
+         #self.images = dict()
+         self.minimap = Minimap(self.window, WINDOW_WIDTH, WINDOW_HEIGHT)
+-
+-        # self.chat = Chat(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, communication)
+         self.loadImages()
+         return
+ 
+@@ -129,9 +123,7 @@ class Visualizer:
+                     size = cellSizeDict[zoom]
+                     self.images[zoom][filename] = pg.transform.scale(
+                         i, (i.get_width() * zoom / DEFAULT_ZOOM, i.get_height() * zoom / DEFAULT_ZOOM))
+-    def is_owner(self,MAP, x, y):
+-        return MAP.grid[x][y].owner == com.ME
+-        
++
+     def update(self, map, walkers):
+         self.list_button = []
+         # Edge of each cell of the grid is 20px in cartesian
+@@ -168,19 +160,11 @@ class Visualizer:
+ 
+         self.minimap.display(map, self.deplacementX + self.tmpDeplacementX,
+                              self.deplacementY + self.tmpDeplacementY)
+-        self.imgavatar.display()
+-        
+-        # self.chat.display(self.chat)
+ 
+         # Draw game barre
+         self.barre.barre_function(self.game.denarii, self.game.population, self.game.date)
+         self.list_button = (set(self.list_button) | set([self.barre.fileButton]))
+ 
+-        if self.showPlayers:
+-            self.imgavatar.show_players_connected(self.window)
+-            self.showPlayers= False
+-            pygame.display.update()
+-        
+         return self.list_button
+ 
+     def update_walker(self, w, cellSize, tileDIM, origin):
+@@ -388,25 +372,22 @@ class Visualizer:
+         for row in range(MAP_DIM):
+             for column in range(MAP_DIM):
+                 if MAP.is_type(column, row, Road):
+-                    if self.overlayType == 'Tile':
+-                            self.showPlayerCase(MAP, row, column,tileDIM, origin) 
+-                    else:
+-                        roadType = 0
+-                        roadType += 1 if (column >
+-                                        0 and MAP.is_type(column - 1, row, Road)) else 0
+-                        roadType += 2 if (row > 0 and MAP.is_type(column, row - 1, Road)) else 0
+-                        roadType += 4 if (column <
+-                                        MAP_DIM and MAP.is_type(column + 1, row, Road)) else 0
+-                        roadType += 8 if (row <
+-                                        MAP_DIM and MAP.is_type(column, row + 1, Road)) else 0
+-                        if roadType == 0:
+-                            roadType = 5
+-                        imgCode = '000' + (f'0{roadType}' if roadType < 10 else f'{roadType}')
+-                        imgName = 'Road'
+-                        compenX = cellSize
+-                        compenY = 0
+-                        self.displayImage(row, column, tileDIM, origin,
+-                                        imgName, imgCode, compenX, compenY)
++                    roadType = 0
++                    roadType += 1 if (column >
++                                      0 and MAP.is_type(column - 1, row, Road)) else 0
++                    roadType += 2 if (row > 0 and MAP.is_type(column, row - 1, Road)) else 0
++                    roadType += 4 if (column <
++                                      MAP_DIM and MAP.is_type(column + 1, row, Road)) else 0
++                    roadType += 8 if (row <
++                                      MAP_DIM and MAP.is_type(column, row + 1, Road)) else 0
++                    if roadType == 0:
++                        roadType = 5
++                    imgCode = '000' + (f'0{roadType}' if roadType < 10 else f'{roadType}')
++                    imgName = 'Road'
++                    compenX = cellSize
++                    compenY = 0
++                    self.displayImage(row, column, tileDIM, origin,
++                                      imgName, imgCode, compenX, compenY)
+                 elif MAP.is_type(column, row, None):
+                     if self.overlayType == 'Desirability':
+                         desirabilityLevel = MAP.grid[column][row].desirability
+@@ -500,9 +481,6 @@ class Visualizer:
+                             desirabilityLevel = MAP.grid[column][row].building.tile.desirability
+                             self.showDesirabilityLevel(
+                                 row, column, tileDIM, origin, desirabilityLevel)
+-                        elif self.overlayType == 'Tile':
+-                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
+-                
+                         else:
+                             houseNames = {
+                                 1: 'SmallTent', 2: 'LargeTent', 3: 'SmallShack', 4: 'LargeShack'}
+@@ -565,9 +543,6 @@ class Visualizer:
+                             desirabilityLevel = MAP.grid[column][row].building.tile.desirability
+                             self.showDesirabilityLevel(
+                                 row, column, tileDIM, origin, desirabilityLevel)
+-                        elif self.overlayType == 'Tile':
+-                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
+-                
+                         else:
+                             imgName = 'NewHouse'
+                             imgCode = '00001'
+@@ -576,116 +551,103 @@ class Visualizer:
+                             self.displayImage(row, column, tileDIM, origin,
+                                               imgName, imgCode, compenX, compenY)
+                     case Water():
+-                        if self.overlayType == 'Tile':
+-                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
+-                        else:
+-                            isSea = True
+-                            for dx in range(-1, 2, 1):
++                        isSea = True
++                        for dx in range(-1, 2, 1):
++                            if not isSea:
++                                break
++                            for dy in range(-1, 2, 1):
+                                 if not isSea:
+                                     break
+-                                for dy in range(-1, 2, 1):
+-                                    if not isSea:
+-                                        break
+-                                    # col = x, row = y
+-                                    x = column + dx
+-                                    y = row + dy
+-                                    if x < 0 or y < 0 or x >= MAP_DIM or y >= MAP_DIM:
+-                                        continue
+-                                    if not isinstance(MAP.grid[x][y].building, Water):
+-                                        isSea = False
+-                                        break
+-                            if isSea:
+-                                imgName = 'Land1a'
+-                                imgCode = '00' + \
+-                                    str(MAP.grid[column][row].building.type)
+-                                compenX = cellSize
+-                                compenY = 0
+-                                self.displayImage(
+-                                    row, column, tileDIM, origin, imgName, imgCode, compenX, compenY)
+-                            else:
+-                                posd = {3: [0, -1],
+-                                        2: [1, 0], 
+-                                        1: [0, 1], 
+-                                        0: [-1, 0]}
+-                                posMark = []
+-                                for i in range(len(posd)):
+-                                    dx, dy = posd[i]
+-                                    x = column + dx
+-                                    y = row + dy
+-                                    if x < 0 or y < 0 or x >= MAP_DIM or y >= MAP_DIM or \
+-                                            MAP.is_type(x, y, Water):
+-                                        posMark.append(i)
+-                                posMark.sort()
+-                                # print(column, row, posMark)
+-                                imgName = 'Land1a'
+-                                # Incomplete
+-                                match tuple(posMark):
+-                                    case ():
+-                                        imgCode = '00199'
+-                                    case (0, 1):
+-                                        imgCode = '00144'
+-                                    case (0, 1, 3):
+-                                        imgCode = '00130'
+-                                    case (0, 2, 3):
+-                                        imgCode = '00143'
+-                                    case (0, 3):
+-                                        imgCode = '00157'
+-                                    case (0, 1, 2, 3):
+-                                        imgCode = '00001'
+-                                        if not MAP.is_type(column + 1, row - 1, Water):
+-                                            imgCode = '00170'
+-                                    case _:
+-                                        imgCode = '00001'
+-                                compenX = cellSize
+-                                compenY = 0
+-                                self.displayImage(
+-                                    row, column, tileDIM, origin, imgName, imgCode, compenX, compenY)
+-                    case Tree():
+-                        if self.overlayType == 'Tile':
+-                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
+-                        else:
++                                # col = x, row = y
++                                x = column + dx
++                                y = row + dy
++                                if x < 0 or y < 0 or x >= MAP_DIM or y >= MAP_DIM:
++                                    continue
++                                if not isinstance(MAP.grid[x][y].building, Water):
++                                    isSea = False
++                                    break
++                        if isSea:
+                             imgName = 'Land1a'
+-                            compenX = cellSize * \
+-                                MAP.grid[column][row].building.compenX
+-                            compenY = cellSize * \
+-                                MAP.grid[column][row].building.compenY
+-                            imgCode = '000' + \
++                            imgCode = '00' + \
+                                 str(MAP.grid[column][row].building.type)
++                            compenX = cellSize
++                            compenY = 0
+                             self.displayImage(
+                                 row, column, tileDIM, origin, imgName, imgCode, compenX, compenY)
+-                    case Rock():
+-                        if self.overlayType == 'Tile':
+-                            self.showPlayerCase(MAP, row, column,tileDIM, origin) 
+                         else:
++                            posd = {3: [0, -1],
++                                    2: [1, 0],
++                                    1: [0, 1],
++                                    0: [-1, 0]}
++                            posMark = []
++                            for i in range(len(posd)):
++                                dx, dy = posd[i]
++                                x = column + dx
++                                y = row + dy
++                                if x < 0 or y < 0 or x >= MAP_DIM or y >= MAP_DIM or \
++                                        MAP.is_type(x, y, Water):
++                                    posMark.append(i)
++                            posMark.sort()
++                            # print(column, row, posMark)
+                             imgName = 'Land1a'
+-                            compenX = cellSize * \
+-                                MAP.grid[column][row].building.compenX
+-                            compenY = cellSize * \
+-                                MAP.grid[column][row].building.compenY
+-                            imgCode = '00' + \
+-                                str(MAP.grid[column][row].building.type)
+-
+-                            self.displayImage(row, column, tileDIM, origin,
+-                                            imgName, imgCode, compenX, compenY)
+-                            imgCode = '00' + str(MAP.grid[column][row].building.type)
+-                            self.displayImage(row, column, tileDIM, origin,
+-                                            imgName, imgCode, compenX, compenY)
++                            # Incomplete
++                            match tuple(posMark):
++                                case ():
++                                    imgCode = '00199'
++                                case (0, 1):
++                                    imgCode = '00144'
++                                case (0, 1, 3):
++                                    imgCode = '00130'
++                                case (0, 2, 3):
++                                    imgCode = '00143'
++                                case (0, 3):
++                                    imgCode = '00157'
++                                case (0, 1, 2, 3):
++                                    imgCode = '00001'
++                                    if not MAP.is_type(column + 1, row - 1, Water):
++                                        imgCode = '00170'
++                                case _:
++                                    imgCode = '00001'
++                            compenX = cellSize
++                            compenY = 0
++                            self.displayImage(
++                                row, column, tileDIM, origin, imgName, imgCode, compenX, compenY)
++                    case Tree():
++                        imgName = 'Land1a'
++                        compenX = cellSize * \
++                            MAP.grid[column][row].building.compenX
++                        compenY = cellSize * \
++                            MAP.grid[column][row].building.compenY
++                        imgCode = '000' + \
++                            str(MAP.grid[column][row].building.type)
++                        self.displayImage(
++                            row, column, tileDIM, origin, imgName, imgCode, compenX, compenY)
++                    case Rock():
++                        imgName = 'Land1a'
++                        compenX = cellSize * \
++                            MAP.grid[column][row].building.compenX
++                        compenY = cellSize * \
++                            MAP.grid[column][row].building.compenY
++                        imgCode = '00' + \
++                            str(MAP.grid[column][row].building.type)
++                        self.displayImage(row, column, tileDIM, origin,
++                                          imgName, imgCode, compenX, compenY)
++                        imgCode = '00' + str(MAP.grid[column][row].building.type)
++                        self.displayImage(row, column, tileDIM, origin,
++                                          imgName, imgCode, compenX, compenY)
+                     case Other_Rock():
+-                        if self.overlayType == 'Tile':
+-                            self.showPlayerCase(MAP, row, column,tileDIM, origin) 
+-                        else:
+-                            imgName = 'plateau'
+-                            compenX = cellSize * \
+-                                MAP.grid[column][row].building.compenX
+-                            compenY = cellSize * \
+-                                MAP.grid[column][row].building.compenY
+-                            imgCode = '0000' + \
+-                                str(MAP.grid[column][row].building.type)
+-                            self.displayImage(row, column, tileDIM, origin,
+-                                            imgName, imgCode, compenX, compenY)
+-                            imgCode = '0000' + str(MAP.grid[column][row].building.type)
+-                            self.displayImage(row, column, tileDIM, origin,
+-                                            imgName, imgCode, compenX, compenY)
++                        imgName = 'plateau'
++                        compenX = cellSize * \
++                            MAP.grid[column][row].building.compenX
++                        compenY = cellSize * \
++                            MAP.grid[column][row].building.compenY
++                        imgCode = '0000' + \
++                            str(MAP.grid[column][row].building.type)
++                        self.displayImage(row, column, tileDIM, origin,
++                                          imgName, imgCode, compenX, compenY)
++                        imgCode = '0000' + str(MAP.grid[column][row].building.type)
++                        self.displayImage(row, column, tileDIM, origin,
++                                          imgName, imgCode, compenX, compenY)
+                     case Prefecture():
+                         if MAP.grid[column][row].building.burning:
+                             imgName = 'Collapsed'
+@@ -724,9 +686,6 @@ class Visualizer:
+                             desirabilityLevel = MAP.grid[column][row].building.tile.desirability
+                             self.showDesirabilityLevel(
+                                 row, column, tileDIM, origin, desirabilityLevel)
+-                        elif self.overlayType == 'Tile':
+-                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
+-                        
+                         else:
+                             imgName = 'Prefecture'
+                             imgCode = '00001'
+@@ -760,15 +719,12 @@ class Visualizer:
+                         # self.displayImage(row, column, tileDIM, origin,
+                                           # imgName, imgCode, compenX, compenY)
+                     case Collapsed():
+-                        if self.overlayType == 'Tile':
+-                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
+-                        else:
+-                            imgName = 'Collapsed'
+-                            imgCode = '00001'
+-                            compenX = cellSize
+-                            compenY = 0
+-                            self.displayImage(row, column, tileDIM, origin,
+-                                            imgName, imgCode, compenX, compenY)
++                        imgName = 'Collapsed'
++                        imgCode = '00001'
++                        compenX = cellSize
++                        compenY = 0
++                        self.displayImage(row, column, tileDIM, origin,
++                                          imgName, imgCode, compenX, compenY)
+                     case Engineer_Post():
+                         if MAP.grid[column][row].building.burning:
+                             imgName = 'Collapsed'
+@@ -807,9 +763,6 @@ class Visualizer:
+                             desirabilityLevel = MAP.grid[column][row].building.tile.desirability
+                             self.showDesirabilityLevel(
+                                 row, column, tileDIM, origin, desirabilityLevel)
+-                        elif self.overlayType == 'Tile':
+-                            self.showPlayerCase(MAP,
+-                                row, column, tileDIM, origin,)
+                         else:
+                             imgName = 'EngineerPost'
+                             imgCode = '00001'
+@@ -874,8 +827,6 @@ class Visualizer:
+                             desirabilityLevel = MAP.grid[column][row].building.tile.desirability
+                             self.showDesirabilityLevel(
+                                 row, column, tileDIM, origin, desirabilityLevel)
+-                        elif self.overlayType == 'Tile':
+-                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
+                         elif MAP.grid[column][row].building.tile.posy == row and MAP.grid[column][row].building.tile.posx == column:
+                             imgName = 'Farm'
+                             imgCode = '00001'
+@@ -952,8 +903,6 @@ class Visualizer:
+                             desirabilityLevel = MAP.grid[column][row].building.tile.desirability
+                             self.showDesirabilityLevel(
+                                 row, column, tileDIM, origin, desirabilityLevel)
+-                        elif self.overlayType == 'Tile':
+-                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
+                         elif MAP.grid[column][row].building.tile.posy == row and MAP.grid[column][row].building.tile.posx == column:
+                             # print(row, column)
+                             imgName = 'Market'
+@@ -1011,8 +960,6 @@ class Visualizer:
+                             desirabilityLevel = MAP.grid[column][row].building.tile.desirability
+                             self.showDesirabilityLevel(
+                                 row, column, tileDIM, origin, desirabilityLevel)
+-                        elif self.overlayType == 'Tile':
+-                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
+                         elif MAP.grid[column][row].building.tile.posy == row and MAP.grid[column][row].building.tile.posx == column:
+                             imgName = 'GranaryBase'
+                             imgCode = '00001'
+@@ -1089,8 +1036,6 @@ class Visualizer:
+                             desirabilityLevel = MAP.grid[column][row].building.tile.desirability
+                             self.showDesirabilityLevel(
+                                 row, column, tileDIM, origin, desirabilityLevel)
+-                        if self.overlayType == 'Tile':
+-                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
+                         else:
+                             imgName = 'Well'
+                             imgCode = '00001'
+@@ -1099,49 +1044,34 @@ class Visualizer:
+                             self.displayImage(row, column, tileDIM, origin,
+                                               imgName, imgCode, compenX, compenY)
+                     case Sign():
+-                        if self.overlayType == 'Tile':
+-                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
++                        imgName = 'Sign_'
++                        if MAP.grid[column][row].building.type == Sign_Type.Enter:
++                            imgName += 'Enter'
+                         else:
+-                            imgName = 'Sign_'
+-                            if MAP.grid[column][row].building.type == Sign_Type.Enter:
+-                                imgName += 'Enter'
+-                            else:
+-                                imgName += 'Exit'
+-                            imgCode = 'se'
+-                            compenX = cellSize * 31 / 32
+-                            compenY = cellSize * 5 / 8
+-                            self.displayImage(row, column, tileDIM, origin,
+-                                            imgName, imgCode, compenX, compenY)
+-                    case None:
+-                        match MAP.grid[column][row].type:
+-                            case Tile_Type.Water:  
+-                                if self.overlayType == 'Tile':
+-                                    self.showPlayerCase(MAP,row, column,tileDIM, origin) 
+-                                else:pass
+-                            case Tile_Type.Mountain:
+-                                if self.overlayType == 'Tile':
+-                                    self.showPlayerCase(MAP,row, column,tileDIM, origin) 
+-                                else:pass
+-                            case Tile_Type.Field:
+-                                if self.overlayType == 'Tile':
+-                                    self.showPlayerCase(MAP,row, column,tileDIM, origin) 
+-                                else:
+-                                    imgName = 'Field'
+-                                    imgCode = '00001'
+-                                    compenX = cellSize * 31 / 32
+-                                    compenY = cellSize / 16
+-                                    self.displayImage(row, column, tileDIM, origin,
+-                                                        imgName, imgCode, compenX, compenY)
+-                            case Tile_Type.Grass:
+-                                if self.overlayType == 'Tile':
+-                                    self.showPlayerCase(MAP,row, column,tileDIM, origin) 
+-                                else:
+-                                    imgName = 'Grass'
+-                                    imgCode = '00010'
+-                                    compenX = cellSize
+-                                    compenY = 0
+-                                    self.displayImage(MAP,row, column, tileDIM, origin,
+-                                                    imgName, imgCode, compenX, compenY)
++                            imgName += 'Exit'
++                        imgCode = 'se'
++                        compenX = cellSize * 31 / 32
++                        compenY = cellSize * 5 / 8
++                        self.displayImage(row, column, tileDIM, origin,
++                                          imgName, imgCode, compenX, compenY)
++                    # case None:
++                        # match MAP.grid[column][row].type:
++                            # case Tile_Type.Water: pass
++                            # case Tile_Type.Mountain: pass
++                            # case Tile_Type.Field:
++                                # imgName = 'Field'
++                                # imgCode = '00001'
++                                # compenX = cellSize * 31 / 32
++                                # compenY = cellSize / 16
++                                # self.displayImage(row, column, tileDIM, origin,
++                                                  # imgName, imgCode, compenX, compenY)
++                            # case Tile_Type.Grass:
++                                # imgName = 'Grass'
++                                # imgCode = '00010'
++                                # compenX = cellSize
++                                # compenY = 0
++                                # self.displayImage(row, column, tileDIM, origin,
++                                                  # imgName, imgCode, compenX, compenY)
+                     case Senate():
+                         if MAP.grid[column][row].building.burning:
+                             imgName = 'Collapsed'
+@@ -1191,8 +1121,6 @@ class Visualizer:
+                             desirabilityLevel = MAP.grid[column][row].building.tile.desirability
+                             self.showDesirabilityLevel(
+                                 row, column, tileDIM, origin, desirabilityLevel)
+-                        elif self.overlayType == 'Tile':
+-                                    self.showPlayerCase(MAP,row, column,tileDIM, origin) 
+                         elif MAP.grid[column][row].building.tile.posy == row and MAP.grid[column][row].building.tile.posx == column:
+                             imgName = 'Senate'
+                             imgCode = '00001'
+@@ -1247,8 +1175,6 @@ class Visualizer:
+                             covered = MAP.grid[column][row].building.water_coverage
+                             self.showWaterCoverage(
+                                 row, column, tileDIM, origin, posType, covered)
+-                        elif self.overlayType == 'Tile':
+-                            self.showPlayerCase(MAP, row, column,tileDIM, origin) 
+                         else:
+                             imgName = 'Garden'
+                             imgCode = '00001'
+@@ -1305,8 +1231,6 @@ class Visualizer:
+                             desirabilityLevel = MAP.grid[column][row].building.tile.desirability
+                             self.showDesirabilityLevel(
+                                 row, column, tileDIM, origin, desirabilityLevel)
+-                        elif self.overlayType == 'Tile':
+-                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
+                         elif MAP.grid[column][row].building.tile.posy == row and MAP.grid[column][row].building.tile.posx == column:
+                             imgName = 'Forum'
+                             imgCode = '00001'
+@@ -1352,8 +1276,6 @@ class Visualizer:
+                                 riskLevel = 0
+                             self.showBurnCollapseRisk(
+                                 row, column, tileDIM, origin, posType, riskLevel)
+-                        elif self.overlayType == 'Tile':
+-                            self.showPlayerCase(MAP,row, column,tileDIM, origin) 
+                         else:
+                             imgName = 'Fountain'
+                             imgCode = '00001'
+@@ -1663,21 +1585,7 @@ class Visualizer:
+             compenY = 0
+             self.displayImage(row, column, tileDIM, origin,
+                               imgName, imgCode, compenX, compenY)
+-    def showPlayerCase(self,MAP, row, column, tileDIM, origin):
+-        if  self.is_owner( MAP,row, column):
+-            imgName = 'player_case'
+-            compenX = tileDIM
+-            compenY = 0
+-            imgCode =''
+-            self.displayImage(row, column, tileDIM, origin, imgName,imgCode, compenX, compenY)
+-        else:
+-            imgName = 'other_player_case'
+-            imgCode =''
+-            compenX = tileDIM
+-            compenY = 0
+-            self.displayImage(row, column, tileDIM, origin, imgName,imgCode, compenX, compenY)
+ 
+-    
+     def showDesirabilityLevel(self, row, column, tileDim, origin, desirabilityLevel):
+         desirabilityLevel = desirabilityLevel // 4
+         if desirabilityLevel < -3:
+@@ -1709,13 +1617,7 @@ class Visualizer:
+                 imgCode = f'0000{desirabilityLevel + 3}'
+             [compenX, compenY] = compenVal[desirabilityLevel]
+         self.displayImage(row, column, tileDim, origin,
+-    
+                           imgName, imgCode, compenX, compenY)
+-   
+-
+-
+-
+-
+ 
+ # Things left to render:
+ # Granary's Crane
+diff --git a/main.py b/main.py
+index 328343d..7713856 100644
+--- a/main.py
++++ b/main.py
+@@ -6,4 +6,5 @@ if __name__ == '__main__':
+     pg.display.set_caption("Caesar3")
+     run()
+     #Controller(Backup().load("new"))
+-    exit(0)
+\ No newline at end of file
++    exit(0)
++

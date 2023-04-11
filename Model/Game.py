@@ -200,8 +200,10 @@ class Game:
                 # only check for the new building because it doesn't impact the others
                 self.road_connect([building])
 
-            if type not in (Water, Tree, Rock, Other_Rock, Sign):
-                com.communication.build(posx, posy, building_type(type))
+        self.buildings.append(building)
+
+        if not force and type not in (Water, Tree, Rock, Other_Rock, Sign):
+            com.communication.build(posx, posy, building_type(type))
 
             self.buildings.append(building)
     
@@ -223,8 +225,8 @@ class Game:
             if building_type == Rock or building_type == Water or building_type == Other_Rock:
                 return
 
-            if not self.pay(2):
-                return
+        if not force and not self.pay(2):
+            return
 
             if building_type == House:
                 removed_population = building.population
@@ -255,7 +257,8 @@ class Game:
         if building_type == Road:
             self.road_connect()
 
-        com.communication.destroy(posx, posy)
+        if not force:
+            com.communication.destroy(posx, posy)
 
     def job_hunt(self):
         

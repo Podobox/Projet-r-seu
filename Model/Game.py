@@ -86,7 +86,7 @@ class Game:
         return string
 
     def set_initial_map(self):
-        self.prop  = PropertyPossession(com.communication , self.map)
+        self.prop = PropertyPossession(com.communication, self.map)
         for y in range(0, MAP_DIM - MAP_DIM // 5):
             for x in range(y // 2):
                 self.build(x, y, Water)
@@ -159,13 +159,11 @@ class Game:
             for y in range(starty, endy):
                 if not self.map.is_type(x, y, None):
                     return
-        if self.map.grid[posx][posy].owner is not com.ME:
+        if not force and self.map.grid[posx][posy].owner is not com.ME:
             print("you're not owner")
             self.prop.modify_property(posx, posy)
 
-        if self.map.grid[posx][posy].owner is  com.ME:
-
-
+        if force or self.map.grid[posx][posy].owner is com.ME:
 
             if type in (Engineer_Post, Forum, Fountain, Garden, Granary, Market, New_House,
                         Prefecture, Road, Senate, Well, Sign)\
@@ -201,12 +199,11 @@ class Game:
                 com.communication.build(posx, posy, building_type(type))
 
     def destroy(self, posx, posy, force=False):
-        if self.map.grid[posx][posy].owner is not com.ME:
+        if not force and self.map.grid[posx][posy].owner is not com.ME:
             print("you're not owner")
             self.prop.modify_property(posx, posy)
 
-        if self.map.grid[posx][posy].owner is  com.ME:
-
+        if force or self.map.grid[posx][posy].owner is com.ME:
 
             building = self.map.grid[posx][posy].building
             if building is None:

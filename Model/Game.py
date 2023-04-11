@@ -392,6 +392,7 @@ class Game:
 
     def check_evolution(self):
         for b in self.buildings:
+            
             if isinstance(b, House) and b.tile.owner is com.ME:
                 diff = b.evolve()
                 if diff != 0:
@@ -405,8 +406,8 @@ class Game:
                 self.unemployed += diff
             elif isinstance(b, New_House) and b.tile.owner is com.ME:
                 if self.map.entry_point is not None and b.migrate(self.map):
-                    com.communication.walker_spawn(self.map.entry_point.tile.posx,
-                                                   self.map.entry_point.tile.posy,
+                    com.communication.walker_spawn(b.tile.posx,
+                                                   b.tile.posy,
                                                    walker_type(Migrant))
                     self.add_to_walkers(b.migrant)
 
@@ -444,9 +445,9 @@ class Game:
                         self.denarii += 2
                         com.communication.collect_money(2)
                         x, y = w.house.tile.posx, w.house.tile.posy
+                        self.remove_from_walkers(w)
                         self.destroy(x, y)
                         self.build(x, y, House)
-                        self.remove_from_walkers(w)
                     case Action.DESTROY_SELF:
                         match w:
                             case Market_Buyer():

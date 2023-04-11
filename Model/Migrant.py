@@ -9,7 +9,7 @@ class Migrant(Destination_Walkers):
         self.destination = (dest_house.tile.posx, dest_house.tile.posy)
         self.house = self.map.grid[self.destination[0]][self.destination[1]].building
         self.leaving = leaving
-        self.building = spawn
+        self.building = self.house
 
     def __repr__(self):
         return "Migrant"
@@ -20,7 +20,7 @@ class Migrant(Destination_Walkers):
         return string
 
     def find_destination(self, action):
-        if not self.leaving and self.house.tile.building is not self.house:
+        if action and not self.leaving and self.house.tile.building is not self.house:
             self.destination = (self.map.exit_point.tile.posx,
                                 self.map.exit_point.tile.posy)
             self.house = self.map.grid[self.destination[0]][self.destination[1]].building

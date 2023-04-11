@@ -87,6 +87,10 @@ class Communication:
         # send the actions from python to c
         self.message_queue.send(message, type=PY_TO_C)
 
+    def send_unique_message_from_py_to_c(self, message, id):
+        # print('send : ', message, ' len=', len(message))
+        # send the actions from python to c
+        self.message_queue.send(message, type=id)
 
     def receive_message_from_c_to_py(self):
         # send the actions from c to python
@@ -240,7 +244,7 @@ class Communication:
 
     def accept_connect(self):
         message = struct.pack("iQQQQ", MessageType.CONNECT.value, 0, 0, 0, 0)
-        self.send_message_from_py_to_c(message)
+        self.send_unique_message_from_py_to_c(message, id)
 
     def connect(self, ip, port):
         nom = "online_game"
@@ -256,7 +260,8 @@ class Communication:
         process = subprocess.Popen(cmd) 
         # self.send_message_from_py_to_c(message)
 
-        sleep(6)
+        while not self.receive_unique_message_from_c_to_py(11):
+            pass
 
         # wait for response from c daemon and unpack the game and player information   
         # while self.receive_message_from_c_to_py():

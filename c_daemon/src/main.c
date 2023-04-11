@@ -3,7 +3,7 @@
 #include "global_var.h"
 
 const int BUFSIZE = 1024;
-uint16_t PORT     = 1236;
+uint16_t PORT     = 1234;
 
 int maxfd;
 int res;

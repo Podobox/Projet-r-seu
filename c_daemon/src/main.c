@@ -350,7 +350,7 @@ int main(int argc, char **argv) {
 
                                 // new player receive the list of player in the game, they
                                 // try co connect to all of them
-                                else if (message.mesg_type == -4) {
+                            } else if (message.mesg_type == -4) {
                                     printf("IN IP RESPONSE\n");
 
                                     // separate the @IP from ip_response

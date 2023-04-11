@@ -34,7 +34,7 @@ void print_connections() {
             printf("Connection %d:\n", i);
             printf("\tSocket: %d\n", connection[i].socket);
             printf("\tIP: %s\n", connection[i].IP);
-            printf("\tPort: %d\n", PORT + i - 1);
+            printf("\tPort: %d\n", PORT);
         }
     }
 }

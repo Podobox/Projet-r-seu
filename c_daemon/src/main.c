@@ -112,7 +112,8 @@ int main(int argc, char **argv) {
                 //         if (!connection[ind].used) {
                 //             connection[ind].IP = get_ip_player;
                 //             if ((res = connect_existed_players(ind))) {
-                //                 fprintf(stderr, "Error number %d connecting to player #%d\n", res, ind);
+                //                 fprintf(stderr, "Error number %d connecting to player
+                //                 #%d\n", res, ind);
                 //             }
                 //             break;
                 //         }
@@ -315,15 +316,17 @@ int main(int argc, char **argv) {
                                         send_message message;
                                         message.mesg_type = -4;
                                         sscanf(connection[ind].IP, "%d.%ld.%ld.%ld",
-                                                   &message.mes.message_type, &message.mes.posx,
-                                                   &message.mes.posy, &message.mes.type);
-                                        printf("sending connection %s to %s\n", connection[ind].IP, connection[index].IP);
+                                               &message.mes.message_type, &message.mes.posx,
+                                               &message.mes.posy, &message.mes.type);
+                                        printf("sending connection %s to %s\n",
+                                               connection[ind].IP, connection[index].IP);
                                         /*printf("Sending:%i %lu "*/
-                                               /*"%lu "*/
-                                               /*"%lu %lu\n",*/
-                                               /*message.mes.message_type,*/
-                                               /*message.mes.posx, message.mes.posy, message.mes.type,*/
-                                               /*message.mes.x);*/
+                                        /*"%lu "*/
+                                        /*"%lu %lu\n",*/
+                                        /*message.mes.message_type,*/
+                                        /*message.mes.posx, message.mes.posy,
+                                         * message.mes.type,*/
+                                        /*message.mes.x);*/
                                         if (write(connection[index].socket, &message, sizeof(send_message))
                                             < 0) {
                                             fprintf(stderr,
@@ -337,124 +340,131 @@ int main(int argc, char **argv) {
                                         /*strcat(buffer, connection[ind].IP);*/
                                     }
                                 }
-                            }
-
-                            // new player receive the list of player in the game, they
-                            // try co connect to all of them
-                            else if (message.mesg_type == -4) {
-                                printf("IN IP RESPONSE\n");
-
-                                // separate the @IP from ip_response
-                                /*char *get_ip_buffer = strtok(buffer, " ");*/
-                                /*char *get_ip_player = strtok(NULL, " ");*/
-
-                                char *get_ip_player = malloc(16);
-
-                                sprintf(get_ip_player, "%d.%lu.%lu.%lu", message.mes.message_type,
-                                        message.mes.posx, message.mes.posy, message.mes.type);
-
-                                /*while (get_ip_player != NULL) {*/
-                                fprintf(stderr, "get_ip_player NOT NULL %s\n", get_ip_player);
-
-                                for (int ind = 0; ind < PLAYER_MAX; ind++) {
-                                    if (!connection[ind].used) {
-                                        connection[ind].IP = get_ip_player;
-                                        if ((res = connect_existed_players(ind))) {
-                                            fprintf(stderr, "Error number %d connecting to player #%d\n",
-                                                    res, ind);
-                                        }
-                                        break;
-                                    }
+                                message.mesg_type = -100;
+                                if (write(connection[index].socket, &message, sizeof(send_message)) < 0) {
+                                    fprintf(stderr,
+                                            "Cannot send /ip_response "
+                                            "message to player #%d\n",
+                                            index);
                                 }
-                                print_connections();
-                                /*get_ip_player = strtok(NULL, " ");*/
-                                /*}*/
-                            } else if (message.mesg_type == -5) {
-                                // they send us a change in game, send this to python
-                                send_from_c(message.mes.message_type, message.mes.posx,
-                                            message.mes.posy, message.mes.type,
-                                            message.mes.x);
-                                // perror("Freaking bruh");
-                                /*char *data;*/
-                                /*data = (buffer + strlen(cmd) + 1);*/
-                                /*int32_t msg_type;*/
-                                /*uint64_t posx, posy, type, x;*/
-                                /*if (sscanf(data, "%d %ld %ld %ld %ld", &msg_type,*/
-                                /*&posx, &posy, &type, &x)) {*/
-                                /*printf("Receiving: %d %ld %ld %ld %ld\n",*/
-                                /*msg_type, posx, posy, type, x);*/
-                                /*send_from_c(msg_type, posx, posy, type, x);*/
-                                /*} else {*/
-                                /*perror("Invalid input or something wrong");*/
-                                /*}*/
-                            } /* else if (!strcmp(cmd, "/outcoming_change")) {
-                                 // we are sending a change
-                                 char msg[BUFSIZE];
-                                 sprintf(msg, "/incoming_change ");
-                                 char *data;
-                                 data = (buffer + strlen(cmd) + 1);
-                                 strcat(msg, data);
-                                 // send msg to all others
-                                 for (int ind = 0; ind < PLAYER_MAX; ind++) {
-                                     if (ind != ind0 && connection[ind].used) {
-                                         if (write(connection[ind].socket, msg,
-                             strlen(msg) + 1) < 0) { stop("Cannot send changes to
-                             other " "players");
+
+                                // new player receive the list of player in the game, they
+                                // try co connect to all of them
+                                else if (message.mesg_type == -4) {
+                                    printf("IN IP RESPONSE\n");
+
+                                    // separate the @IP from ip_response
+                                    /*char *get_ip_buffer = strtok(buffer, " ");*/
+                                    /*char *get_ip_player = strtok(NULL, " ");*/
+
+                                    char *get_ip_player = malloc(16);
+
+                                    sprintf(get_ip_player, "%d.%lu.%lu.%lu",
+                                            message.mes.message_type, message.mes.posx,
+                                            message.mes.posy, message.mes.type);
+
+                                    /*while (get_ip_player != NULL) {*/
+                                    fprintf(stderr, "get_ip_player NOT NULL %s\n", get_ip_player);
+
+                                    for (int ind = 0; ind < PLAYER_MAX; ind++) {
+                                        if (!connection[ind].used) {
+                                            connection[ind].IP = get_ip_player;
+                                            if ((res = connect_existed_players(ind))) {
+                                                fprintf(stderr, "Error number %d connecting to player #%d\n",
+                                                        res, ind);
+                                            }
+                                            break;
+                                        }
+                                    }
+                                    print_connections();
+                                    /*get_ip_player = strtok(NULL, " ");*/
+                                    /*}*/
+                                } else if (message.mesg_type == -5) {
+                                    // they send us a change in game, send this to python
+                                    send_from_c(message.mes.message_type,
+                                                message.mes.posx, message.mes.posy,
+                                                message.mes.type, message.mes.x);
+                                    // perror("Freaking bruh");
+                                    /*char *data;*/
+                                    /*data = (buffer + strlen(cmd) + 1);*/
+                                    /*int32_t msg_type;*/
+                                    /*uint64_t posx, posy, type, x;*/
+                                    /*if (sscanf(data, "%d %ld %ld %ld %ld", &msg_type,*/
+                                    /*&posx, &posy, &type, &x)) {*/
+                                    /*printf("Receiving: %d %ld %ld %ld %ld\n",*/
+                                    /*msg_type, posx, posy, type, x);*/
+                                    /*send_from_c(msg_type, posx, posy, type, x);*/
+                                    /*} else {*/
+                                    /*perror("Invalid input or something wrong");*/
+                                    /*}*/
+                                } /* else if (!strcmp(cmd, "/outcoming_change")) {
+                                     // we are sending a change
+                                     char msg[BUFSIZE];
+                                     sprintf(msg, "/incoming_change ");
+                                     char *data;
+                                     data = (buffer + strlen(cmd) + 1);
+                                     strcat(msg, data);
+                                     // send msg to all others
+                                     for (int ind = 0; ind < PLAYER_MAX; ind++) {
+                                         if (ind != ind0 && connection[ind].used) {
+                                             if (write(connection[ind].socket, msg,
+                                 strlen(msg) + 1) < 0) { stop("Cannot send changes to
+                                 other " "players");
+                                             }
                                          }
                                      }
-                                 }
-                             }*/
-                            else if (message.mesg_type == -6) {
-                                printf("IN FILE TRANSFER\n");
-                                // send file of the current game
-                                send_file_by_socket(connection[index].socket);
-                            } else {
-                                printf("OTHER MESSAGE\n");
+                                 }*/
+                                else if (message.mesg_type == -6) {
+                                    printf("IN FILE TRANSFER\n");
+                                    // send file of the current game
+                                    send_file_by_socket(connection[index].socket);
+                                } else {
+                                    printf("OTHER MESSAGE\n");
+                                }
                             }
                         }
                     }
                 }
-            }
-            char change_msg[BUFSIZE];
-            recv_data = recv_from_python();
-            /*printf("recv_from_python: %p\n", recv_data);*/
-            if (recv_data == NULL)
-                continue;
-            sprintf(change_msg, "/outcoming_change %d %ld %ld %ld %ld", recv_data->message_type,
-                    recv_data->posx, recv_data->posy, recv_data->type, recv_data->x);
-            printf("%s\n", change_msg);
-            send_message message;
-            message.mesg_type        = -5;
-            message.mes.message_type = recv_data->message_type;
-            message.mes.posx         = recv_data->posx;
-            message.mes.posy         = recv_data->posy;
-            message.mes.x            = recv_data->x;
-            message.mes.type         = recv_data->type;
-            for (int ind = 0; ind < PLAYER_MAX; ind++) {
-                if (connection[ind].used && ind != ind0) {
-                    printf("sending to %i\n", connection[ind].socket);
-                    // send_message message;
-                    // message.mesg_type        = C_TO_PY;
-                    // message.mes.message_type = recv_data->message_type;
-                    // message.mes.posx         = recv_data->posx;
-                    // message.mes.posy         = recv_data->posy;
-                    // message.mes.type         = recv_data->type;
-                    // message.mes.x            = recv_data->x;
-                    if (write(connection[ind].socket, &message, sizeof(send_message)) < 0) {
-                        stop("Cannot forward message");
+                char change_msg[BUFSIZE];
+                recv_data = recv_from_python();
+                /*printf("recv_from_python: %p\n", recv_data);*/
+                if (recv_data == NULL)
+                    continue;
+                sprintf(change_msg, "/outcoming_change %d %ld %ld %ld %ld", recv_data->message_type,
+                        recv_data->posx, recv_data->posy, recv_data->type, recv_data->x);
+                printf("%s\n", change_msg);
+                send_message message;
+                message.mesg_type        = -5;
+                message.mes.message_type = recv_data->message_type;
+                message.mes.posx         = recv_data->posx;
+                message.mes.posy         = recv_data->posy;
+                message.mes.x            = recv_data->x;
+                message.mes.type         = recv_data->type;
+                for (int ind = 0; ind < PLAYER_MAX; ind++) {
+                    if (connection[ind].used && ind != ind0) {
+                        printf("sending to %i\n", connection[ind].socket);
+                        // send_message message;
+                        // message.mesg_type        = C_TO_PY;
+                        // message.mes.message_type = recv_data->message_type;
+                        // message.mes.posx         = recv_data->posx;
+                        // message.mes.posy         = recv_data->posy;
+                        // message.mes.type         = recv_data->type;
+                        // message.mes.x            = recv_data->x;
+                        if (write(connection[ind].socket, &message, sizeof(send_message)) < 0) {
+                            stop("Cannot forward message");
+                        }
                     }
                 }
+                /*if (write(connection[ind0].socket, change_msg, strlen(change_msg) + 1) <
+                 * 0) {*/
+                /*perror("Failed to send changes");*/
+                /*}*/
             }
-            /*if (write(connection[ind0].socket, change_msg, strlen(change_msg) + 1) <
-             * 0) {*/
-            /*perror("Failed to send changes");*/
-            /*}*/
+            close(listenfd);
+            perror("Execution");
+            exit(EXIT_SUCCESS);
         }
         close(listenfd);
         perror("Execution");
         exit(EXIT_SUCCESS);
     }
-    close(listenfd);
-    perror("Execution");
-    exit(EXIT_SUCCESS);
-}

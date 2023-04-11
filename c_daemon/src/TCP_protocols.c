@@ -20,11 +20,12 @@ int connect_existed_players(int index) {
     struct sockaddr_in current_player;
     bzero(&current_player, sizeof(current_player));
     current_player.sin_family = AF_INET;
-    current_player.sin_port = htons(PORT + index - 1);
+    current_player.sin_port = htons(PORT);
     current_player.sin_addr.s_addr = inet_addr(connection[index].IP);
 
     // connect to the player
     if (connect(sock, (struct sockaddr *)&current_player, sizeof(current_player)) < 0) {
+        perror("connect");
         return 3;
     }
 

@@ -285,7 +285,7 @@ class Communication:
         process = subprocess.Popen(cmd) 
         self.send_message_from_py_to_c(message)
 
-        sleep(2)
+        sleep(4)
 
         # wait for response from c daemon and unpack the game and player information   
         # while self.receive_message_from_c_to_py():

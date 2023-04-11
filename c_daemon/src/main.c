@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
                 // get file to start the game
                 send_message message;
                 message.mesg_type = -6;
-                if (write(connection[index].socket, &message, sizeof(send_message)) < 0){
+                if (write(connection[index].socket, &message, sizeof(send_message)) < 0) {
                     stop("cannot send message for file transfer");
                 }
 
@@ -143,7 +143,6 @@ int main(int argc, char **argv) {
                 break;
             }
         }
-
     }
 
     print_connections();
@@ -280,8 +279,12 @@ int main(int argc, char **argv) {
                         // receive data from other
                         else {
                             // print received message
-                            printf("Received %li from IP:%s socket:%d buffer:%i %lu %lu %lu %lu\n", message.mesg_type,
-                                   connection[index].IP, connection[index].socket, message.mes.message_type, message.mes.posx, message.mes.posy, message.mes.type, message.mes.x);
+                            printf("Received %li from IP:%s socket:%d buffer:%i %lu %lu "
+                                   "%lu %lu\n",
+                                   message.mesg_type, connection[index].IP,
+                                   connection[index].socket, message.mes.message_type,
+                                   message.mes.posx, message.mes.posy, message.mes.type,
+                                   message.mes.x);
 
                             /*char cmd[BUFSIZE];*/
                             /*for (unsigned long int i = 0; i <= strlen(buffer); i++)
@@ -302,23 +305,25 @@ int main(int argc, char **argv) {
                             if (message.mesg_type == -1) {
                                 printf("IN IP DEMANDE\n");
 
-                                sprintf(buffer, "/ip_response");
+                                /*sprintf(buffer, "/ip_response");*/
 
                                 for (int ind = 0; ind < PLAYER_MAX; ind++) {
                                     if (connection[ind].used && ind != ind0 && ind != index /**/) {
+                                        send_message message;
+                                        message.mesg_type = -4;
+                                        message.mes.posx = sscanf(connection[ind].IP, "%d.%ld.%ld.%ld", &message.mes.message_type, &message.mes.posx, &message.mes.posy, &message.mes.type);
+                                        if (write(connection[index].socket, &message, sizeof(send_message))
+                                            < 0) {
+                                            fprintf(stderr, "Cannot send /ip_response message to player #%d\n",
+                                                    index);
+                                        }
                                         /*sprintf(buffer, "%s %s", buffer,
                                          * connection[ind].IP);*/
-                                        strcat(buffer, " ");
-                                        strcat(buffer, connection[ind].IP);
+                                        /*strcat(buffer, " ");*/
+                                        /*strcat(buffer, connection[ind].IP);*/
                                     }
                                 }
                                 printf("answering %s\n", buffer);
-                                send_message message;
-                                message.mesg_type = -4;
-                                if (write(connection[index].socket, &message, sizeof(send_message)) < 0) {
-                                    fprintf(stderr, "Cannot send /ip_response message to player #%d\n",
-                                            index);
-                                }
                             }
 
                             // new player receive the list of player in the game, they
@@ -327,10 +332,14 @@ int main(int argc, char **argv) {
                                 printf("IN IP RESPONSE\n");
 
                                 // separate the @IP from ip_response
-                                char *get_ip_buffer = strtok(buffer, " ");
-                                char *get_ip_player = strtok(NULL, " ");
+                                /*char *get_ip_buffer = strtok(buffer, " ");*/
+                                /*char *get_ip_player = strtok(NULL, " ");*/
+                                
+                                char get_ip_player[16];
 
-                                while (get_ip_player != NULL) {
+                                sprintf(get_ip_player, "%d.%lu.%lu.%lu", message.mes.message_type, message.mes.posx, message.mes.posy, message.mes.type);
+
+                                /*while (get_ip_player != NULL) {*/
                                     fprintf(stderr, "get_ip_player NOT NULL %s\n", get_ip_player);
 
                                     for (int ind = 0; ind < PLAYER_MAX; ind++) {
@@ -343,8 +352,8 @@ int main(int argc, char **argv) {
                                             break;
                                         }
                                     }
-                                    get_ip_player = strtok(NULL, " ");
-                                }
+                                    /*get_ip_player = strtok(NULL, " ");*/
+                                /*}*/
                             } else if (message.mesg_type == -5) {
                                 // they send us a change in game, send this to python
                                 send_from_c(message.mes.message_type, message.mes.posx,
@@ -380,7 +389,7 @@ int main(int argc, char **argv) {
                                      }
                                  }
                              }*/
-                            else if (message.mesg_type == -6){
+                            else if (message.mesg_type == -6) {
                                 printf("IN FILE TRANSFER\n");
                                 // send file of the current game
                                 send_file_by_socket(connection[index].socket);
@@ -400,12 +409,12 @@ int main(int argc, char **argv) {
                     recv_data->posx, recv_data->posy, recv_data->type, recv_data->x);
             printf("%s\n", change_msg);
             send_message message;
-            message.mesg_type = -5;
+            message.mesg_type        = -5;
             message.mes.message_type = recv_data->message_type;
-            message.mes.posx = recv_data->posx;
-            message.mes.posy = recv_data->posy;
-            message.mes.x = recv_data->x;
-            message.mes.type = recv_data->type;
+            message.mes.posx         = recv_data->posx;
+            message.mes.posy         = recv_data->posy;
+            message.mes.x            = recv_data->x;
+            message.mes.type         = recv_data->type;
             for (int ind = 0; ind < PLAYER_MAX; ind++) {
                 if (connection[ind].used && ind != ind0) {
                     printf("sending to %i\n", connection[ind].socket);

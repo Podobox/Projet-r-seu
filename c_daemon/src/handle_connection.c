@@ -130,7 +130,7 @@ void recv_file(int sockfd) {
 
     // verify if the file is received successfully before do other thing
     while (total_bytes_read < file_size) {
-        printf("%i\n", total_bytes_read);
+        /*printf("%i\n", total_bytes_read);*/
         while ((valread = recv(sockfd, buffer, BUFSIZE - 1, MSG_DONTWAIT)) == BUFSIZE - 1) {
             /*while ((valread = read(sockfd, buffer, BUFSIZE - 1)) == BUFSIZE - 1 ||
              * total_bytes_read < file_size - BUFSIZE + 1) {*/

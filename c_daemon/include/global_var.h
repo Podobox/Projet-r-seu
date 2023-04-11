@@ -1,6 +1,8 @@
 #ifndef GLOBAL_VAR_H
 #define GLOBAL_VAR_H
 
+#define _GNU_SOURCE     /* To get defns of NI_MAXSERV and NI_MAXHOST */
+
 #include <arpa/inet.h>
 #include <errno.h>
 #include <ifaddrs.h>
@@ -18,6 +20,11 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <ifaddrs.h>
+#include <arpa/inet.h>
+
+// define the save directory
+#define SAVE_DIR "../Save"
 
 #define max(a, b) ((a > b) ? a : b)
 #define PLAYER_MAX 10

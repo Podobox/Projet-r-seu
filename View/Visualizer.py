@@ -40,6 +40,7 @@ from Controller.Button import Button
 from View.FileMenu import FileMenu
 from View.SideMenu import Menu
 from View.Minimap import Minimap
+from View.Chat import Chat
 
 from Model.Tree import Tree
 from Model.Water import Water
@@ -160,6 +161,7 @@ class Visualizer:
 
         self.minimap.display(map, self.deplacementX + self.tmpDeplacementX,
                              self.deplacementY + self.tmpDeplacementY)
+        
 
         # Draw game barre
         self.barre.barre_function(self.game.denarii, self.game.population, self.game.date)

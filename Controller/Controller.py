@@ -1,5 +1,6 @@
 import random
-
+import subprocess
+import os
 from Model.Player import Player
 from Model.Grass import Grass
 from Model.Map import MAP_DIM
@@ -75,7 +76,10 @@ class Controller:
         # Benchmarking
         self.bench = 0
         self.bench_nb = 0
+        # self.communication = Communication()
+        self.checkDaemon()
         self.run()
+
 
     def run(self):
         # print(self.game)
@@ -83,6 +87,9 @@ class Controller:
         for _ in range(5):
             self.game.increase_speed()
 
+        # for x in range(MAP_DIM):
+        #     for y in range(MAP_DIM):
+        #         print(self.game.map.grid[x][y].owner)
         # for x in range(10, 15):
             # for y in range(2, 20):
                 # self.game.destroy(x, y)
@@ -144,7 +151,7 @@ class Controller:
                 pass
             case MessageType.CONNECT:
                 Backup("online_game").save(self.game)
-                com.accept_connect()
+                com.communication.accept_connect()
             case MessageType.DISCONNECT:
                 # message sent only to me, i take all the tiles
                 self.game.map.grid[message[1]][message[2]].owner = com.ME
@@ -290,6 +297,19 @@ class Controller:
         self.checkEvents(sleep_time)
         self.last_frame = time_ns()
 
+    def checkDaemon(self):
+        # Check if c_daemon is already running
+        process = subprocess.Popen(['pgrep', 'c_daemon'], stdout=subprocess.PIPE)
+        output, _ = process.communicate()
+        if output:
+            # c_daemon is already running
+            print("c_daemon is already running")
+        else:
+            # c_daemon is not running, start it
+            print("Starting c_daemon")
+            # print([os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'c_daemon', 'bin', 'c_daemon'))])
+            subprocess.Popen([os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'c_daemon', 'bin', 'c_daemon'))])
+
     def checkEvents(self, delta_time=0):
         stop_time = time_ns() + delta_time
         for event in pg.event.get():
@@ -308,12 +328,12 @@ class Controller:
                 case pg.MOUSEBUTTONDOWN:
                     print("MouseButtonDown")
                     if event.button == pg.BUTTON_LEFT:
-                        print("Left button pressed at (x, y) = ", event.pos)
+                        # print("Left button pressed at (x, y) = ", event.pos)
 
                         print("self.building est a : ", self.building)
                         # ------------------------------------------------------------------------------------Faire en clique droit
                     elif event.button == pg.BUTTON_RIGHT:
-                        print("Right button pressed at (x, y) = ", event.pos)
+                        # print("Right button pressed at (x, y) = ", event.pos)
                         if event.pos[0] <= self.visualizer.GAME_WIDTH and event.pos[1] <= self.visualizer.GAME_HEIGHT:
                             self.MODE_DECALAGE = True
                             self.ORIGIN_DECALAGE = event.pos
@@ -329,9 +349,9 @@ class Controller:
                             self.building = False
                             self.visualizer.changeBuildingMode()
                             self.final_pos = None
-                        print("Left button released at (x, y) = ", event.pos)
+                        # print("Left button released at (x, y) = ", event.pos)
                     elif event.button == pg.BUTTON_RIGHT:
-                        print("Right button released at (x, y) = ", event.pos)
+                        # print("Right button released at (x, y) = ", event.pos)
                         if self.MODE_DECALAGE:
                             self.MODE_DECALAGE = False
                             mouse_pos = event.pos
@@ -392,10 +412,10 @@ class Controller:
                     if left_button_pressed:
                         actionned = False
                         if not(self.building):
-                            print("into not(self.building)")
+                            # print("into not(self.building)")
                             for button in self.list_button:
                                 if button.listener_rect(mouse_pos):
-                                    print("button clicked")
+                                    # print("button clicked")
                                     self.buttonclicked = button
 
                                     if self.buttonclicked.building != -1:

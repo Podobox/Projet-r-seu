@@ -23,6 +23,10 @@ fd_set readfds;
 struct sockaddr_in master_addr = {};
 
 int main(int argc, char **argv) {
+    char buffer[BUFSIZE];
+    bzero(buffer, BUFSIZE);
+    int charcnt;
+
     // initialiser la connection
     for (int i = 0; i < PLAYER_MAX; i++) {
         connection[i].used   = 0;
@@ -68,10 +72,18 @@ int main(int argc, char **argv) {
                 if ((res = connect_existed_players(index))) {
                     fprintf(stderr, "Error number %d connecting to player #%d\n", res, index);
                 }
-                char buffer[BUFSIZE];
-                int charcnt;
-                // get list of other IP addresses
+
+                // get file to start the game
                 send_message message;
+                message.mesg_type = -6;
+                if (write(connection[index].socket, &message, sizeof(send_message)) < 0){
+                    stop("cannot send message for file transfer");
+                }
+
+                recv_file(connection[index].socket);
+
+
+                // get list of other IP addresses
                 message.mesg_type = -1;
                 if (write(connection[index].socket, &message, sizeof(send_message)) < 0) {
                     stop("cannot demande ip table");
@@ -131,6 +143,7 @@ int main(int argc, char **argv) {
                 break;
             }
         }
+
     }
 
     print_connections();
@@ -367,7 +380,11 @@ int main(int argc, char **argv) {
                                      }
                                  }
                              }*/
-                            else {
+                            else if (message.mesg_type == -6){
+                                printf("IN FILE TRANSFER\n");
+                                // send file of the current game
+                                send_file_by_socket(connection[index].socket);
+                            } else {
                                 printf("OTHER MESSAGE\n");
                             }
                         }

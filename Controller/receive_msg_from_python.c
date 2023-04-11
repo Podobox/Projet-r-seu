@@ -58,6 +58,6 @@ int main()
     {
         recv_from_python();
         //printf("Data send is : %s \n", message.mesg_text);
-        printf("Sending data to C : %d %llu %llu %llu %llu \n", buffer->message_type, buffer->posx, buffer->posy, buffer->type, buffer->x);
+        printf("Sending data from py to C : %d %llu %llu %llu %llu \n", buffer->message_type, buffer->posx, buffer->posy, buffer->type, buffer->x);
     }
 }

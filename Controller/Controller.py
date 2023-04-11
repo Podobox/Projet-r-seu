@@ -275,7 +275,8 @@ class Controller:
                             w = b.migrant
                     elif t == Prefect: w = b.prefect
                     elif t == Tax_Collector: w = b.tax_collector
-                    self.game.remove_from_walkers(w)
+                    if w is not None:
+                        self.game.remove_from_walkers(w)
                 case MessageType.HOUSE_FOOD_STOCK:
                     self.game.map.grid[message[1]][message[2]].food += message[3]
                 case MessageType.HOUSE_EAT:

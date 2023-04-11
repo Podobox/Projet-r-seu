@@ -3,6 +3,7 @@ from pygame.locals import *
 from Controller.Controller import Controller
 from Controller.Backup import Backup
 from Controller.Communication import Communication
+import Controller.Communication as com
 from Model.Game import Game
 from View.Visualizer import WINDOW_WIDTH, WINDOW_HEIGHT
 import Save
@@ -279,7 +280,6 @@ def enter_connect_game():
                     screen.blit(text_2, (x[0] / 2 - 100, (x[1] / 3) + 70))
                     pygame.display.flip()
                 elif event.key == pygame.K_RETURN:
-                    communication = Communication()
                     if ip_port.count("/") != 1:
                         erreur = "no port provided"
                         text_erreur = font.render(erreur, True, (255, 0, 0))
@@ -287,7 +287,7 @@ def enter_connect_game():
                         pygame.display.flip()
                         continue
                     ip, port = ip_port.split("/")
-                    nom, game = communication.connect(ip, int(port))
+                    nom, game = com.communication.connect(ip, int(port))
                     backup = Backup(nom)
                     game = backup.load(nom)
                     print(nom)

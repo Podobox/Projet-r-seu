@@ -280,7 +280,7 @@ int main(int argc, char **argv) {
                         // receive data from other
                         else {
                             // print received message
-                            printf("Received from IP:%s socket:%d buffer:%i %lu %lu %lu %lu\n",
+                            printf("Received %li from IP:%s socket:%d buffer:%i %lu %lu %lu %lu\n", message.mesg_type,
                                    connection[index].IP, connection[index].socket, message.mes.message_type, message.mes.posx, message.mes.posy, message.mes.type, message.mes.x);
 
                             /*char cmd[BUFSIZE];*/

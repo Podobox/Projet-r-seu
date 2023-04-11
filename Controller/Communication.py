@@ -70,7 +70,8 @@ class Communication:
     def __init__(self):
         sysv_ipc.MessageQueue.remove(sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT))
         # create fifo to communicate with c daemon
-        self.message_queue = sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT, mode=0o777)
+        # self.message_queue = sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT, mode=0o777)
+        self.message_queue = sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT)
 
         # try:
         #     # Try to create a new message queue with the same key
@@ -100,14 +101,14 @@ class Communication:
         except sysv_ipc.BusyError:
             # Message queue is full, handle the error here
             return False
-        except OSError as e:
-            print("error in send_message_from_py_to_c")
-            if e.errno == 22:
-                # Invalid argument, handle the error here
-                return False
-            else:
-                # Other OSError, re-raise the exception
-                raise e
+        # except OSError as e:
+            # # print("error in send_message_from_py_to_c")
+            # if e.errno == 22:
+                # # Invalid argument, handle the error here
+                # return False
+            # else:
+                # # Other OSError, re-raise the exception
+                # raise e
 
     def receive_message_from_c_to_py(self):
         # send the actions from c to python
@@ -117,10 +118,10 @@ class Communication:
             return True
         except sysv_ipc.BusyError:
             return False
-        except sysv_ipc.ExistentialError:
-            print("error in receive_message_from_c_to_py")
+        # except sysv_ipc.ExistentialError:
+            # print("error in receive_message_from_c_to_py")
             # Message queue no longer exists, handle the error here
-            return False
+            # return False
 
     def receive_unique_message_from_c_to_py(self, id):
         # send the actions from c to python
@@ -268,7 +269,7 @@ class Communication:
 
     def accept_connect(self):
         message = struct.pack("iQQQQ", MessageType.CONNECT.value, 0, 0, 0, 0)
-        self.send_message_from_py_to_c(message)
+        # self.send_message_from_py_to_c(message)
 
     def connect(self, ip, port):
         nom = "online_game"
@@ -284,14 +285,17 @@ class Communication:
         process = subprocess.Popen(cmd) 
         self.send_message_from_py_to_c(message)
 
+        sleep(2)
+
         # wait for response from c daemon and unpack the game and player information   
-        while self.receive_message_from_c_to_py():
-            game = pickle.loads(self.message.get())
-            return (nom, game)
+        # while self.receive_message_from_c_to_py():
+            # game = pickle.loads(self.message.get())
+            # return (nom, game)
         
         # return the game it is connected to and its players
 
         # If the loop did not run, return a default value
+
         return (nom, None)
 
     def disconnect(self, posx, posy):

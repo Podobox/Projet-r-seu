@@ -1,11 +1,11 @@
-#include "TCP_protocols.h"
 #include "IPC.h"
+#include "TCP_protocols.h"
 #include "global_var.h"
 
 // functions to work with the structure
 
 // Function to add a new player info to the list of connected player
-void add_connection(int socket, char* IP) {
+void add_connection(int socket, char *IP) {
     int i = 0;
 
     while (i < PLAYER_MAX && connection[i].used) {
@@ -13,9 +13,9 @@ void add_connection(int socket, char* IP) {
     }
 
     if (i < PLAYER_MAX) {
-        connection[i].used = 1;
+        connection[i].used   = 1;
         connection[i].socket = socket;
-        connection[i].IP = strdup(IP);
+        connection[i].IP     = strdup(IP);
         existed_player++;
     } else {
         // The array is full, handle the error as needed.
@@ -25,7 +25,7 @@ void add_connection(int socket, char* IP) {
 void close_connection(int index) {
     close(connection[index].socket);
     connection[index].socket = 0;
-    connection[index].used = 0;
+    connection[index].used   = 0;
 }
 
 void print_connections() {
@@ -90,16 +90,15 @@ void send_file_by_socket(int sockfd) {
     fclose(fp);
 
     printf("File sent succesfully\n");
-
 }
 
 void recv_file(int sockfd) {
     /* start of recv_file */
     printf("IN RECV FILE\n");
-    
+
     char buffer[BUFSIZE];
     bzero(buffer, BUFSIZE);
-    long file_size = -1; // not initialised yet
+    long file_size       = -1;  // not initialised yet
     int total_bytes_read = 0;
 
     // create a new file in the save directory
@@ -108,7 +107,7 @@ void recv_file(int sockfd) {
     strcat(cwd, "/Save/online_game");
     printf("\t$PWD received file: %s\n", cwd);
 
-    FILE* fp = fopen(cwd, "w");
+    FILE *fp = fopen(cwd, "w");
     if (fp == NULL) {
         printf("Error creating file.\n");
         return;
@@ -118,7 +117,7 @@ void recv_file(int sockfd) {
     int valread;
 
     send_message message;
-    valread = read(sockfd, &message, sizeof(send_message));
+    valread   = read(sockfd, &message, sizeof(send_message));
     file_size = message.mesg_type;
 
     /*valread = read(sockfd, buffer, BUFSIZE - 1);*/
@@ -130,53 +129,46 @@ void recv_file(int sockfd) {
     // printf("\tin recv_file, total bytes read = %d\n", total_bytes_read);
 
     // verify if the file is received successfully before do other thing
-    while (total_bytes_read != file_size) {
-
-        while ((valread = read(sockfd, buffer, BUFSIZE - 1)) == BUFSIZE - 1) {
+    while (total_bytes_read < file_size) {
+        printf("%i\n", total_bytes_read);
+        while ((valread = recv(sockfd, buffer, BUFSIZE - 1, MSG_DONTWAIT)) == BUFSIZE - 1) {
+            /*while ((valread = read(sockfd, buffer, BUFSIZE - 1)) == BUFSIZE - 1 ||
+             * total_bytes_read < file_size - BUFSIZE + 1) {*/
 
             buffer[valread] = '\0';
             // printf("\trecv buffer %d: %s\n", valread,  buffer);
             fwrite(buffer, 1, valread, fp);
-            total_bytes_read += valread; 
-
+            total_bytes_read += valread;
         }
 
-        if (valread != 0) {
+        if (valread < 0) {
+            continue;
+        }
 
+        /*printf("valread : %d\n", valread);*/
+        if (valread != 0) {
             buffer[valread] = '\0';
             fwrite(buffer, 1, valread, fp);
-            total_bytes_read += valread; 
-
+            total_bytes_read += valread;
         }
 
-        if(total_bytes_read < file_size ) {
-            printf("\tReceived file of %ld unsuccessfully (%d)\n", file_size, total_bytes_read);
-            stop("not received the file to start the game successfully");
-            exit(EXIT_FAILURE);
-        }
+        /*if(total_bytes_read < file_size ) {*/
+        /*printf("\tReceived file of %ld unsuccessfully (%d)\n", file_size,
+         * total_bytes_read);*/
+        /*stop("not received the file to start the game successfully");*/
+        /*exit(EXIT_FAILURE);*/
+        /*}*/
     }
 
     // printf("\tend recv_file()\n");
     fclose(fp);
 
     printf("\tin recv_file out while, total bytes read = %d\n", total_bytes_read);
-    if(total_bytes_read == file_size) {
+    if (total_bytes_read >= file_size) {
         printf("\tReceived file of %ld successfully (%d)\n", file_size, total_bytes_read);
-    }
-    else {
+    } else {
         printf("\tReceived file of %ld unsuccessfully\n", file_size);
         stop("not received the file to start the game successfully");
     }
     /* end of recv_file */
 }
-
-
-
-
-
-
-
-
-
-
-

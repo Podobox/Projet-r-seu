@@ -275,7 +275,7 @@ class Communication:
     def accept_connect(self):
         message = struct.pack("iQQQQ", MessageType.CONNECT.value, 0, 0, 0, 0)
         # self.send_message_from_py_to_c(message)
-        self.send_unique_message_from_py_to_c(message, id)
+        self.send_unique_message_from_py_to_c(message, 10)
 
     def connect(self, ip, port):
         nom = "online_game"

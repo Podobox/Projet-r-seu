@@ -197,17 +197,23 @@ class Controller:
                 case MessageType.BURN_STAGE_INCREASE:
                     # message is (posx, posy, burn_stage)
                     b = self.game.map.grid[message[1]][message[2]].building
+                    if b is None:
+                        return
                     b.burn_stage = message[3]
                     if message[3] > STAGES_BEFORE_BURN:
                         b.burn_stage = STAGES_BEFORE_BURN
                 case MessageType.COLLAPSE_STAGE_INCREASE:
                     # message is (posx, posy, collapse_stage)
                     b = self.game.map.grid[message[1]][message[2]].building
+                    if b is None:
+                        return
                     b.collapse_stage = message[3]
                     if message[3] > STAGES_BEFORE_COLLAPSE:
                         b.collapse_stage = STAGES_BEFORE_COLLAPSE
                 case MessageType.WALKER_SPAWN:
                     b = self.game.map.grid[message[1]][message[2]].building
+                    if b is None:
+                        return
                     t = walker_type(message[4], to_num=False)
                     if t == Engineer:
                         b.engineer_do(self.game.map)

@@ -3,7 +3,7 @@
 #include "global_var.h"
 
 const int BUFSIZE = 1024;
-uint16_t PORT     = 1234;
+uint16_t PORT     = 1236;
 
 int maxfd;
 int res;
@@ -124,26 +124,26 @@ int main(int argc, char **argv) {
 
                 // demand the initial state of the game
                 /*send_message message;*/
-                message.mesg_type = -2;
-                if (write(connection[index].socket, &message, sizeof(send_message)) < 0) {
-                    stop("cannot demand initial state");
-                }
-                /*if (write(connection[index].socket, "/incoming_change 1 2 3 4 5",*/
-                /*strlen("/incoming_change 1 2 3 4 5") + 1)*/
-                /*< 0) {*/
-                /*stop("dumb dumb test");*/
-                /*}*/
-                /*// wait 50ms*/
-                /*usleep(50000);*/
-                /*if (write(connection[index].socket, "/outcoming_change 5 6 7 8 9",*/
-                /*strlen("/outcoming_change 5 6 7 8 9") + 1)*/
-                /*< 0) {*/
-                /*stop("dumb test 2");*/
-                /*}*/
-                break;
-            }
+            /*message.mesg_type = -2;*/
+            /*if (write(connection[index].socket, &message, sizeof(send_message)) < 0) {*/
+                /*stop("cannot demand initial state");*/
+            /*}*/
+            /*if (write(connection[index].socket, "/incoming_change 1 2 3 4 5",*/
+            /*strlen("/incoming_change 1 2 3 4 5") + 1)*/
+            /*< 0) {*/
+            /*stop("dumb dumb test");*/
+            /*}*/
+            /*// wait 50ms*/
+            /*usleep(50000);*/
+            /*if (write(connection[index].socket, "/outcoming_change 5 6 7 8 9",*/
+            /*strlen("/outcoming_change 5 6 7 8 9") + 1)*/
+            /*< 0) {*/
+            /*stop("dumb test 2");*/
+            /*}*/
+            break;
         }
     }
+}
 
     print_connections();
 
@@ -312,6 +312,7 @@ int main(int argc, char **argv) {
                                         send_message message;
                                         message.mesg_type = -4;
                                         message.mes.posx = sscanf(connection[ind].IP, "%d.%ld.%ld.%ld", &message.mes.message_type, &message.mes.posx, &message.mes.posy, &message.mes.type);
+                                        printf("sending connection %s\n", connection[ind].IP);
                                         if (write(connection[index].socket, &message, sizeof(send_message))
                                             < 0) {
                                             fprintf(stderr, "Cannot send /ip_response message to player #%d\n",
@@ -323,7 +324,6 @@ int main(int argc, char **argv) {
                                         /*strcat(buffer, connection[ind].IP);*/
                                     }
                                 }
-                                printf("answering %s\n", buffer);
                             }
 
                             // new player receive the list of player in the game, they

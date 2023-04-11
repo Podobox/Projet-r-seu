@@ -328,7 +328,7 @@ class Game:
                 # if b.deliver(self.map):
                     # self.add_to_walkers(b.farm_boy)
                 # elif b.farm_boy is None and buf is not None:
-                    self.remove_from_walkers(buf)
+                    # self.remove_from_walkers(buf)
 
     def advance_time(self):
         delta = timedelta(minutes=TIME_PER_FRAME)

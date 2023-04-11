@@ -45,7 +45,7 @@ void send_file_by_socket(int sockfd) {
 
     // ask python to save the game
     send_from_c(3, 0, 0, 0, 0);
-    sleep(2);
+    recv_from_python_mt(10);
 
     // get the name of the file
     char cwd[BUFSIZE];
@@ -170,5 +170,6 @@ void recv_file(int sockfd) {
         printf("\tReceived file of %ld unsuccessfully\n", file_size);
         stop("not received the file to start the game successfully");
     }
+    send_from_c_mt(0, 0, 0, 0, 0, 11);
     /* end of recv_file */
 }

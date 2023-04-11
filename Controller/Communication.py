@@ -80,7 +80,7 @@ class Communication:
         # except sysv_ipc.ExistentialError:
         #     # If the creation failed, return True
         #     exists = True
-            
+
         # print(exists)
 
         self.message = Queue(-1)
@@ -109,6 +109,11 @@ class Communication:
             # else:
                 # # Other OSError, re-raise the exception
                 # raise e
+
+    def send_unique_message_from_py_to_c(self, message, id):
+        # print('send : ', message, ' len=', len(message))
+        # send the actions from python to c
+        self.message_queue.send(message, type=id)
 
     def receive_message_from_c_to_py(self):
         # send the actions from c to python
@@ -270,28 +275,31 @@ class Communication:
     def accept_connect(self):
         message = struct.pack("iQQQQ", MessageType.CONNECT.value, 0, 0, 0, 0)
         # self.send_message_from_py_to_c(message)
+        self.send_unique_message_from_py_to_c(message, id)
 
     def connect(self, ip, port):
         nom = "online_game"
         try:
-            message = struct.pack("i4sIQQ", MessageType.CONNECT.value, socket.inet_aton(ip), int(port), 0, 0)
+            message = struct.pack("i4sIQQ", MessageType.CONNECT.value,
+                                  socket.inet_aton(ip), int(port), 0, 0)
         except struct.error as e:
-            raise ValueError(f"Error packing message: {e}")  
-        
+            raise ValueError(f"Error packing message: {e}")
+
         # Define the command to run
         cmd = ["./c_daemon/bin/c_daemon", ip, str(port)]
 
         # Start the process
-        process = subprocess.Popen(cmd) 
+        process = subprocess.Popen(cmd)
         self.send_message_from_py_to_c(message)
 
-        sleep(4)
+        while not self.receive_unique_message_from_c_to_py(11):
+            pass
 
-        # wait for response from c daemon and unpack the game and player information   
+        # wait for response from c daemon and unpack the game and player information
         # while self.receive_message_from_c_to_py():
             # game = pickle.loads(self.message.get())
             # return (nom, game)
-        
+
         # return the game it is connected to and its players
 
         # If the loop did not run, return a default value

@@ -268,7 +268,11 @@ class Controller:
                     elif t == Farm_Boy: w = b.farm_boy
                     elif t == Market_Buyer: w = b.buyer
                     elif t == Market_Trader: w = b.trader
-                    elif t == Migrant: w = b.migrant
+                    elif t == Migrant:
+                        if type(w) != New_House:
+                            pass
+                        else:
+                            w = b.migrant
                     elif t == Prefect: w = b.prefect
                     elif t == Tax_Collector: w = b.tax_collector
                     self.game.remove_from_walkers(w)

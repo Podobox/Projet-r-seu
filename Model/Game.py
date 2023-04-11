@@ -392,7 +392,6 @@ class Game:
 
     def check_evolution(self):
         for b in self.buildings:
-            
             if isinstance(b, House) and b.tile.owner is com.ME:
                 diff = b.evolve()
                 if diff != 0:

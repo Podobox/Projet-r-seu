@@ -105,9 +105,9 @@ class Controller:
         # for x in range(0, 20):
             # for y in range(1):
                 # self.game.map.grid[x][y].owner = None
-        # for x in range(MAP_DIM):
-            # for y in range(MAP_DIM):
-                # self.game.map.grid[x][y].owner = None
+        for x in range(MAP_DIM):
+            for y in range(MAP_DIM):
+                self.game.map.grid[x][y].owner = None
 
         while True:
             self.game.advance_time()

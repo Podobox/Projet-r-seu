@@ -264,7 +264,8 @@ class Controller:
             case MessageType.COLLECT_MONEY:
                 self.game.denarii += message[3]
             case MessageType.CHAT_MESSAGE:
-                self.visualizer.chat.message = message[1]
+                self.visualizer.chat.receive_msg = message[2]
+                self.visualizer.chat.len_receive_message = message[1]
 
     def wait_next_frame(self):
         time_now = time_ns()

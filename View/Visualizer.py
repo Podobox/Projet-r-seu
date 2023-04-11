@@ -1663,7 +1663,7 @@ class Visualizer:
             self.displayImage(row, column, tileDIM, origin,
                               imgName, imgCode, compenX, compenY)
     def showPlayerCase(self,MAP, row, column, tileDIM, origin):
-        if  self.is_owner( MAP,row, column):
+        if  self.is_owner( MAP,column, row):
             imgName = 'player_case'
             compenX = tileDIM
             compenY = 0

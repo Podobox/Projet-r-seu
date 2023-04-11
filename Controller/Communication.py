@@ -256,14 +256,17 @@ class Communication:
         process = subprocess.Popen(cmd) 
         self.send_message_from_py_to_c(message)
 
+        sleep(4)
+
         # wait for response from c daemon and unpack the game and player information   
-        while self.receive_message_from_c_to_py():
-            game = pickle.loads(self.message.get())
-            return (nom, game)
+        # while self.receive_message_from_c_to_py():
+            # game = pickle.loads(self.message.get())
+            # return (nom, game)
         
         # return the game it is connected to and its players
 
         # If the loop did not run, return a default value
+
         return (nom, None)
 
     def disconnect(self, posx, posy):

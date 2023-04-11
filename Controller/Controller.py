@@ -40,6 +40,7 @@ from Model.Engineer import Engineer
 from Model.Prefect import Prefect
 from Model.Tax_Collector import Tax_Collector
 from Model.Walkers import Direction
+from Model.Building import STAGES_BEFORE_BURN, STAGES_BEFORE_COLLAPSE
 
 FRAMES_PER_SECONDS = 10
 TIME_NS_PER_FRAME = 1 / FRAMES_PER_SECONDS * 1e9
@@ -194,12 +195,16 @@ class Controller:
                 pass
             case MessageType.BURN_STAGE_INCREASE:
                 # message is (posx, posy, burn_stage)
-                self.game.map.grid[message[1]][message[2]].building.burn_stage = \
-                    message[3]
+                b = self.game.map.grid[message[1]][message[2]].building
+                b.burn_stage = message[3]
+                if message[3] > STAGES_BEFORE_BURN:
+                    b.burn_stage = STAGES_BEFORE_BURN
             case MessageType.COLLAPSE_STAGE_INCREASE:
                 # message is (posx, posy, collapse_stage)
-                self.game.map.grid[message[1]][message[2]].building.collapse_stage = \
-                    message[3]
+                b = self.game.map.grid[message[1]][message[2]].building
+                b.collapse_stage = message[3]
+                if message[3] > STAGES_BEFORE_COLLAPSE:
+                    b.collapse_stage = STAGES_BEFORE_COLLAPSE
             case MessageType.WALKER_SPAWN:
                 b = self.game.map.grid[message[1]][message[2]].building
                 t = walker_type(message[4], to_num=False)

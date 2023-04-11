@@ -156,17 +156,18 @@ def convert_msg(message):
     new_msg = ""
     for w in message:
         new_msg += f'{convert_letter(w)}0'
-    return int(new_msg[:-1])
+    return int(new_msg[:])
 
 
 def convert_receive_msg(number, length):
     msg = ""
     decal = 0
+    print(number)
     for i in range(length):
         if str(number)[1+2*i+decal] == '0':
             msg += convert_number(int(str(number)[2*i + decal]))
         else:
-            msg += convert_msg(int(str(number)[2*i+decal:2*i+2+decal]))
+            msg += convert_number(int(str(number)[2*i+decal:2*i+2+decal]))
             decal += 1
     return msg
 
@@ -206,10 +207,10 @@ class Chat:
         if self.is_selected:
             self.check_input(now)
         # can take control of chat with enter key
-        else:
-            for event in pg.event.get():
-                if event.type == pg.KEYDOWN and event.key == pg.K_RETURN:
-                    self.is_selected = True
+        # else:
+           # for event in pg.event.get():
+               # if event.type == pg.KEYDOWN and event.key == pg.K_RETURN:
+                  # self.is_selected = True
 
         # receive messages from others
         if self.receive_msg and not self.message:

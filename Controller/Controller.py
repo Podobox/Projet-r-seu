@@ -67,7 +67,7 @@ class Controller:
         if players is None:
             self.game.take_all_ownership(self.player)
         self.game.set_initial_map()
-        self.visualizer = Visualizer(self.list_button, self.game, self.backup)
+        self.visualizer = Visualizer(self.list_button, self.game, self.backup, com.communication)
         self.building = False
         self.buttonclicked = None
         self.last_frame = time_ns()
@@ -263,6 +263,9 @@ class Controller:
                 self.game.denarii -= message[3]
             case MessageType.COLLECT_MONEY:
                 self.game.denarii += message[3]
+            case MessageType.CHAT_MESSAGE:
+                self.visualizer.chat.receive_msg = message[2]
+                self.visualizer.chat.len_receive_message = message[1]
 
     def wait_next_frame(self):
         time_now = time_ns()

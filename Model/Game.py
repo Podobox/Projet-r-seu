@@ -320,13 +320,14 @@ class Game:
                     b.eat()
 
     def farm(self):
-        for b in self.buildings:
-            if isinstance(b, Wheat_Farm) and b.tile.owner is com.ME:
-                b.farm(self.date)
-                buf = b.farm_boy
-                if b.deliver(self.map):
-                    self.add_to_walkers(b.farm_boy)
-                elif b.farm_boy is None and buf is not None:
+        pass
+        # for b in self.buildings:
+            # if isinstance(b, Wheat_Farm) and b.tile.owner is com.ME:
+                # b.farm(self.date)
+                # buf = b.farm_boy
+                # if b.deliver(self.map):
+                    # self.add_to_walkers(b.farm_boy)
+                # elif b.farm_boy is None and buf is not None:
                     self.remove_from_walkers(buf)
 
     def advance_time(self):
@@ -411,22 +412,24 @@ class Game:
                     self.add_to_walkers(b.migrant)
 
     def fill_market(self):
-        for b in self.buildings:
-            if isinstance(b, Market) and b.tile.owner is com.ME:
-                buf = b.buyer
-                if b.fill(self.map):
-                    self.add_to_walkers(b.buyer)
-                elif b.buyer is None and buf is not None:
-                    self.remove_from_walkers(buf)
+        pass
+        # for b in self.buildings:
+            # if isinstance(b, Market) and b.tile.owner is com.ME:
+                # buf = b.buyer
+                # if b.fill(self.map):
+                    # self.add_to_walkers(b.buyer)
+                # elif b.buyer is None and buf is not None:
+                    # self.remove_from_walkers(buf)
 
     def trade_market(self):
-        for b in self.buildings:
-            if isinstance(b, Market) and b.tile.owner is com.ME:
-                buf = b.trader
-                if b.trade(self.map):
-                    self.add_to_walkers(b.trader)
-                elif b.trader is None and buf is not None:
-                    self.remove_from_walkers(buf)
+        pass
+        # for b in self.buildings:
+            # if isinstance(b, Market) and b.tile.owner is com.ME:
+                # buf = b.trader
+                # if b.trade(self.map):
+                    # self.add_to_walkers(b.trader)
+                # elif b.trader is None and buf is not None:
+                    # self.remove_from_walkers(buf)
 
     def walk(self):
         for w in self.walkers:
@@ -468,31 +471,34 @@ class Game:
                             print(f"new balance: {self.denarii}")
 
     def engineer(self):
-        for b in self.buildings:
-            if isinstance(b, Engineer_Post) and b.tile.owner is com.ME:
-                buf = b.engineer
-                if b.engineer_do(self.map):
-                    self.add_to_walkers(b.engineer)
-                elif b.engineer is None and buf is not None:
-                    self.remove_from_walkers(buf)
+        pass
+        # for b in self.buildings:
+            # if isinstance(b, Engineer_Post) and b.tile.owner is com.ME:
+                # buf = b.engineer
+                # if b.engineer_do(self.map):
+                    # self.add_to_walkers(b.engineer)
+                # elif b.engineer is None and buf is not None:
+                    # self.remove_from_walkers(buf)
 
     def firefight(self):
-        for b in self.buildings:
-            if isinstance(b, Prefecture) and b.tile.owner is com.ME:
-                buf = b.prefect
-                if b.prefect_do(self.map):
-                    self.add_to_walkers(b.prefect)
-                elif b.prefect is None and buf is not None:
-                    self.remove_from_walkers(buf)
+        pass
+        # for b in self.buildings:
+            # if isinstance(b, Prefecture) and b.tile.owner is com.ME:
+                # buf = b.prefect
+                # if b.prefect_do(self.map):
+                    # self.add_to_walkers(b.prefect)
+                # elif b.prefect is None and buf is not None:
+                    # self.remove_from_walkers(buf)
 
     def collect_tax(self):
-        for b in self.buildings:
-            if isinstance(b, Forum) and b.tile.owner is com.ME:
-                buf = b.tax_collector
-                if b.collect(self.map):
-                    self.add_to_walkers(b.tax_collector)
-                elif b.tax_collector is None and buf is not None:
-                    self.remove_from_walkers(buf)
+        pass
+        # for b in self.buildings:
+            # if isinstance(b, Forum) and b.tile.owner is com.ME:
+                # buf = b.tax_collector
+                # if b.collect(self.map):
+                    # self.add_to_walkers(b.tax_collector)
+                # elif b.tax_collector is None and buf is not None:
+                    # self.remove_from_walkers(buf)
 
     def get_denarii(self):
         return self.denarii

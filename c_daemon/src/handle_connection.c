@@ -45,7 +45,7 @@ void send_file_by_socket(int sockfd) {
 
     // ask python to save the game
     send_from_c(3, 0, 0, 0, 0);
-    recv_from_python_mt(10);
+    while (recv_from_python_mt(10) == NULL);
 
     // get the name of the file
     char cwd[BUFSIZE];

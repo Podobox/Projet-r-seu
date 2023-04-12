@@ -7,6 +7,7 @@ from enum import Enum
 import sys
 import sysv_ipc
 import re
+from View.Chat import convert_msg
 import pickle
 import struct
 from queue import Queue
@@ -55,6 +56,7 @@ class MessageType(Enum):
     SPEND_MONEY = 28
     COLLECT_MONEY = 29
     PLAYER = 30
+    CHAT_MESSAGE = 31
     # TODO below
     # change state of walkers ?
 
@@ -258,6 +260,12 @@ class Communication:
     def give_ownership(self, posx, posy, unique_id):
         message = struct.pack("iQQQQ", MessageType.GIVE_OWNERSHIP.value, posx, posy, 0,
                               unique_id)
+        self.send_message_from_py_to_c(message)
+
+    # functions use to send chat's messages
+    def send_chat_message(self, chat_message):
+        message = struct.pack("iQQQQ", MessageType.CHAT_MESSAGE.value, len(chat_message), convert_msg(chat_message),
+                              0, 0)
         self.send_message_from_py_to_c(message)
 
     def check_messages(self):

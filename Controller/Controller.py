@@ -290,6 +290,9 @@ class Controller:
                     self.game.denarii -= message[3]
                 case MessageType.COLLECT_MONEY:
                     self.game.denarii += message[3]
+                case MessageType.CHAT_MESSAGE:
+                    self.visualizer.chat.receive_msg = message[2]
+                    self.visualizer.chat.len_receive_message = message[1]
         except RuntimeError as e:
             print(e)
 

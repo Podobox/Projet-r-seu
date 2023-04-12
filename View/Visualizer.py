@@ -114,6 +114,7 @@ class Visualizer:
         self.fileMenu = FileMenu(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, backup, game)
         #self.images = dict()
         self.minimap = Minimap(self.window, WINDOW_WIDTH, WINDOW_HEIGHT)
+        self.chat = Chat(self.window, WINDOW_WIDTH, WINDOW_HEIGHT, communication)
 
         self.loadImages()
         return
@@ -167,6 +168,8 @@ class Visualizer:
 
         self.minimap.display(map, self.deplacementX + self.tmpDeplacementX,
                              self.deplacementY + self.tmpDeplacementY)
+
+        self.chat.display(self.chat)
         # self.imgavatar.display()
         
 
